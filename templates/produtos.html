@@ -1,0 +1,204 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/produtos.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<!-- ===================================== -->
+<!-- TOPO -->
+<!-- ===================================== -->
+
+<div class="topo-produtos">
+
+    <div>
+
+        <h1>
+
+            Produtos
+
+        </h1>
+
+        <p class="subtitulo-pagina">
+
+            Gerencie seu estoque e preços
+
+        </p>
+
+    </div>
+
+    {% if session["nivel"] != "funcionario" %}
+
+    <button class="btn-add-produto" onclick="abrirModalProduto()">
+
+        + Adicionar Produto
+
+    </button>
+
+    {% endif %}
+
+</div>
+
+<!-- ===================================== -->
+<!-- PRODUTOS -->
+<!-- ===================================== -->
+
+<div class="produtos-grid">
+
+    {% for produto in produtos %}
+
+    <div class="produto-card">
+
+        <div class="produto-info">
+
+            <h2>
+
+                {{ produto["nome"] }}
+
+            </h2>
+
+            <span class="preco">
+
+                R$ {{ produto["preco"] }}
+
+            </span>
+
+            <span class="estoque">
+
+                Estoque: {{ produto["estoque"] }}
+
+            </span>
+
+        </div>
+
+        <div class="menu-produto">
+
+            <button class="btn-menu" onclick="toggleMenu('menu{{ produto.id }}')">
+                ⋮
+            </button>
+
+            <div id="menu{{ produto.id }}" class="dropdown-menu">
+                {% if session["nivel"] != "funcionario" %}
+                <a href="/editar_produto/{{ produto['id'] }}">
+                    Editar
+                </a>
+                {% endif %}
+
+                {% if session["nivel"] != "funcionario" %}
+
+                <a href="/excluir_produto/{{ produto['id'] }}">
+                    Excluir
+                </a>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+<!-- ===================================== -->
+<!-- MODAL -->
+<!-- ===================================== -->
+
+<div id="modalProduto" class="modal-produto">
+
+    <div class="modal-produto-content">
+
+        <div class="modal-topo">
+
+            <h2>
+
+                Novo Produto
+
+            </h2>
+
+            <span class="fechar" onclick="fecharModalProduto()">
+
+                ✖
+
+            </span>
+
+        </div>
+
+        <form method="POST">
+
+            <input type="text" name="nome" placeholder="Nome do produto" required>
+
+            <input type="number" step="0.01" name="preco" placeholder="Preço" required>
+
+            <input type="number" name="estoque" placeholder="Estoque" required>
+
+            <input type="text" name="codigo_barras" placeholder="Código de barras" required>
+
+            <button type="submit" class="btn">
+
+                Salvar Produto
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+
+    function abrirModalProduto() {
+
+        document.getElementById(
+            "modalProduto"
+        ).style.display = "flex"
+
+    }
+
+    function fecharModalProduto() {
+
+        document.getElementById(
+            "modalProduto"
+        ).style.display = "none"
+
+    }
+
+    window.onclick = function (event) {
+
+        const modal =
+            document.getElementById(
+                "modalProduto"
+            )
+
+        if (event.target == modal) {
+
+            modal.style.display = "none"
+
+        }
+
+    }
+
+    function toggleMenu(id) {
+
+        const menu =
+            document.getElementById(id)
+
+        if (menu.style.display === "block") {
+
+            menu.style.display = "none"
+
+        } else {
+
+            menu.style.display = "block"
+
+        }
+
+    }
+
+</script>
+
+{% endblock %}

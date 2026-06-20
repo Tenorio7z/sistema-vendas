@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estatisticas.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<h1 class="titulo-pagina">
+
+    Histórico de Caixas
+
+</h1>
+
+<p class="subtitulo-pagina">
+
+    Todos os caixas encerrados
+
+</p>
+
+<div class="caixas-grid">
+
+    {% for caixa in caixas %}
+
+    <div class="caixa-card">
+
+        <h2>
+
+            Caixa #{{ caixa.id }}
+
+        </h2>
+
+        <p>
+
+            Abertura:
+            {{ caixa.data_abertura }}
+
+        </p>
+
+        <p>
+
+            Fechamento:
+            {{ caixa.data_fechamento }}
+
+        </p>
+
+        <h3>
+
+            R$ {{ "%.2f"|format(caixa.valor_final) }}
+
+        </h3>
+
+        <a href="/historico_caixa/{{ caixa.id }}">
+
+            Ver Detalhes
+
+        </a>
+
+    </div>
+
+    {% else %}
+
+    <div class="sem-caixas">
+
+        Nenhum caixa fechado encontrado.
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

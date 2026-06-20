@@ -1,0 +1,379 @@
+.estatisticas-container{
+    width:100%;
+}
+
+.titulo-pagina{
+    color:#fff;
+    font-size:2rem;
+    margin-bottom:5px;
+}
+
+.subtitulo-pagina{
+    color:#94a3b8;
+    margin-bottom:30px;
+}
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.stat-card{
+    background:#16233d;
+    border:1px solid rgba(59,130,246,.15);
+    border-radius:18px;
+    padding:25px;
+    transition:.3s;
+}
+
+.stat-card:hover{
+    transform:translateY(-4px);
+    border-color:#3b82f6;
+}
+
+.stat-card span{
+    color:#94a3b8;
+    display:block;
+    margin-bottom:12px;
+}
+
+.stat-card h2{
+    color:#3b82f6;
+    font-size:2rem;
+}
+
+.destaque{
+    background:linear-gradient(
+        135deg,
+        #1d4ed8,
+        #2563eb
+    );
+}
+
+.destaque h2,
+.destaque span{
+    color:#fff;
+}
+
+.grafico-card{
+    background:#16233d;
+    border:1px solid rgba(59,130,246,.15);
+    border-radius:20px;
+    padding:25px;
+    margin-bottom:30px;
+}
+
+.grafico-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.grafico-header h2{
+    color:#fff;
+    margin-bottom:5px;
+}
+
+.grafico-header p{
+    color:#94a3b8;
+}
+
+.badge-premium{
+    background:#2563eb;
+    color:#fff;
+    padding:8px 16px;
+    border-radius:10px;
+    font-size:.85rem;
+    font-weight:bold;
+}
+
+.grafico-container{
+    position:relative;
+    height:380px;
+}
+
+#graficoVendas{
+    width:100% !important;
+    height:100% !important;
+}
+
+.resumo-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.resumo-card{
+    background:#16233d;
+    border:1px solid rgba(59,130,246,.15);
+    border-radius:18px;
+    padding:25px;
+}
+
+.resumo-card h3{
+    color:#fff;
+    margin-bottom:10px;
+}
+
+.resumo-card p{
+    color:#94a3b8;
+    line-height:1.6;
+}
+
+.premium-lock{
+    max-width:600px;
+    margin:60px auto;
+    text-align:center;
+}
+
+.premium-icon{
+    font-size:5rem;
+}
+
+.btn-upgrade{
+    display:inline-block;
+    margin-top:20px;
+    padding:14px 28px;
+    background:#2563eb;
+    color:#fff;
+    text-decoration:none;
+    border-radius:10px;
+}
+
+
+
+
+
+
+
+
+.caixas-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:20px;
+    margin-top:25px;
+}
+
+.caixa-card{
+    background:#18253f;
+    border-radius:18px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,.08);
+    transition:.3s;
+}
+
+.caixa-card:hover{
+    transform:translateY(-4px);
+}
+
+.caixa-card h2{
+    color:#fff;
+    margin-bottom:15px;
+}
+
+.caixa-card p{
+    color:#94a3b8;
+    margin-bottom:8px;
+}
+
+.caixa-card h3{
+    color:#22c55e;
+    margin-top:15px;
+}
+
+.caixa-card a{
+    display:inline-block;
+    margin-top:15px;
+    text-decoration:none;
+    background:#2563eb;
+    color:white;
+    padding:10px 15px;
+    border-radius:10px;
+}
+
+.sem-caixas{
+    color:white;
+    padding:20px;
+}
+
+
+
+.tabela-vendas{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.tabela-vendas th{
+    text-align:left;
+    padding:15px;
+    color:#fff;
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.tabela-vendas td{
+    padding:15px;
+    color:#cbd5e1;
+    border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+
+
+
+
+.acoes-estatisticas{
+    display:flex;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.btn-historico{
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+
+    color:white;
+    text-decoration:none;
+
+    padding:12px 20px;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    transition:.3s;
+}
+
+.btn-historico:hover{
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 10px 25px rgba(37,99,235,.25);
+}
+
+@media(max-width:900px){
+
+    .resumo-grid{
+        grid-template-columns:1fr;
+    }
+
+    .grafico-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:15px;
+    }
+
+}
+
+@media (max-width: 900px) {
+
+    /* =========================
+       TÍTULOS
+    ========================= */
+    .titulo-pagina {
+        font-size: 1.6rem;
+    }
+
+    .subtitulo-pagina {
+        font-size: 14px;
+    }
+
+    /* =========================
+       GRID STATS
+    ========================= */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .stat-card {
+        padding: 18px;
+    }
+
+    .stat-card h2 {
+        font-size: 1.6rem;
+    }
+
+    /* =========================
+       GRAFICO
+    ========================= */
+    .grafico-card {
+        padding: 18px;
+    }
+
+    .grafico-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .grafico-container {
+        height: 260px;
+    }
+
+    /* =========================
+       RESUMO
+    ========================= */
+    .resumo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .resumo-card {
+        padding: 18px;
+    }
+
+    /* =========================
+       CAIXAS
+    ========================= */
+    .caixas-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .caixa-card {
+        padding: 18px;
+    }
+
+    /* =========================
+       TABELA (parte crítica)
+    ========================= */
+    .tabela-vendas {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .tabela-vendas th,
+    .tabela-vendas td {
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    /* =========================
+       AÇÕES
+    ========================= */
+    .acoes-estatisticas {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-historico {
+        text-align: center;
+        width: 100%;
+    }
+
+    /* =========================
+       PREMIUM
+    ========================= */
+    .premium-lock {
+        margin: 30px auto;
+        padding: 0 15px;
+    }
+
+    .premium-icon {
+        font-size: 3.5rem;
+    }
+}

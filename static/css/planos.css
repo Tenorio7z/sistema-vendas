@@ -1,0 +1,258 @@
+/* ==========================================
+PLANOS
+========================================== */
+
+.planos-container{
+
+    max-width:1200px;
+    margin:auto;
+}
+
+.planos-container h1{
+
+    font-size:38px;
+    color:var(--text);
+    margin-bottom:10px;
+}
+
+.subtitulo{
+
+    color:var(--text-secondary);
+    margin-bottom:35px;
+    font-size:16px;
+}
+
+/* ==========================================
+GRID
+========================================== */
+
+.planos-grid{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+    gap:30px;
+}
+
+/* ==========================================
+CARD
+========================================== */
+
+.plano-card{
+
+    position:relative;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:24px;
+
+    padding:35px;
+
+    transition:.3s;
+
+    overflow:hidden;
+}
+
+.plano-card:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:
+    0 20px 40px rgba(0,0,0,.25);
+}
+
+/* ==========================================
+COMUM
+========================================== */
+
+.comum{
+
+    border-left:6px solid #64748b;
+}
+
+/* ==========================================
+PREMIUM
+========================================== */
+
+.premium{
+
+    border-left:6px solid #f59e0b;
+
+    background:
+    linear-gradient(
+        180deg,
+        rgba(245,158,11,.05),
+        transparent
+    ),
+    var(--card);
+}
+
+/* ==========================================
+DESTAQUE
+========================================== */
+
+.destaque{
+
+    position:absolute;
+
+    top:20px;
+    right:20px;
+
+    background:#f59e0b;
+
+    color:white;
+
+    padding:8px 14px;
+
+    border-radius:999px;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    letter-spacing:.5px;
+}
+
+/* ==========================================
+TÍTULOS
+========================================== */
+
+.plano-card h2{
+
+    font-size:32px;
+
+    margin-bottom:10px;
+
+    color:var(--text);
+}
+
+.preco{
+
+    font-size:42px;
+
+    font-weight:800;
+
+    color:var(--primary);
+
+    margin-bottom:25px;
+}
+
+.preco span{
+
+    font-size:16px;
+
+    color:var(--text-secondary);
+}
+
+/* ==========================================
+LISTA
+========================================== */
+
+.plano-card ul{
+
+    list-style:none;
+
+    margin-top:20px;
+}
+
+.plano-card li{
+
+    padding:12px 0;
+
+    border-bottom:1px solid var(--border);
+
+    color:var(--text);
+
+    font-size:15px;
+}
+
+.plano-card li:last-child{
+
+    border-bottom:none;
+}
+
+/* ==========================================
+BOTÃO
+========================================== */
+
+.btn-plano{
+
+    width:100%;
+
+    margin-top:30px;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:14px;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.btn-comum{
+
+    background:#334155;
+
+    color:white;
+}
+
+.btn-premium{
+
+    background:#f59e0b;
+
+    color:white;
+}
+
+.btn-plano:hover{
+
+    transform:translateY(-3px);
+}
+
+/* ==========================================
+PLANO ATUAL
+========================================== */
+
+.plano-atual{
+
+    margin-bottom:30px;
+
+    padding:15px 20px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    font-weight:600;
+}
+
+.plano-atual strong{
+
+    color:var(--primary);
+}
+
+/* ==========================================
+RESPONSIVO
+========================================== */
+
+@media(max-width:768px){
+
+    .planos-grid{
+
+        grid-template-columns:1fr;
+    }
+
+    .preco{
+
+        font-size:32px;
+    }
+}

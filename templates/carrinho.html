@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Carrinho</h1>
+
+{% for item in carrinho %}
+
+<div class="card">
+
+    <h2>
+        {{ item["nome"] }}
+    </h2>
+
+    <p>
+        Quantidade:
+        {{ item["quantidade"] }}
+    </p>
+
+    <p>
+        Valor:
+        R$ {{ item["preco"] }}
+    </p>
+
+
+    <a href="/remover_carrinho/{{ item['id'] }}" class="btn" style="background:red;">
+        Remover
+    </a>
+
+</div>
+
+{% endfor %}
+
+<div class="card">
+
+    <h2>
+        Total:
+        R$ {{ total }}
+    </h2>
+
+    <a href="/finalizar_venda" class="btn">
+        Finalizar Venda
+    </a>
+
+</div>
+
+{% endblock %}

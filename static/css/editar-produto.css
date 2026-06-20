@@ -1,0 +1,207 @@
+/* ==========================================
+PÁGINA
+========================================== */
+
+.editar-container{
+    max-width:700px;
+    margin:0 auto;
+}
+
+/* ==========================================
+CARD
+========================================== */
+
+.editar-card{
+    background:white;
+
+    border:1px solid #dbe4f0;
+
+    border-radius:24px;
+
+    padding:30px;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.05);
+}
+
+/* ==========================================
+TOPO
+========================================== */
+
+.editar-topo{
+    margin-bottom:30px;
+}
+
+.editar-topo h1{
+    color:#2563eb;
+    margin-bottom:8px;
+}
+
+.editar-topo p{
+    color:#64748b;
+}
+
+/* ==========================================
+FORM
+========================================== */
+
+.form-editar{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.form-group label{
+    margin-bottom:8px;
+
+    font-weight:600;
+
+    color:#334155;
+}
+
+.form-group input{
+    padding:14px;
+
+    border:1px solid #dbe4f0;
+
+    border-radius:12px;
+
+    outline:none;
+
+    transition:.3s;
+}
+
+.form-group input:focus{
+    border-color:#2563eb;
+
+    box-shadow:
+        0 0 0 4px rgba(37,99,235,.10);
+}
+
+/* ==========================================
+AÇÕES
+========================================== */
+
+.acoes-editar{
+    display:flex;
+    gap:15px;
+    margin-top:10px;
+}
+
+.btn-salvar{
+    flex:1;
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.btn-salvar:hover{
+    background:#1d4ed8;
+}
+
+.btn-voltar{
+    flex:1;
+
+    background:#e2e8f0;
+
+    color:#334155;
+
+    text-decoration:none;
+
+    text-align:center;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    font-weight:bold;
+
+    transition:.3s;
+}
+
+.btn-voltar:hover{
+    background:#cbd5e1;
+}
+
+/* ==========================================
+RESPONSIVO
+========================================== */
+
+@media (max-width: 700px) {
+
+    /* =========================
+       CONTAINER
+    ========================= */
+    .editar-container {
+        max-width: 100%;
+        padding: 0 15px;
+    }
+
+    /* =========================
+       CARD
+    ========================= */
+    .editar-card {
+        padding: 20px;
+        border-radius: 18px;
+    }
+
+    /* =========================
+       TOPO
+    ========================= */
+    .editar-topo h1 {
+        font-size: 24px;
+    }
+
+    .editar-topo p {
+        font-size: 14px;
+    }
+
+    /* =========================
+       FORM
+    ========================= */
+    .form-editar {
+        gap: 15px;
+    }
+
+    .form-group label {
+        font-size: 14px;
+    }
+
+    .form-group input {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    /* =========================
+       AÇÕES
+    ========================= */
+    .acoes-editar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-salvar,
+    .btn-voltar {
+        width: 100%;
+        padding: 13px;
+        font-size: 14px;
+    }
+}

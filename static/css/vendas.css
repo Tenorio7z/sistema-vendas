@@ -1,0 +1,566 @@
+/* ==========================================
+VENDAS
+========================================== */
+
+.topo-vendas{
+    margin-bottom:25px;
+}
+
+.subtitulo-pagina{
+    color:var(--text-secondary);
+    margin-top:5px;
+}
+
+/* ==========================================
+BUSCA
+========================================== */
+
+.busca{
+    width:100%;
+    margin-bottom:25px;
+}
+
+/* ==========================================
+LAYOUT PDV
+========================================== */
+
+.pdv-layout{
+    display:grid;
+    grid-template-columns:1fr 350px;
+    gap:25px;
+    align-items:start;
+}
+
+/* ==========================================
+PRODUTOS
+========================================== */
+
+.produtos-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+    gap:20px;
+}
+
+.produto-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    min-height:100px;
+    transition:.3s;
+}
+
+.produto-card:hover{
+    transform:translateY(-4px);
+    border-color:var(--primary);
+}
+
+.produto-info h3{
+    color:var(--text);
+    margin-bottom:8px;
+    font-size:20px;
+}
+
+.preco{
+    display:block;
+    font-size:18px;
+    font-weight:bold;
+    color:var(--primary);
+    margin-bottom:8px;
+}
+
+.estoque{
+    color:var(--text-secondary);
+    font-size:16px;
+}
+
+.btn-add{
+    margin-top:10px;
+    display:block;
+    text-align:center;
+    padding:8px;
+    background:var(--primary);
+    color:white;
+    text-decoration:none;
+    border-radius:12px;
+    font-weight:bold;
+}
+
+.btn-add:hover{
+    background:var(--primary-hover);
+}
+
+/* ==========================================
+CARRINHO
+========================================== */
+
+.carrinho-box{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    position:sticky;
+    top:20px;
+    min-height:500px;
+    max-height:85vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+.topo-carrinho{
+    padding:20px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.titulo-carrinho{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.contador{
+    width:28px;
+    height:28px;
+
+    border-radius:50%;
+
+    background:var(--primary);
+
+    color:white;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:13px;
+    font-weight:bold;
+}
+
+
+/* ==========================================
+LISTA
+========================================== */
+
+.lista-carrinho{
+    flex:1;
+    overflow-y:auto;
+    padding:15px;
+}
+
+.item-carrinho{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+    padding-bottom:15px;
+    border-bottom:1px solid var(--border);
+}
+
+.item-carrinho strong{
+    font-size:15px;
+}
+
+.item-carrinho p{
+    margin-top:5px;
+    font-size:13px;
+}
+
+.lado-item{
+    text-align:right;
+}
+
+.lado-item span{
+    display:block;
+    margin-bottom:5px;
+    color:var(--primary);
+    font-weight:bold;
+}
+
+.remover-item{
+    text-decoration:none;
+    color:#ef4444;
+    font-size:18px;
+    font-weight:bold;
+    transition:.2s;
+}
+
+.remover-item:hover{
+    transform:scale(1.15);
+}
+
+/* ==========================================
+VAZIO
+========================================== */
+
+.carrinho-vazio{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:var(--text-secondary);
+    font-size:15px;
+}
+/* ==========================================
+RODAPÉ
+========================================== */
+
+.rodape-carrinho{
+    padding:20px;
+    border-top:1px solid var(--border);
+}
+
+.rodape-carrinho .btn{
+    width:100%;
+}
+
+.total-box{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:15px;
+}
+
+.total-box h3{
+    color:var(--primary);
+    font-size:26px;
+    font-weight:700;
+}
+
+/* ==========================================
+CAIXA FECHADO
+========================================== */
+
+.caixa-fechado {
+    max-width: 420px;
+    width: 90%;
+
+    margin: 80px auto;
+
+    padding: 30px;
+
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+
+    text-align: center;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.caixa-fechado h2 {
+    font-size: 22px;
+    color: var(--text);
+    margin: 0;
+}
+
+.caixa-fechado p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.caixa-fechado .btn {
+    margin-top: 10px;
+
+    padding: 12px 18px;
+
+    border-radius: 12px;
+
+    background: #2563eb;
+    color: white;
+
+    text-decoration: none;
+
+    font-weight: 600;
+
+    transition: 0.2s;
+}
+
+.caixa-fechado .btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.campo-busca{
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    margin-bottom:20px;
+    font-size:15px;
+}
+
+
+
+
+
+
+
+
+
+
+.resumo-venda{
+    margin:20px 0;
+    max-height:250px;
+    overflow-y:auto;
+}
+
+.linha-resumo{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+.total-resumo{
+    display:flex;
+    justify-content:space-between;
+    margin-top:15px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+
+.dark .produto-card,
+.dark .carrinho-box,
+.dark .caixa-fechado{
+    box-shadow:none;
+}
+
+.dark .produto-card:hover{
+    box-shadow:
+        0 0 0 1px var(--primary);
+}
+
+.dark .campo-busca::placeholder{
+    color:var(--text-secondary);
+}
+
+/* ==========================================
+RESPONSIVO
+========================================== */
+
+/* ==========================================
+RESPONSIVO GLOBAL (CELULARES)
+========================================== */
+
+@media (max-width: 1024px) {
+
+    /* grids grandes ficam mais seguros */
+    .planos-grid,
+    .stats-grid,
+    .resumo-grid,
+    .caixas-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .dashboard-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .pdv-layout {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* ==========================================
+TABLET
+========================================== */
+
+@media (max-width: 768px) {
+
+    /* HEADER E TOPO */
+    .topo-produtos,
+    .caixa-header,
+    .admin-header,
+    .page-header,
+    .grafico-header,
+    .dashboard-topo {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    /* TEXTOS GRANDES */
+    .page-header h1,
+    .caixa-titulo,
+    .titulo-pagina,
+    .planos-container h1 {
+        font-size: 28px;
+    }
+
+    /* GRID COLUNAS */
+    .admin-form-grid,
+    .caixa-cards,
+    .stats-grid,
+    .resumo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* CARDS */
+    .dashboard-card,
+    .stat-card,
+    .plano-card,
+    .caixa-card {
+        padding: 20px;
+    }
+
+    /* BOTÕES EM LINHA VIRAM COLUNA */
+    .acoes-editar,
+    .company-actions,
+    .acoes-modal,
+    .caixa-header-acoes {
+        flex-direction: column;
+    }
+
+    /* PRODUTOS */
+    .produtos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+
+    /* LOGIN */
+    .login-box {
+        padding: 30px;
+    }
+
+}
+
+/* ==========================================
+CELULAR (IPHONE REAL LIFE MODE)
+========================================== */
+
+@media (max-width: 480px) {
+
+    body {
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    /* SIDEBAR SUMINDO PRA NÃO ATRAPALHAR VIDA DO USUÁRIO */
+    .sidebar {
+        position: fixed;
+        left: -100%;
+        width: 85%;
+        height: 100vh;
+        transition: .3s;
+    }
+
+    .sidebar.fechada {
+        left: 0;
+        width: 85%;
+    }
+
+    .main {
+        margin-left: 0 !important;
+        padding: 15px;
+    }
+
+    /* TITULOS */
+    h1, .page-header h1 {
+        font-size: 22px !important;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    /* CARDS FULL WIDTH */
+    .dashboard-card,
+    .stat-card,
+    .produto-card,
+    .funcionario-card,
+    .caixa-card,
+    .plano-card {
+        width: 100%;
+    }
+
+    /* BOTÕES GRANDES PRA DEDO HUMANO */
+    button,
+    .btn,
+    .btn-plano,
+    .btn-add-produto,
+    .btn-acao {
+        width: 100%;
+    }
+
+    /* GRID FORÇANDO 1 COLUNA */
+    .produtos-grid,
+    .funcionarios-grid,
+    .planos-grid,
+    .stats-grid,
+    .caixa-cards {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* TOPO AJUSTADO */
+    .topo-produtos,
+    .caixa-header,
+    .admin-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    /* CARRINHO NÃO SURTA */
+    .carrinho-box {
+        position: relative;
+        max-height: none;
+        width: 100%;
+    }
+
+    /* LOGIN MAIS COMPACTO */
+    .login-box {
+        width: 92%;
+        padding: 20px;
+        border-radius: 18px;
+    }
+
+    .login-box h1 {
+        font-size: 24px;
+    }
+
+    /* MODAIS */
+    .modal-produto-content,
+    .modal-funcionario-content,
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+
+    /* ESTATÍSTICAS */
+    .estatisticas-funcionario {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* ==========================================
+MICRO AJUSTE (IPHONE PEQUENO / ANDROID MINI)
+========================================== */
+
+@media (max-width: 360px) {
+
+    .dashboard-card h2,
+    .stat-card h2 {
+        font-size: 20px;
+    }
+
+    .btn,
+    button {
+        font-size: 14px;
+    }
+
+}

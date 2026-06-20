@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/planos.css') }}">
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="planos-container">
+
+    <h1>Planos Nexus PDV</h1>
+
+    <p class="subtitulo">
+
+        Seu plano atual:
+        <strong>{{ session["plano"]|upper }}</strong>
+
+    </p>
+
+    <div class="planos-grid">
+
+        <div class="plano-card comum">
+
+            <h2>Comum</h2>
+
+            <div class="preco">
+                R$ 79,90/mês
+            </div>
+
+            <ul>
+                <li>✓ Até 50 produtos</li>
+                <li>✓ Até 2 funcionários</li>
+                <li>✓ PDV completo</li>
+                <li>✓ Controle de estoque</li>
+                <li>✓ Controle de caixa</li>
+            </ul>
+
+        </div>
+
+        <div class="plano-card premium">
+
+            <span class="destaque">
+
+                MAIS VENDIDO
+
+            </span>
+
+            <h2>Premium</h2>
+
+            <div class="preco">
+                R$ 139,90/mês
+            </div>
+
+            <ul>
+                <li>✓ Produtos ilimitados</li>
+                <li>✓ Funcionários ilimitados</li>
+                <li>✓ Relatórios avançados</li>
+                <li>✓ Dashboard com gráficos</li>
+                <li>✓ Backup automático</li>
+                <li>✓ Recursos futuros</li>
+                <li>✓ Sistema de comissão</li>
+            </ul>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

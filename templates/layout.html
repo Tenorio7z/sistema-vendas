@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Sistema Nexus
+    </title>
+
+    <!-- CSS GLOBAL -->
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+
+    {% block css %}
+    {% endblock %}
+
+
+</head>
+
+<body>
+
+    <!-- ===================================== -->
+    <!-- SIDEBAR -->
+    <!-- ===================================== -->
+
+    <aside class="sidebar">
+
+        <button id="toggleMenu" class="menu-toggle">
+            <img id="menuIcon" src="/static/img/menu-aberto.png" alt="Menu">
+        </button>
+
+        <button onclick="alternarTema()" class="menu-toggle">
+            <img src="/static/img/DarkMode.png" alt="menu">
+        </button>
+
+        <h2>
+            Nexus PVD
+        </h2>
+
+
+        <nav>
+
+            <a href="/dashboard">
+                Dashboard
+            </a>
+
+            {% if session["nivel"] == "gerente" %}
+
+            <a href="/perfis">
+
+                Gerenciar Perfis
+
+            </a>
+
+            {% endif %}
+
+            {% if session["nivel"] == "master" %}
+
+            <a href="/admin">
+                Painel Master
+            </a>
+
+            {% endif %}
+
+            {% if session["nivel"] != "funcionario" %}
+
+            <a href="/produtos">
+                Produtos
+            </a>
+
+            {% endif %}
+
+            <a href="/vendas">
+                Vendas
+            </a>
+
+            <a href="/caixa">
+                Caixa
+            </a>
+            {% if session["nivel"] == "gerente" %}
+
+            <a href="/estatisticas">
+
+                Estatísticas
+
+            </a>
+
+            {% endif %}
+
+            <a href="/planos">
+
+                Planos
+
+            </a>
+            <a href="/logout">
+                Sair
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- ===================================== -->
+    <!-- CONTEÚDO -->
+    <!-- ===================================== -->
+
+    <main class="main">
+
+        <!-- ALERTAS -->
+
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+
+        {% if mensagens %}
+
+        {% for categoria, msg in mensagens %}
+
+        <div class="alert {{ categoria }}">
+
+            {{ msg }}
+
+        </div>
+
+        {% endfor %}
+
+        {% endif %}
+
+        {% endwith %}
+
+        <!-- CONTEÚDO DA PÁGINA -->
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+    <div id="toast-notificacao"></div>
+
+    <!-- ===================================== -->
+    <!-- SCRIPT MENU -->
+    <!-- ===================================== -->
+
+    <script>
+        const toggle = document.getElementById("toggleMenu")
+        const sidebar = document.querySelector(".sidebar")
+        const menuIcon = document.getElementById("menuIcon")
+
+        // aplica tema salvo ao carregar
+        const temaSalvo = localStorage.getItem("tema")
+
+        if (temaSalvo === "dark") {
+            document.body.classList.add("dark")
+        }
+
+        atualizarIcones(document.body.classList.contains("dark"))
+
+        // sidebar toggle
+        toggle.addEventListener("click", () => {
+
+            sidebar.classList.toggle("fechada")
+
+            if (sidebar.classList.contains("fechada")) {
+                menuIcon.src = "/static/img/menu-fechado.png"
+            } else {
+                menuIcon.src = "/static/img/menu-aberto.png"
+            }
+
+        })
+
+
+        // função do tema (ÚNICA)
+        function alternarTema() {
+
+            document.body.classList.toggle("dark")
+
+            const isDark = document.body.classList.contains("dark")
+
+            localStorage.setItem("tema", isDark ? "dark" : "light")
+
+            atualizarIcones(isDark)
+        }
+
+
+        // troca ícones do sistema
+        function atualizarIcones(isDark) {
+
+            document.querySelectorAll(".icon-acao").forEach(img => {
+                img.src = isDark ? img.dataset.dark : img.dataset.light
+            })
+
+        }
+    </script>
+
+    <script>
+
+        let ultimoHorarioToast = ""
+
+        function mostrarToast(notificacao) {
+
+            const container =
+                document.getElementById(
+                    "toast-notificacao"
+                )
+
+            const toast =
+                document.createElement("div")
+
+            toast.className = "toast"
+
+            toast.innerHTML = `
+
+        <strong>
+            🔔 Nova Venda
+        </strong>
+
+        <p>
+            ${notificacao.funcionario}
+            vendeu
+            ${notificacao.produto}
+            R$ ${parseFloat(
+                notificacao.valor
+            ).toFixed(2)}
+        </p>
+
+        <small>
+            ${notificacao.hora}
+        </small>
+
+    `
+
+            container.appendChild(
+                toast
+            )
+
+            setTimeout(() => {
+
+                toast.remove()
+
+            }, 5000)
+
+        }
+
+        function verificarNovasNotificacoes() {
+
+            fetch(
+                "/api/notificacoes?t=" +
+                new Date().getTime()
+            )
+
+                .then(response => response.json())
+
+                .then(dados => {
+
+                    if (!dados.length) {
+                        return
+                    }
+
+                    const horarioAtual =
+                        dados[0].hora
+
+                    if (
+                        ultimoHorarioToast !== "" &&
+                        horarioAtual !== ultimoHorarioToast
+                    ) {
+
+                        mostrarToast(
+                            dados[0]
+                        )
+
+                        const som =
+                            new Audio(
+                                "/static/audio/venda.mp3"
+                            )
+
+                        som.play()
+                            .catch(() => { })
+
+                    }
+
+                    ultimoHorarioToast =
+                        horarioAtual
+
+                })
+
+                .catch(erro => {
+
+                    console.log(
+                        "Erro:",
+                        erro
+                    )
+
+                })
+
+        }
+
+        verificarNovasNotificacoes()
+
+        setInterval(
+            verificarNovasNotificacoes,
+            3000
+        )
+
+    </script>
+
+
+
+</body>
+
+</html>

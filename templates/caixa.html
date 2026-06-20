@@ -1,0 +1,326 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/caixa.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="caixa-header">
+
+    <div class="caixa-header-info">
+
+        <h1 class="caixa-titulo">
+            Caixa
+        </h1>
+
+        <p class="caixa-subtitulo">
+            Controle operacional do caixa
+        </p>
+
+    </div>
+
+    {% if caixa and caixa["status"] == "aberto" %}
+
+    <div class="caixa-header-acoes">
+        <button class="caixa-btn-icon" onclick="abrirModal('adicionar')">
+            <img class="icon-acao" data-light="/static/img/botao-adicionar-white.png"
+                data-dark="/static/img/botao-adicionar.png" src="/static/img/botao-adicionar.png">
+        </button>
+
+        <button class="caixa-btn-icon" onclick="abrirModal('sacar')">
+            <img class="icon-acao" data-light="/static/img/remover-white.png" data-dark="/static/img/remover.png"
+                src="/static/img/remover.png">
+        </button>
+
+        <button class="caixa-btn-icon caixa-btn-danger" onclick="abrirModal('fechar')">
+            <img src="/static/img/fechar-caixa.png" alt="Fechar caixa">
+        </button>
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% if not caixa or caixa["status"] == "fechado" %}
+
+<div class="caixa-login-box">
+
+    <h2 class="caixa-login-titulo">
+        Abrir Caixa
+    </h2>
+
+    <p class="caixa-login-usuario">
+
+        Usuário conectado:
+        <strong>{{ session["usuario"] }}</strong>
+
+    </p>
+
+    <form method="POST" action="/caixa" class="caixa-form">
+
+        <input type="hidden" name="acao" value="abrir">
+
+        <input class="caixa-input" type="number" step="0.01" name="valor" placeholder="Valor inicial" required>
+
+        <input class="caixa-input" type="password" name="senha" placeholder="Senha" required>
+
+        <button type="submit" class="caixa-btn">
+            Abrir Caixa
+        </button>
+
+    </form>
+
+</div>
+
+{% else %}
+
+<div class="caixa-cards">
+
+    <div class="caixa-card">
+
+        <span>
+            Valor Inicial
+        </span>
+
+        <h2>
+
+            R$ {{ caixa["valor_inicial"] }}
+
+        </h2>
+
+    </div>
+
+    <div class="caixa-card">
+
+        <span>
+            Saldo Atual
+        </span>
+
+        <h2>
+
+            R$ {{ caixa["valor_final"] }}
+
+        </h2>
+
+    </div>
+
+    <div class="caixa-card">
+
+        <span>
+            Status
+        </span>
+
+        <h2>
+
+            {{ caixa["status"] }}
+
+        </h2>
+
+    </div>
+
+</div>
+
+<div class="caixa-historicos">
+
+    <div class="caixa-historico-box">
+
+        <h2 class="caixa-historico-titulo">
+
+            Movimentações do Caixa
+
+        </h2>
+
+        {% for mov in movimentacoes %}
+
+        <div class="caixa-item">
+
+            <div>
+
+                <strong>
+
+                    {{ mov["descricao"] }}
+
+                </strong>
+
+            </div>
+
+            <div>
+
+                R$ {{ mov["valor"] }}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <div class="caixa-historico-box">
+
+        <h2 class="caixa-historico-titulo">
+
+            Últimas Vendas
+
+        </h2>
+
+        {% for venda in historico_vendas %}
+
+        <div class="caixa-item">
+
+            <div>
+
+                <strong>
+
+                    {{ venda["nome"] }}
+
+                </strong>
+
+                <br>
+
+                <small>
+
+                    {{ venda["pagamento"] }}
+
+                </small>
+
+            </div>
+
+            <div>
+
+                {{ venda["quantidade"] }}x
+
+                <br>
+
+                R$ {{ venda["valor"] }}
+
+                {% if session["nivel"] == "gerente" %}
+
+                <br>
+
+                <a href="/cancelar_venda/{{ venda['id'] }}" onclick="return confirm('Cancelar esta venda?')"
+                    style="color:red;text-decoration:none;">
+                    ❌ Cancelar
+                </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<!-- MODAL -->
+
+<div id="modalCaixa" class="caixa-modal">
+
+    <div class="caixa-modal-box">
+
+        <h2 id="tituloModal">
+
+            Ação
+
+        </h2>
+
+        <form method="POST" action="/caixa" class="caixa-form">
+
+            <input type="hidden" name="acao" id="acaoInput">
+
+            <input class="caixa-input" type="number" step="0.01" name="valor" id="valorInput" placeholder="Valor">
+
+            <input class="caixa-input" type="password" name="senha" placeholder="Senha do usuário" required>
+
+            <button type="submit" class="caixa-btn">
+
+                Confirmar
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+
+    function abrirModal(acao) {
+
+        document.getElementById(
+            "modalCaixa"
+        ).style.display = "flex"
+
+        document.getElementById(
+            "acaoInput"
+        ).value = acao
+
+        const titulo =
+            document.getElementById(
+                "tituloModal"
+            )
+
+        const valorInput =
+            document.getElementById(
+                "valorInput"
+            )
+
+        if (acao == "fechar") {
+
+            titulo.innerText =
+                "Fechar Caixa"
+
+            valorInput.style.display =
+                "none"
+
+        }
+
+        else if (acao == "adicionar") {
+
+            titulo.innerText =
+                "Adicionar Saldo"
+
+            valorInput.style.display =
+                "block"
+
+        }
+
+        else if (acao == "sacar") {
+
+            titulo.innerText =
+                "Remover Saldo"
+
+            valorInput.style.display =
+                "block"
+
+        }
+
+    }
+
+    window.onclick = function (event) {
+
+        const modal =
+            document.getElementById(
+                "modalCaixa"
+            )
+
+        if (event.target == modal) {
+
+            modal.style.display = "none"
+
+        }
+
+    }
+
+</script>
+
+{% endblock %}

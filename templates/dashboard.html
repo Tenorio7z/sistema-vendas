@@ -1,0 +1,264 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+
+
+<!-- ===================================== -->
+<!-- BOAS-VINDAS -->
+<!-- ===================================== -->
+
+
+
+    <div class="card-boas-vindas">
+
+        <h1>
+
+            Bem-vindo,
+            {{ empresa["nome"] }}
+
+        </h1>
+
+        <p>
+
+        Sistema operacional de vendas
+
+        </p>
+
+    </div>
+
+
+
+<!-- ===================================== -->
+<!-- CARDS PRINCIPAIS -->
+<!-- ===================================== -->
+
+<div class="topo-dashboard">
+
+    <div class="dashboard-card">
+
+        <span class="card-label">
+
+            Faturamento do dia
+
+        </span>
+
+        <h2 id="faturamento">
+
+            R$ {{ faturamento }}
+
+        </h2>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <span class="card-label">
+
+            Total de vendas
+
+        </span>
+
+        <h2 id="total-vendas"> 
+
+            {{ total_vendas }}
+
+        </h2>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <span class="card-label">
+
+            Produtos cadastrados
+
+        </span>
+
+        <h2 id="total-produtos">
+
+            {{ total_produtos }}
+
+        </h2>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <span class="card-label">
+
+            Caixa
+
+        </span>
+
+        <h2>
+
+            {% if caixa_aberto %}
+
+            Aberto
+
+            {% else %}
+
+            Fechado
+
+            {% endif %}
+
+        </h2>
+
+    </div>
+
+</div>
+
+<!-- ===================================== -->
+<!-- GRÁFICO -->
+<!-- ===================================== -->
+
+
+
+<!-- ===================================== -->
+<!-- MOVIMENTO E ALERTAS -->
+<!-- ===================================== -->
+
+<div class="dashboard-grid-2">
+
+    <div class="card">
+
+        <h2>
+
+            Movimento do dia
+
+        </h2>
+
+        <div class="movimento-item">
+
+            <span> 
+
+                Clientes atendidos
+
+            </span>
+
+            <strong id="clientes-atendidos">
+
+                {{ clientes_atendidos }}
+
+            </strong>
+
+        </div>
+
+        <div class="movimento-item">
+
+            <span>
+
+                Itens vendidos
+
+            </span>
+
+            <strong id="itens-vendidos">
+
+                {{ itens_vendidos }}
+
+            </strong>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h2>
+
+            Alertas
+
+        </h2>
+
+        {% if alertas %}
+
+        {% for alerta in alertas %}
+
+        <div class="alerta-item">
+
+            {{ alerta }}
+
+        </div>
+
+        {% endfor %}
+
+        {% else %}
+
+        <p>
+
+            Nenhum alerta encontrado
+
+        </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<script>
+
+function atualizarDashboard() {
+
+    fetch(
+        "/api/dashboard?t=" +
+        new Date().getTime()
+    )
+
+    .then(response => response.json())
+
+    .then(dados => {
+
+        document.getElementById(
+            "faturamento"
+        ).innerHTML =
+            "R$ " +
+            parseFloat(
+                dados.faturamento
+            ).toFixed(2)
+
+        document.getElementById(
+            "total-vendas"
+        ).innerHTML =
+            dados.total_vendas
+
+        document.getElementById(
+            "clientes-atendidos"
+        ).innerHTML =
+            dados.clientes_atendidos
+
+        document.getElementById(
+            "itens-vendidos"
+        ).innerHTML =
+            dados.itens_vendidos
+
+    })
+
+    .catch(erro => {
+
+        console.log(
+            "Erro dashboard:",
+            erro
+        )
+
+    })
+
+}
+
+setInterval(
+    atualizarDashboard,
+    3000
+)
+
+</script>
+
+
+{% endblock %}

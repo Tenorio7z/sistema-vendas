@@ -1,0 +1,645 @@
+/* ==========================================
+RESET
+========================================== */
+
+:root{
+
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --card-hover:#f8fafc;
+
+    --text:#0f172a;
+    --text-secondary:#64748b;
+
+    --border:#dbe4f0;
+
+    --primary:#2563eb;
+    --primary-hover:#1d4ed8;
+
+}
+
+.dark{
+
+    --bg:#0f172a;
+    --card:#1e293b;
+    --card-hover:#334155;
+
+    --text:#f8fafc;
+    --text-secondary:#94a3b8;
+
+    --border:#334155;
+
+    --primary:#3b82f6;
+    --primary-hover:#60a5fa;
+
+}
+
+
+
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+/* ==========================================
+BODY
+========================================== */
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+}
+
+/* ==========================================
+SCROLLBAR
+========================================== */
+
+::-webkit-scrollbar-track{
+    background:var(--border);
+}
+
+::-webkit-scrollbar-thumb{
+    background:var(--text-secondary);
+    border-radius:20px;
+}
+
+/* ==========================================
+SIDEBAR
+========================================== */
+
+.sidebar{
+    width:260px;
+    min-height:100vh;
+    background:var(--card);
+    position:fixed;
+    left:0;
+    top:0;
+    padding:25px;
+    border-right:1px solid var(--border);
+    transition:.3s;
+    z-index:1000;
+}
+
+.sidebar h2{
+    color:var(--text);
+}
+
+.sidebar a{
+    display:block;
+
+    text-decoration:none;
+
+    color:var(--text-secondary);
+
+    padding:14px;
+
+    border-radius:12px;
+
+    transition:.3s;
+}
+
+.sidebar a:hover{
+    background:var(--card-hover);
+    color:var(--text);
+}
+
+/* ==========================================
+BOTÃO MENU
+========================================== */
+
+.menu-toggle{
+    width:50px;
+    height:50px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:var(--primary);
+
+    color:white;
+
+    cursor:pointer;
+
+    font-size:20px;
+
+    margin-bottom:20px;
+
+    transition:.3s;
+}
+
+.menu-toggle img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.menu-toggle:hover img {
+    transform: scale(1.15);
+    opacity: 0.8;
+}
+
+.menu-toggle:active img {
+    transform: scale(0.95);
+}
+
+.menu-toggle:hover{
+    background:var(--primary-hover);
+}
+
+.menu-toggle i {
+    font-size: 22px;
+    color: white;
+    transition: transform 0.2s ease;
+}
+
+.menu-toggle:hover i {
+    transform: scale(1.15);
+}
+
+/* ==========================================
+SIDEBAR FECHADA
+========================================== */
+
+.sidebar.fechada{
+    width:90px;
+}
+
+.sidebar.fechada h2{
+    display:none;
+}
+
+.sidebar.fechada a{
+    font-size:0;
+}
+
+.sidebar.fechada nav{
+    gap:12px;
+}
+
+/* ==========================================
+MAIN
+========================================== */
+
+.main{
+    flex:1;
+
+    margin-left:260px;
+
+    padding:30px;
+
+    transition:.3s;
+}
+
+.sidebar.fechada + .main{
+    margin-left:90px;
+}
+
+/* ==========================================
+TÍTULOS GLOBAIS
+========================================== */
+
+h1{
+    color:var(--text);
+}
+
+h2{
+    color:var(--text);
+}
+
+/* ==========================================
+CARDS BASE
+========================================== */
+
+.card{
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:20px;
+
+    padding:25px;
+
+    box-shadow:
+        0 2px 10px rgba(0,0,0,.04);
+}
+
+/* ==========================================
+FORMULÁRIOS
+========================================== */
+
+form{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+
+    padding:14px;
+
+    border:1px solid var(--border);
+
+    border-radius:12px;
+
+    background:var(--card);
+
+    color:var(--text);
+
+    outline:none;
+
+    transition:.3s;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    border-color:var(--primary);
+
+    box-shadow:
+        0 0 0 4px rgba(59,130,246,.15);
+}
+/* ==========================================
+BOTÕES
+========================================== */
+
+.btn,
+button{
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:8px;
+
+    padding:12px 20px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:var(--primary);
+
+    color:white;
+
+    text-decoration:none;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+}
+
+.btn:hover,
+button:hover{
+    background:var(--primary-hover);
+}
+
+/* ==========================================
+BOTÃO SUCESSO
+========================================== */
+
+.btn-success{
+    background:#22c55e;
+}
+
+.btn-success:hover{
+    background:#16a34a;
+}
+
+/* ==========================================
+BOTÃO PERIGO
+========================================== */
+
+.btn-danger{
+    background:#ef4444;
+}
+
+.btn-danger:hover{
+    background:#dc2626;
+}
+
+/* ==========================================
+ALERTAS
+========================================== */
+
+.alert{
+    padding:15px;
+
+    border-radius:12px;
+
+    margin-bottom:20px;
+
+    font-weight:600;
+}
+
+.alert.sucesso{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.alert.erro{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+/* ==========================================
+MODAL BASE
+========================================== */
+
+.modal{
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.6);
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+}
+
+.modal-content{
+    background:var(--card);
+
+    color:var(--text);
+
+    border-radius:20px;
+
+    padding:30px;
+
+    width:100%;
+
+    max-width:500px;
+}
+
+#toast-notificacao{
+
+    position: fixed;
+
+    top: 20px;
+
+    right: 20px;
+
+    z-index: 99999;
+
+    width: 350px;
+
+}
+
+.toast{
+
+    background: linear-gradient(
+        135deg,
+        #1e293b,
+        #0f172a
+    );
+
+    color: white;
+
+    padding: 18px;
+
+    margin-bottom: 15px;
+
+    border-radius: 16px;
+
+    border-left: 5px solid #22c55e;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.35);
+
+    animation: aparecer .4s ease;
+
+    backdrop-filter: blur(10px);
+
+}
+
+.toast strong{
+
+    display: block;
+
+    font-size: 16px;
+
+    margin-bottom: 8px;
+
+    color: #22c55e;
+
+}
+
+.toast p{
+
+    margin: 0;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+}
+
+.toast small{
+
+    display: block;
+
+    margin-top: 10px;
+
+    color: #94a3b8;
+
+    font-size: 12px;
+
+}
+
+@keyframes aparecer{
+
+    from{
+
+        opacity: 0;
+
+        transform:
+            translateX(100px);
+
+    }
+
+    to{
+
+        opacity: 1;
+
+        transform:
+            translateX(0);
+
+    }
+
+}
+
+@keyframes sumir{
+
+    from{
+
+        opacity: 1;
+
+    }
+
+    to{
+
+        opacity: 0;
+
+        transform:
+            translateX(100px);
+
+    }
+
+}
+
+/* ==========================================
+RESPONSIVO
+========================================== */
+
+@media (max-width: 900px) {
+
+    body{
+        flex-direction: column;
+    }
+
+    /* =========================
+       SIDEBAR VIRA TOP BAR
+    ========================= */
+    .sidebar{
+        position: relative;
+        width: 100%;
+        min-height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px;
+        gap: 10px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar h2{
+        font-size: 18px;
+        display: block;
+    }
+
+    .sidebar nav{
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+    }
+
+    .sidebar a{
+        white-space: nowrap;
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+
+    /* =========================
+       BOTÃO MENU
+    ========================= */
+    .menu-toggle{
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
+        margin-bottom: 0;
+    }
+
+    /* =========================
+       MAIN AJUSTA ESPAÇO
+    ========================= */
+    .main{
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    /* =========================
+       SIDEBAR FECHADA (mobile não faz sentido esconder tudo)
+    ========================= */
+    .sidebar.fechada{
+        width: 100%;
+    }
+
+    .sidebar.fechada h2{
+        display: block;
+    }
+
+    .sidebar.fechada a{
+        font-size: 13px;
+    }
+
+    /* =========================
+       FORM E CARDS
+    ========================= */
+    input,
+    select,
+    textarea{
+        font-size: 14px;
+    }
+
+    .card{
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    /* =========================
+       TOAST (não pode ocupar tela no mobile)
+    ========================= */
+    #toast-notificacao{
+        width: calc(100% - 30px);
+        right: 15px;
+        left: 15px;
+        top: 10px;
+    }
+
+    .toast{
+        font-size: 13px;
+    }
+}
+
+/* =========================
+   EXTRA: CELULAR PEQUENO
+========================= */
+@media (max-width: 480px) {
+
+    .sidebar nav{
+        gap: 6px;
+    }
+
+    .sidebar a{
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .menu-toggle{
+        width: 38px;
+        height: 38px;
+    }
+
+    .card{
+        padding: 14px;
+    }
+
+    input,
+    select,
+    textarea{
+        padding: 12px;
+    }
+}

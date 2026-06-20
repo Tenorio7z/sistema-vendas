@@ -1,0 +1,296 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<section class="admin">
+
+    <!-- TOPO -->
+
+    <header class="admin-header">
+
+        <div>
+
+            <h1 class="page-title">
+                Painel Master
+            </h1>
+
+            <p class="page-subtitle">
+                Controle total das empresas cadastradas
+            </p>
+
+        </div>
+
+        <div class="system-status">
+
+            <span class="status-dot"></span>
+
+            Sistema Online
+
+        </div>
+
+    </header>
+
+    <!-- FORMULÁRIO -->
+
+    <section class="card admin-form-card">
+
+        <div class="section-header">
+
+            <h2>
+                Nova Empresa
+            </h2>
+
+            <p>
+                Cadastre novos clientes no sistema
+            </p>
+
+        </div>
+
+        <form method="POST" class="admin-form-grid">
+
+            <div class="form-group">
+
+                <label>
+                    Nome da Empresa
+                </label>
+
+                <input type="text" name="empresa" placeholder="Ex: Tenório Store" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Usuário
+                </label>
+
+                <input type="text" name="usuario" placeholder="Usuário de acesso" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Senha
+                </label>
+
+                <input type="password" name="senha" placeholder="Senha segura" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Plano
+                </label>
+
+                <select name="plano">
+
+                    <option value="comum">
+                        Comum
+                    </option>
+
+                    <option value="premium">
+                        Premium
+                    </option>
+
+                </select>
+
+            </div>
+
+            <button type="submit" class="btn-primary btn-full">
+
+                Cadastrar Empresa
+
+            </button>
+
+        </form>
+
+    </section>
+
+    <!-- RESUMO -->
+
+    <section class="admin-stats">
+
+        <div class="stat-card">
+
+            <h3>{{ total_empresas }}</h3>
+
+            <p>Empresas</p>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>{{ total_usuarios }}</h3>
+
+            <p>Usuários</p>
+
+        </div>
+
+    </section>
+
+    <!-- BUSCA -->
+
+    <div class="busca-box">
+
+        <input type="text" id="buscaEmpresa" placeholder="Buscar empresa...">
+
+    </div>
+
+    <!-- EMPRESAS -->
+
+    <section class="companies-grid">
+
+        {% for empresa in empresas %}
+
+        <article class="company-card">
+
+            <div class="company-header">
+
+                <div class="company-icon">
+                    <img src="/static/img/empresa.png" alt="">
+                </div>
+
+                <div>
+
+                    <h2>
+                        {{ empresa["nome"] }}
+                    </h2>
+
+                    <p>
+                        {{ empresa["usuario"] }}
+                    </p>
+
+                </div>
+
+                <div class="badge-plano {{ empresa['plano'] }}">
+
+                    {{ empresa["plano"]|upper }}
+
+                </div>
+
+            </div>
+
+            <div class="company-status">
+
+                {% if empresa["status"] == "ativo" %}
+
+                <span class="badge badge-success">
+                    Ativo
+                </span>
+
+                {% else %}
+
+                <span class="badge badge-danger">
+                    Bloqueado
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <div class="company-footer">
+
+                <div class="empresa-stats">
+
+                    <span>
+                        {{ empresa["total_produtos"] }} produtos
+                    </span>
+
+                    <span>
+                        {{ empresa["total_vendas"] }} vendas
+                    </span>
+
+                    <span>
+                        {{ empresa["total_usuarios"] }} usuários
+                    </span>
+
+                </div>
+
+                <div class="dropdown">
+
+                    <button class="menu-btn">
+                        ⋮
+                    </button>
+
+                    <div class="dropdown-content">
+
+                        <a href="/bloquear_usuario/{{ empresa['id'] }}">
+                            Bloquear
+                        </a>
+
+                        <a href="/liberar_usuario/{{ empresa['id'] }}">
+                            Liberar
+                        </a>
+
+                        <a href="/excluir_empresa/{{ empresa['id'] }}">
+                            Excluir
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+        {% endfor %}
+
+    </section>
+
+</section>
+
+<script>
+
+    document.querySelectorAll(".menu-btn").forEach(btn => {
+
+        btn.addEventListener("click", function (e) {
+
+            e.stopPropagation();
+
+            document
+                .querySelectorAll(".dropdown-content")
+                .forEach(menu => {
+
+                    if (menu !== this.nextElementSibling) {
+
+                        menu.style.display = "none";
+
+                    }
+
+                });
+
+            const menu = this.nextElementSibling;
+
+            menu.style.display =
+                menu.style.display === "block"
+                    ? "none"
+                    : "block";
+
+        });
+
+    });
+
+    document.addEventListener("click", () => {
+
+        document
+            .querySelectorAll(".dropdown-content")
+            .forEach(menu => {
+
+                menu.style.display = "none";
+
+            });
+
+    });
+
+</script>
+
+{% endblock %}

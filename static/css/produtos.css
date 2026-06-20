@@ -1,0 +1,349 @@
+/* ==========================================
+TOPO PRODUTOS
+========================================== */
+
+.topo-produtos {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.topo-produtos h1 {
+    margin: 0;
+    color: var(--text);
+}
+
+/* ==========================================
+BOTÃO ADICIONAR
+========================================== */
+
+.btn-add-produto {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .3s;
+}
+
+.btn-add-produto:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+/* ==========================================
+GRID PRODUTOS
+========================================== */
+
+.produtos-grid {
+
+    display: grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap: 15px;
+}
+
+
+/* ==========================================
+CARD PRODUTO
+========================================== */
+
+.produto-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    padding: 15px;
+
+    position: relative;
+
+    min-height: 120px;
+
+    transition: .3s;
+}
+
+.produto-card:hover {
+    transform: translateY(-4px);
+
+    border-color: var(--primary);
+
+    box-shadow:
+        0 10px 25px rgba(37, 99, 235, .12);
+}
+
+.produto-card h2 {
+    color: var(--text);
+    margin: 0;
+    font-size: 22px;
+}
+
+.produto-info .preco {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--primary);
+    white-space: nowrap;
+}
+
+.produto-info .estoque {
+    display: block;
+
+    font-size: 16px;
+    color: var(--text-secondary);
+
+    margin-top: 4px;
+}
+
+.produto-info h2 {
+    margin: 0;
+    font-size: 22px;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.produto-card p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* ==========================================
+AÇÕES PRODUTO
+========================================== */
+
+.acoes-produto {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.acoes-produto .btn {
+    flex: 1;
+    text-align: center;
+}
+
+.acoes-produto .btn-danger {
+    background: #dc2626;
+}
+
+.acoes-produto .btn-danger:hover {
+    background: #b91c1c;
+}
+
+/* ==========================================
+MODAL PRODUTO
+========================================== */
+
+.modal-produto {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, .75);
+
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+}
+
+.modal-produto-content {
+    width: 100%;
+    max-width: 500px;
+
+    background: var(--card);
+
+    border-radius: 24px;
+
+    padding: 30px;
+
+    border: 1px solid var(--border);
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, .20);
+}
+
+.modal-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 25px;
+}
+
+.modal-topo h2 {
+    margin: 0;
+    color: var(--text);
+}
+
+.fechar {
+    cursor: pointer;
+    font-size: 22px;
+    color: var(--text-secondary);
+    transition: .3s;
+}
+
+.fechar:hover {
+    color: #dc2626;
+}
+
+.modal-produto form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-produto {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.btn-menu {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+
+    position: absolute;
+    right: 0;
+    top: 30px;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    min-width: 120px;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+
+    z-index: 100;
+}
+
+.dropdown-menu a{
+    display:block;
+
+    padding:10px;
+
+    text-decoration:none;
+
+    color:var(--text);
+}
+
+.dropdown-menu a:hover{
+    background:var(--card-hover);
+}
+
+.dark .produto-card{
+    box-shadow:none;
+}
+
+.dark .produto-card:hover{
+    box-shadow:
+        0 0 0 1px var(--primary);
+}
+
+.dark .dropdown-menu{
+    box-shadow:none;
+}
+
+.dark .modal-produto-content{
+    box-shadow:none;
+}
+
+/* ==========================================
+RESPONSIVO
+========================================== */
+
+@media (max-width: 768px) {
+
+    /* =========================
+       TOPO
+    ========================= */
+    .topo-produtos {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .topo-produtos h1 {
+        font-size: 24px;
+    }
+
+    .btn-add-produto {
+        width: 100%;
+        padding: 12px;
+    }
+
+    /* =========================
+       GRID
+    ========================= */
+    .produtos-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* =========================
+       CARD
+    ========================= */
+    .produto-card {
+        padding: 14px;
+        min-height: auto;
+    }
+
+    .produto-card h2,
+    .produto-info h2 {
+        font-size: 18px;
+    }
+
+    .produto-info .preco {
+        font-size: 18px;
+    }
+
+    .produto-info .estoque {
+        font-size: 14px;
+    }
+
+    .produto-card p {
+        font-size: 13px;
+    }
+
+    /* =========================
+       AÇÕES
+    ========================= */
+    .acoes-produto {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .acoes-produto .btn {
+        width: 100%;
+    }
+
+    /* =========================
+       MODAL
+    ========================= */
+    .modal-produto-content {
+        width: 92%;
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .modal-topo h2 {
+        font-size: 18px;
+    }
+
+    /* =========================
+       MENU DROPDOWN
+    ========================= */
+    .dropdown-menu {
+        min-width: 100%;
+    }
+}

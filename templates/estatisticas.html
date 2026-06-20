@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/estatisticas.css') }}">
+{% endblock %}
+
+{% block content %}
+
+{% if bloqueado %}
+
+<div class="premium-lock">
+
+    <div class="premium-icon">👑</div>
+
+    <h1>Recurso Premium</h1>
+
+    <p>
+        Estatísticas avançadas estão disponíveis apenas
+        para clientes Premium.
+    </p>
+
+
+    <a href="/planos" class="btn-upgrade">
+        Fazer Upgrade
+    </a>
+
+</div>
+
+{% else %}
+
+<div class="estatisticas-container">
+
+    <h1 class="titulo-pagina">
+        Estatísticas
+    </h1>
+
+    <p class="subtitulo-pagina">
+        Indicadores avançados do seu negócio
+    </p>
+
+    <div class="acoes-estatisticas">
+
+        <a href="/historico_caixas" class="btn-historico">
+
+            📂 Histórico de Caixas
+
+        </a>
+
+    </div>
+
+    <!-- KPIs -->
+
+    <div class="stats-grid">
+
+        <div class="stat-card destaque">
+            <span>Faturamento Total</span>
+            <h2>R$ {{ "%.2f"|format(faturamento) }}</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Hoje</span>
+            <h2>R$ {{ faturamento_dia }}</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Este Mês</span>
+            <h2>R$ {{ faturamento_mes }}</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Este Ano</span>
+            <h2>R$ {{ faturamento_ano }}</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Total de Vendas</span>
+            <h2>{{ total_vendas }}</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Ticket Médio</span>
+            <h2>R$ {{ "%.2f"|format(ticket_medio) }}</h2>
+        </div>
+
+        <div class="stat-card">
+            <span>Produto Mais Vendido</span>
+            <h2>{{ produto_top }}</h2>
+        </div>
+
+    </div>
+
+    <!-- GRAFICO -->
+
+    <div class="grafico-card">
+
+        <div class="grafico-header">
+
+            <div>
+                <h2>Faturamento</h2>
+                <p>Evolução das vendas ao longo do tempo</p>
+            </div>
+
+            <span class="badge-premium">
+                PREMIUM
+            </span>
+
+        </div>
+
+        <div class="grafico-container">
+            <canvas id="graficoVendas"></canvas>
+        </div>
+
+    </div>
+
+    <!-- RESUMOS -->
+
+    <div class="resumo-grid">
+
+        <div class="resumo-card">
+            <h3>Meta Mensal</h3>
+            <p>
+                Acompanhe seu desempenho mensal
+                e compare com metas futuras.
+            </p>
+        </div>
+
+        <div class="resumo-card">
+            <h3>Tendência</h3>
+            <p>
+                Identifique períodos de crescimento
+                ou queda nas vendas.
+            </p>
+        </div>
+
+        <div class="resumo-card">
+            <h3>Performance</h3>
+            <p>
+                Analise os produtos mais vendidos
+                e os horários de maior movimento.
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% if not bloqueado %}
+
+<script>
+
+    const labels = JSON.parse('{{ labels|tojson|safe }}');
+    const valores = JSON.parse('{{ valores|tojson|safe }}');
+
+    const ctx = document.getElementById('graficoVendas');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Faturamento',
+                data: valores,
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+</script>
+
+{% endif %}
+
+{% endblock %}

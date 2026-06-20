@@ -1,0 +1,364 @@
+/* ==========================================
+RESET
+========================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+/* ==========================================
+BODY
+========================================== */
+
+body{
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    overflow:hidden;
+
+    background:#020617;
+}
+
+/* ==========================================
+FUNDO
+========================================== */
+
+.background{
+    position:fixed;
+    inset:0;
+
+    background:
+    radial-gradient(circle at top left,
+    rgba(37,99,235,.20),
+    transparent 30%),
+
+    radial-gradient(circle at bottom right,
+    rgba(59,130,246,.20),
+    transparent 30%),
+
+    linear-gradient(
+        135deg,
+        #020617,
+        #0f172a,
+        #020617
+    );
+
+    z-index:-1;
+}
+
+/* ==========================================
+LOGIN BOX
+========================================== */
+
+.login-box{
+
+    width:100%;
+    max-width:500px;
+
+    padding:45px;
+
+    border-radius:30px;
+
+    background:
+    rgba(15,23,42,.75);
+
+    backdrop-filter:blur(12px);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+    0 0 50px rgba(37,99,235,.15);
+
+}
+
+/* ==========================================
+LOGO
+========================================== */
+
+.logo-box{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.logo-nexus{
+    width:170px;
+    max-width:100%;
+}
+
+.login-box h1{
+
+    text-align:center;
+
+    color:white;
+
+    font-size:35px;
+
+    margin-bottom:10px;
+
+    font-weight:700;
+}
+
+.sub{
+
+    text-align:center;
+
+    color:#94a3b8;
+
+    font-size:18px;
+
+    margin-bottom:35px;
+}
+
+/* ==========================================
+FORM
+========================================== */
+
+.login-form{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.input-group label{
+
+    display:block;
+
+    color:#e2e8f0;
+
+    margin-bottom:8px;
+
+    font-weight:600;
+}
+
+.input-icon{
+
+    position:relative;
+}
+
+.input-icon i{
+
+    position:absolute;
+
+    left:16px;
+    top:50%;
+
+    transform:translateY(-50%);
+
+    color:#64748b;
+
+    font-size:18px;
+}
+
+.input-icon input{
+
+    width:100%;
+
+    height:58px;
+
+    padding-left:50px;
+
+    background:
+    rgba(255,255,255,.03);
+
+    border:1px solid #334155;
+
+    border-radius:14px;
+
+    color:white;
+
+    outline:none;
+
+    transition:.3s;
+}
+
+.input-icon input::placeholder{
+    color:#64748b;
+}
+
+.input-icon input:focus{
+
+    border-color:#3b82f6;
+
+    box-shadow:
+    0 0 0 4px rgba(59,130,246,.15);
+}
+
+/* ==========================================
+BOTÃO
+========================================== */
+
+.btn-login{
+
+    width:100%;
+
+    height:60px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:
+    linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+}
+
+.btn-login:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+    0 10px 25px rgba(37,99,235,.35);
+}
+
+/* ==========================================
+ALERTAS
+========================================== */
+
+.alert{
+
+    padding:15px;
+
+    border-radius:14px;
+
+    margin-bottom:20px;
+
+    font-weight:600;
+}
+
+.alert.erro{
+
+    background:
+    rgba(220,38,38,.15);
+
+    color:#fca5a5;
+
+    border:1px solid rgba(220,38,38,.3);
+}
+
+.alert.sucesso{
+
+    background:
+    rgba(34,197,94,.15);
+
+    color:#86efac;
+
+    border:1px solid rgba(34,197,94,.3);
+}
+
+/* ==========================================
+FOOTER
+========================================== */
+
+.footer{
+
+    margin-top:25px;
+
+    text-align:center;
+
+    color:#64748b;
+
+    font-size:14px;
+}
+
+/* ==========================================
+RESPONSIVO
+========================================== */
+
+@media (max-width: 600px) {
+
+    /* =========================
+       BODY
+    ========================= */
+    body {
+        align-items: flex-start;
+        padding: 20px 0;
+        overflow-y: auto;
+    }
+
+    /* =========================
+       LOGIN BOX
+    ========================= */
+    .login-box {
+        width: 92%;
+        padding: 25px;
+        border-radius: 22px;
+    }
+
+    /* =========================
+       LOGO
+    ========================= */
+    .logo-nexus {
+        width: 120px;
+    }
+
+    /* =========================
+       TÍTULOS
+    ========================= */
+    .login-box h1 {
+        font-size: 28px;
+    }
+
+    .sub {
+        font-size: 15px;
+        margin-bottom: 25px;
+    }
+
+    /* =========================
+       INPUTS
+    ========================= */
+    .input-icon input {
+        height: 52px;
+        font-size: 14px;
+    }
+
+    .input-icon i {
+        font-size: 16px;
+    }
+
+    /* =========================
+       BOTÃO
+    ========================= */
+    .btn-login {
+        height: 52px;
+        font-size: 16px;
+    }
+
+    /* =========================
+       ALERTAS
+    ========================= */
+    .alert {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+    .footer {
+        font-size: 12px;
+    }
+}

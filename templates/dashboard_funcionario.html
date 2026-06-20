@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/funcionario_dashboard.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-funcionario">
+
+    <h1>
+
+        {{ funcionario["usuario"] }}
+
+    </h1>
+
+    <p>
+
+        Comissão:
+        {{ funcionario["comissao"] }}%
+
+    </p>
+
+    <h2 class="secao-titulo">
+        Faturamento
+    </h2>
+
+    <div class="cards-dashboard">
+
+        <div class="card-info faturamento">
+
+            <h3>Hoje</h3>
+
+            <strong>
+                R$ {{ "%.2f"|format(vendas_hoje) }}
+            </strong>
+
+        </div>
+
+        <div class="card-info faturamento">
+
+            <h3>Mês</h3>
+
+            <strong>
+                R$ {{ "%.2f"|format(vendas_mes) }}
+            </strong>
+
+        </div>
+
+        <div class="card-info faturamento">
+
+            <h3>Ano</h3>
+
+            <strong>
+                R$ {{ "%.2f"|format(vendas_ano) }}
+            </strong>
+
+        </div>
+
+        <div class="card-info faturamento">
+
+            <h3>Total</h3>
+
+            <strong>
+                R$ {{ "%.2f"|format(vendas_total) }}
+            </strong>
+
+        </div>
+
+    </div>
+
+    <hr>
+
+    <h2 class="secao-titulo">
+        Comissão
+    </h2>
+
+    <div class="cards-dashboard">
+
+        <div class="card-info comissao">
+
+            <h3>Hoje</h3>
+
+            <strong>
+                R$ {{ "%.2f"|format(comissao_hoje) }}
+            </strong>
+
+        </div>
+
+        <div class="card-info comissao">
+
+            <h3>Mês</h3>
+
+            <strong>
+                R$ {{ "%.2f"|format(comissao_mes) }}
+            </strong>
+
+        </div>
+
+        <div class="card-info comissao">
+
+            <h3>Ano</h3>
+
+            <strong>
+                R$ {{ "%.2f"|format(comissao_ano) }}
+            </strong>
+
+        </div>
+
+        <div class="card-info comissao">
+
+            <h3>Total</h3>
+
+            <strong>
+                R$ {{ "%.2f"|format(comissao_total) }}
+            </strong>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

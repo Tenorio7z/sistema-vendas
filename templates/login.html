@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Login | Nexus PDV
+    </title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <div class="background"></div>
+
+    <main class="login-page">
+
+        <div class="login-box">
+
+            <div class="logo-box">
+
+                <img
+                    src="{{ url_for('static', filename='img/logo NEXUS.png') }}"
+                    alt="Nexus"
+                    class="logo-nexus"
+                >
+
+            </div>
+
+            <h1>
+                Bem-vindo de volta!
+            </h1>
+
+            <p class="sub">
+
+                Faça login para acessar o sistema
+
+            </p>
+
+            {% with mensagens = get_flashed_messages(with_categories=true) %}
+
+            {% if mensagens %}
+
+            {% for categoria, msg in mensagens %}
+
+            <div class="alert {{ categoria }}">
+
+                {{ msg }}
+
+            </div>
+
+            {% endfor %}
+
+            {% endif %}
+
+            {% endwith %}
+
+            <form method="POST" class="login-form">
+
+                <div class="input-group">
+
+                    <label>
+
+                        Usuário
+
+                    </label>
+
+                    <div class="input-icon">
+
+                        <i class="fa-regular fa-user"></i>
+
+                        <input
+                            type="text"
+                            name="usuario"
+                            placeholder="Digite seu usuário"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>
+
+                        Senha
+
+                    </label>
+
+                    <div class="input-icon">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            type="password"
+                            name="senha"
+                            placeholder="Digite sua senha"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn-login"
+                >
+
+                    <i class="fa-solid fa-right-to-bracket"></i>
+
+                    Entrar
+
+                </button>
+
+            </form>
+
+            <div class="footer">
+
+                © 2026 Nexus. Todos os direitos reservados.
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>

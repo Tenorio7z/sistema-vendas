@@ -1,0 +1,385 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/perfis.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<section class="perfis">
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>
+                Gerenciar Perfis
+            </h1>
+
+            <p>
+                Funcionários da empresa
+            </p>
+
+        </div>
+
+        <button class="btn-novo-funcionario" onclick="abrirModalFuncionario()">
+            + Funcionário
+        </button>
+
+    </div>
+
+    <div id="modalFuncionario" class="modal-funcionario">
+
+        <div class="modal-funcionario-content">
+
+            <div class="modal-header">
+
+                <h2>
+                    Novo Funcionário
+                </h2>
+
+                <span class="fechar-modal" onclick="fecharModalFuncionario()">
+                    ✕
+                </span>
+
+            </div>
+
+            <form method="POST">
+
+                <input type="text" name="usuario" placeholder="Usuário" required>
+
+                <input type="password" name="senha" placeholder="Senha" required>
+
+                <select name="comissao" required>
+
+                    <option value="5">5%</option>
+
+                    <option value="10">10%</option>
+
+                    <option value="15">15%</option>
+
+                    <option value="20">20%</option>
+
+                    <option value="25">25%</option>
+
+                </select>
+
+
+                <button type="submit">
+
+                    Cadastrar Funcionário
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div class="funcionarios-grid">
+
+        {% for funcionario in funcionarios %}
+
+        <div class="funcionario-card">
+
+            <div class="funcionario-topo">
+
+                <div>
+
+                    <h3>
+                        {{ funcionario["usuario"] }}
+                    </h3>
+
+                    <span>
+                        Funcionário
+                    </span>
+
+                </div>
+
+                <div class="lado-direito-funcionario">
+
+                    {% if funcionario["status"] == "ativo" %}
+
+                    <span class="ativo">
+                        Ativo
+                    </span>
+
+                    {% else %}
+
+                    <span class="bloqueado">
+                        Bloqueado
+                    </span>
+
+                    {% endif %}
+
+                    <button class="btn-opcoes" data-id="{{ funcionario['id'] }}"
+                        data-usuario="{{ funcionario['usuario'] }}" data-status="{{ funcionario['status'] }}"
+                        data-comissao="{{ funcionario['comissao'] }}" data-total="{{ funcionario['total_vendido'] }}"
+                        data-valorcomissao="{{ funcionario['valor_comissao'] }}"
+                        data-vendas="{{ funcionario['total_vendas'] }}"
+                        data-ultima="{{ funcionario['ultima_venda'] or 'Nenhuma venda' }}"
+                        onclick="abrirDetalhesFuncionario(this)">
+                        ⋮
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="estatisticas-funcionario">
+
+                <div>
+
+                    <small>Total vendido</small>
+
+                    <strong>
+                        R$ {{ "%.2f"|format(funcionario["total_vendido"]) }}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <small>Comissão</small>
+
+                    <strong>
+                        {{ funcionario["comissao"] }}%
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <small>Valor comissão</small>
+
+                    <strong>
+                        R$ {{ "%.2f"|format(funcionario["valor_comissao"]) }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <div id="modalDetalhes" class="modal-funcionario">
+
+        <div class="modal-funcionario-content">
+
+            <span class="fechar-modal" onclick="fecharDetalhes()">
+                ✕
+            </span>
+
+            <div id="conteudoDetalhes"></div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<script>
+
+    async function abrirDetalhesFuncionario(botao) {
+
+        let usuario = botao.dataset.usuario
+        let status = botao.dataset.status
+        let comissao = botao.dataset.comissao
+        let totalVendido = botao.dataset.total
+        let valorComissao = botao.dataset.valorcomissao
+        let totalVendas = botao.dataset.vendas
+        let ultimaVenda = botao.dataset.ultima
+        let id = botao.dataset.id
+
+        let resposta =
+            await fetch(
+                `/historico_funcionario/${id}`
+            )
+
+        let vendas =
+            await resposta.json()
+
+        let historico = ""
+
+        if (vendas.length === 0) {
+
+            historico = `
+
+            <p>
+                Nenhuma venda encontrada.
+            </p>
+
+        `
+
+        } else {
+
+            vendas.forEach(venda => {
+
+                historico += `
+
+                <div class="item-historico">
+
+                    <strong>
+                        ${venda.produto}
+                    </strong>
+
+                    <p>
+                        Quantidade: ${venda.quantidade}
+                    </p>
+
+                    <p>
+                        Valor: R$ ${parseFloat(venda.valor).toFixed(2)}
+                    </p>
+
+                    <p>
+                        Pagamento: ${venda.pagamento}
+                    </p>
+
+                    <p>
+                        ${venda.data}
+                    </p>
+
+                </div>
+
+            `
+
+            })
+
+        }
+
+        document.getElementById(
+            "conteudoDetalhes"
+        ).innerHTML = `
+
+        <h2>${usuario}</h2>
+
+        <p>
+            <b>Status:</b>
+            ${status}
+        </p>
+
+        <p>
+            <b>Total vendido:</b>
+            R$ ${parseFloat(totalVendido).toFixed(2)}
+        </p>
+
+        <p>
+            <b>Comissão:</b>
+            ${comissao}%
+        </p>
+
+        <p>
+            <b>Valor comissão:</b>
+            R$ ${parseFloat(valorComissao).toFixed(2)}
+        </p>
+
+        <p>
+            <b>Quantidade de vendas:</b>
+            ${totalVendas}
+        </p>
+
+        <p>
+            <b>Última venda:</b>
+            ${ultimaVenda}
+        </p>
+
+ 
+
+        <div class="acoes-modal">
+
+
+            <a
+                class="btn-dashboard"
+                href="/funcionario/${id}">
+                Dashboard
+            </a>
+
+            <a
+                class="btn-bloquear"
+                href="/bloquear_funcionario/${id}">
+                Bloquear
+            </a>
+
+            <a
+                class="btn-liberar"
+                href="/liberar_funcionario/${id}">
+                Liberar
+            </a>
+
+            <a
+                class="btn-excluir"
+                href="/excluir_funcionario/${id}">
+                Excluir
+            </a>
+
+        </div>
+
+    `
+
+        document.getElementById(
+            "modalDetalhes"
+        ).style.display = "flex"
+
+    }
+
+    function fecharDetalhes() {
+
+        document.getElementById(
+            "modalDetalhes"
+        ).style.display = "none"
+
+    }
+
+    function abrirModalFuncionario() {
+
+        document.getElementById(
+            "modalFuncionario"
+        ).style.display = "flex"
+
+    }
+
+    function fecharModalFuncionario() {
+
+        document.getElementById(
+            "modalFuncionario"
+        ).style.display = "none"
+
+    }
+
+    window.onclick = function (event) {
+
+        const modalFuncionario =
+            document.getElementById(
+                "modalFuncionario"
+            )
+
+        const modalDetalhes =
+            document.getElementById(
+                "modalDetalhes"
+            )
+
+        if (event.target === modalFuncionario) {
+
+            modalFuncionario.style.display = "none"
+
+        }
+
+        if (event.target === modalDetalhes) {
+
+            modalDetalhes.style.display = "none"
+
+        }
+
+    }
+
+</script>
+
+
+{% endblock %}

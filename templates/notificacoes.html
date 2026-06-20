@@ -1,0 +1,145 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="pagina-notificacoes">
+
+    <h1>
+        🔔 Notificações de Vendas
+    </h1>
+
+    <div id="lista-notificacoes">
+
+        <p>
+            Carregando notificações...
+        </p>
+
+    </div>
+
+</div>
+
+<audio id="somVenda" src="/static/audio/venda.mp3" preload="auto">
+</audio>
+
+<script>
+
+    let ultimoHorario = ""
+
+    function carregarNotificacoes() {
+
+        fetch(
+            "/api/notificacoes?t=" +
+            new Date().getTime()
+        )
+
+        .then(response => response.json())
+
+        .then(dados => {
+
+            console.log(
+                "Recebido:",
+                dados
+            )
+
+            let html = ""
+
+            if (dados.length === 0) {
+
+                html = `
+
+                <div class="card-notificacao">
+
+                    Nenhuma notificação encontrada.
+
+                </div>
+
+                `
+
+            } else {
+
+                if (dados[0]) {
+
+                    let horarioAtual =
+                        dados[0].hora
+
+                    if (
+                        ultimoHorario !== "" &&
+                        horarioAtual !== ultimoHorario
+                    ) {
+
+                        document
+                            .getElementById(
+                                "somVenda"
+                            )
+                            .play()
+                            .catch(() => {})
+
+                        mostrarToast(
+                            dados[0]
+                        )
+
+                    }
+
+                    ultimoHorario =
+                        horarioAtual
+
+                }
+
+                dados.forEach(n => {
+
+                    html += `
+
+                    <div class="card-notificacao">
+
+                        <strong>
+                            ${n.funcionario}
+                        </strong>
+
+                        <p>
+                            Venda R$ ${parseFloat(
+                                n.valor
+                            ).toFixed(2)}
+                        </p>
+
+                        <small>
+                            ${n.hora}
+                        </small>
+
+                    </div>
+
+                    `
+
+                })
+
+            }
+
+            document.getElementById(
+                "lista-notificacoes"
+            ).innerHTML = html
+
+        })
+
+        .catch(erro => {
+
+            console.log(
+                "Erro:",
+                erro
+            )
+
+        })
+
+    }
+
+    carregarNotificacoes()
+
+    setInterval(() => {
+
+        console.log("RODANDO")
+
+        carregarNotificacoes()
+
+    }, 3000)
+
+</script>
+
+{% endblock %}

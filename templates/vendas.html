@@ -1,0 +1,367 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/vendas.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="topo-vendas">
+
+    <div>
+
+        <h1>
+            PDV
+        </h1>
+
+        <p class="subtitulo-pagina">
+            Sistema de vendas e atendimento
+        </p>
+
+    </div>
+
+</div>
+
+{% if caixa_fechado %}
+
+<div class="caixa-fechado">
+
+    <h2>
+        Caixa fechado
+    </h2>
+
+    <p>
+        Abra o caixa antes de iniciar vendas.
+    </p>
+
+    <a href="/caixa" class="btn">
+        Abrir Caixa
+    </a>
+
+</div>
+
+{% else %}
+
+<input type="text" id="scanner" class="campo-busca" placeholder="Buscar produtos ou ler código de barras" autofocus>
+
+<div class="pdv-layout">
+
+    <!-- PRODUTOS -->
+
+    <div class="produtos-grid">
+
+        {% for produto in produtos %}
+
+        <div class="produto-card">
+
+            <div class="produto-info">
+
+                <h3>
+                    {{ produto["nome"] }}
+                </h3>
+
+                <span class="preco">
+                    R$ {{ produto["preco"] }}
+                </span>
+
+                <span class="estoque">
+                    {{ produto["estoque"] }}
+                </span>
+
+            </div>
+
+            <a href="/adicionar_carrinho/{{ produto['id'] }}" class="btn-add">
+                Adicionar
+            </a>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- CARRINHO -->
+
+    <div class="carrinho-box">
+
+        <div class="topo-carrinho">
+
+            <div class="titulo-carrinho">
+
+                <h2>
+                    Carrinho
+                </h2>
+
+                <span class="contador">
+                    {{ carrinho|length }}
+                </span>
+
+            </div>
+
+        </div>
+
+        {% if carrinho %}
+
+        <div class="lista-carrinho">
+
+            {% for item in carrinho %}
+
+            <div class="item-carrinho">
+
+                <div>
+
+                    <strong>
+                        {{ item["nome"] }}
+                    </strong>
+
+                    <p>
+                        x{{ item["quantidade"] }}
+                    </p>
+
+                </div>
+
+                <div class="lado-item">
+
+                    <span>
+                        R$ {{ item["preco"] * item["quantidade"] }}
+                    </span>
+
+                    <a href="/remover_carrinho/{{ item['id'] }}" class="remover-item">
+                        ✕
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="carrinho-vazio">
+
+            <p>
+                Nenhum item no pedido
+            </p>
+
+        </div>
+
+        {% endif %}
+
+        <div class="rodape-carrinho">
+
+            <div class="total-box">
+
+                <span>
+                    Total
+                </span>
+
+                <h3>
+                    R$ {{ total }}
+                </h3>
+
+            </div>
+
+            <button class="btn" onclick="abrirModal()">
+                Pagar • R$ {{ total }}
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- MODAL PAGAMENTO -->
+
+<div id="modalPagamento" class="modal">
+
+    <div class="modal-content">
+
+        <h2>
+            Finalizar Pagamento
+        </h2>
+
+        <div class="resumo-venda">
+
+            {% for item in carrinho %}
+
+            <div class="linha-resumo">
+
+                <span>
+
+                    {{ item["quantidade"] }}x
+                    {{ item["nome"] }}
+
+                </span>
+
+                <strong>
+
+                    R$ {{
+                    item["preco"] *
+                    item["quantidade"]
+                    }}
+
+                </strong>
+
+            </div>
+
+            {% endfor %}
+
+            <hr>
+
+            <div class="total-resumo">
+
+                <span>Total</span>
+
+                <strong>
+
+                    R$ {{ total }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+        <form method="POST" action="/finalizar_venda">
+
+            <select name="pagamento">
+
+                <option value="Dinheiro">
+                    Dinheiro
+                </option>
+
+                <option value="PIX">
+                    PIX
+                </option>
+
+                <option value="Cartão">
+                    Cartão
+                </option>
+
+            </select>
+
+            <button type="submit" class="btn">
+                Finalizar Venda
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    const busca =
+        document.getElementById("scanner")
+
+    busca.addEventListener("keyup", () => {
+
+        const texto =
+            busca.value.toLowerCase()
+
+        const cards =
+            document.querySelectorAll(".produto-card")
+
+        cards.forEach(card => {
+
+            const nome =
+                card.innerText.toLowerCase()
+
+            card.style.display =
+                nome.includes(texto)
+                    ? "flex"
+                    : "none"
+
+        })
+
+    })
+
+    function abrirModal() {
+
+        document.getElementById(
+            "modalPagamento"
+        ).style.display = "flex"
+
+    }
+
+    window.onclick = function (event) {
+
+        const modal =
+            document.getElementById(
+                "modalPagamento"
+            )
+
+        if (event.target == modal) {
+
+            modal.style.display = "none"
+
+        }
+
+    }
+
+    const scanner =
+        document.getElementById("scanner")
+
+    scanner.focus()
+
+    scanner.addEventListener("keypress", function (event) {
+
+        if (event.key === "Enter") {
+
+            event.preventDefault()
+
+            let codigo = this.value.trim()
+
+            if (codigo !== "") {
+
+                window.location.href =
+                    "/codigo/" + codigo
+
+            }
+
+        }
+
+    })
+
+    window.onload = function () {
+
+        const scanner =
+            document.getElementById("scanner")
+
+        if (scanner) {
+
+            scanner.value = ""
+            scanner.focus()
+
+        }
+
+    }
+
+</script>
+
+{% endif %}
+
+
+{% if abrir_cupom %}
+
+<script>
+
+window.open(
+    "/abrir_cupom",
+    "_blank"
+)
+
+</script>
+
+{% endif %}
+
+{% endblock %}

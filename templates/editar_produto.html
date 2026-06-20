@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editar-produto.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="editar-container">
+
+    <div class="editar-card">
+
+        <div class="editar-topo">
+
+            <h1>Editar Produto</h1>
+
+            <p>
+                Atualize as informações do produto.
+            </p>
+
+        </div>
+
+        <form method="POST" class="form-editar">
+
+            <div class="form-group">
+
+                <label>Nome</label>
+
+                <input type="text" name="nome" value="{{ produto['nome'] }}" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Preço</label>
+
+                <input type="number" step="0.01" name="preco" value="{{ produto['preco'] }}" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Estoque</label>
+
+                <input type="number" name="estoque" value="{{ produto['estoque'] }}" required>
+
+            </div>
+
+            <div>
+                <input type="text" name="codigo_barras" value="{{ produto['codigo_barras'] }}"
+                    placeholder="Código de barras">
+            </div>
+
+            <div class="acoes-editar">
+
+                <button type="submit" class="btn-salvar">
+                    Salvar Alterações
+                </button>
+
+                <a href="/produtos" class="btn-voltar">
+                    Voltar
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

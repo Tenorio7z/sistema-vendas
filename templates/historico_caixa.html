@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/estatisticas.css') }}">
+
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="titulo-pagina">
+
+    Caixa #{{ caixa.id }}
+
+</h1>
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+
+        <span>Total Faturado</span>
+
+        <h2>
+
+            R$ {{ "%.2f"|format(total_faturado) }}
+
+        </h2>
+
+    </div>
+
+    <div class="stat-card">
+
+        <span>PIX</span>
+
+        <h2>
+
+            R$ {{ "%.2f"|format(total_pix) }}
+
+        </h2>
+
+    </div>
+
+    <div class="stat-card">
+
+        <span>Dinheiro</span>
+
+        <h2>
+
+            R$ {{ "%.2f"|format(total_dinheiro) }}
+
+        </h2>
+
+    </div>
+
+    <div class="stat-card">
+
+        <span>Cartão</span>
+
+        <h2>
+
+            R$ {{ "%.2f"|format(total_cartao) }}
+
+        </h2>
+
+    </div>
+
+    <div class="stat-card">
+
+        <span>Itens Vendidos</span>
+
+        <h2>
+
+            {{ total_itens }}
+
+        </h2>
+
+    </div>
+
+    <div class="stat-card">
+
+        <span>Abertura</span>
+
+        <h2>
+
+            {{ caixa.data_abertura }}
+
+        </h2>
+
+    </div>
+
+    <div class="stat-card">
+
+        <span>Fechamento</span>
+
+        <h2>
+
+            {{ caixa.data_fechamento }}
+
+        </h2>
+
+    </div>
+
+</div>
+
+<div class="grafico-card">
+
+    <h2>
+
+        Produtos Vendidos
+
+    </h2>
+
+    <table class="tabela-vendas">
+
+        <thead>
+
+            <tr>
+
+                <th>Produto</th>
+                <th>Qtd</th>
+                <th>Valor</th>
+                <th>Pagamento</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for venda in vendas %}
+
+            <tr>
+
+                <td>{{ venda.nome }}</td>
+
+                <td>{{ venda.quantidade }}</td>
+
+                <td>R$ {{ "%.2f"|format(venda.valor) }}</td>
+
+                <td>{{ venda.pagamento }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+
+    <a href="/relatorio_caixa/{{ caixa.id }}" class="btn btn-danger">
+        📄 Exportar PDF
+    </a>
+
+</div>
+
+{% endblock %}

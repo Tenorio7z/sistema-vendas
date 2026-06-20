@@ -1,0 +1,816 @@
+/* ==========================================
+PÁGINA
+========================================== */
+
+.perfis {
+    width: 100%;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+
+.page-header h1 {
+    font-size: 42px;
+    margin-bottom: 5px;
+    color: var(--text);
+}
+
+.page-header p {
+    color: var(--text-secondary);
+}
+
+.btn-novo-funcionario {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-novo-funcionario:hover {
+    opacity: .9;
+}
+
+/* ==========================================
+CARD PADRÃO
+========================================== */
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+}
+
+/* ==========================================
+CADASTRO
+========================================== */
+
+.cadastro-box {
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.cadastro-box h2 {
+    margin-bottom: 20px;
+    color: var(--text);
+}
+
+.cadastro-box form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cadastro-box input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--background-secondary);
+    color: var(--text);
+    font-size: 15px;
+}
+
+.cadastro-box input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.cadastro-box button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .3s;
+}
+
+.cadastro-box button:hover {
+    background: var(--primary-hover);
+}
+
+/* ==========================================
+GRID FUNCIONÁRIOS
+========================================== */
+
+.funcionarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* ==========================================
+CARD FUNCIONÁRIO
+========================================== */
+
+.funcionario-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    transition: .3s;
+}
+
+.funcionario-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+}
+
+.funcionario-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.funcionario-topo h3 {
+    margin: 0;
+    font-size: 20px;
+    color: var(--text);
+}
+
+.funcionario-topo div span {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* ==========================================
+STATUS
+========================================== */
+
+.ativo {
+    background: rgba(34, 197, 94, .15);
+    color: #22c55e !important;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px !important;
+    font-weight: 600;
+}
+
+.bloqueado {
+    background: rgba(239, 68, 68, .15);
+    color: #ef4444 !important;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px !important;
+    font-weight: 600;
+}
+
+/* ==========================================
+AÇÕES
+========================================== */
+
+.dropdown-content {
+    display: flex;
+    gap: 10px;
+}
+
+.dropdown-content a {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: .2s;
+}
+
+/* Bloquear */
+
+.dropdown-content a:nth-child(1) {
+    background: rgba(239, 68, 68, .15);
+    color: #ef4444;
+}
+
+.dropdown-content a:nth-child(1):hover {
+    transform: translateY(-2px);
+}
+
+/* Liberar */
+
+.dropdown-content a:nth-child(2) {
+    background: rgba(34, 197, 94, .15);
+    color: #22c55e;
+}
+
+.dropdown-content a:nth-child(2):hover {
+    transform: translateY(-2px);
+}
+
+/* Excluir */
+
+.dropdown-content a:nth-child(3) {
+    background: rgba(168, 85, 247, .15);
+    color: #a855f7;
+}
+
+.dropdown-content a:nth-child(3):hover {
+    transform: translateY(-2px);
+}
+
+.modal-funcionario {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .6);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-funcionario-content {
+    width: 450px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 25px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.fechar-modal {
+    cursor: pointer;
+    font-size: 22px;
+}
+
+.modal-funcionario form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-funcionario input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--background-secondary);
+    color: var(--text);
+}
+
+.modal-funcionario button {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* ==========================================
+ESTATÍSTICAS FUNCIONÁRIO
+========================================== */
+
+.estatisticas-funcionario {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.estatisticas-funcionario div {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+}
+
+.estatisticas-funcionario small {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.estatisticas-funcionario strong {
+    color: var(--primary);
+    font-size: 15px;
+}
+
+/* ==========================================
+TOPO CARD
+========================================== */
+
+.lado-direito-funcionario {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-opcoes {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 20px;
+    transition: .2s;
+}
+
+.btn-opcoes:hover {
+    background: var(--background);
+}
+
+/* ==========================================
+MODAL DETALHES
+========================================== */
+
+#conteudoDetalhes {
+    margin-top: 10px;
+}
+
+#conteudoDetalhes h2 {
+    margin-bottom: 20px;
+    color: var(--text);
+}
+
+#conteudoDetalhes p {
+    margin-bottom: 12px;
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+#conteudoDetalhes b {
+    color: var(--text);
+}
+
+#conteudoDetalhes hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+}
+
+/* ==========================================
+AÇÕES MODAL
+========================================== */
+
+.acoes-modal {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.acoes-modal a {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: .2s;
+}
+
+.btn-bloquear {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-bloquear:hover {
+    transform: translateY(-2px);
+}
+
+.btn-liberar {
+    background: #10b981;
+    color: white;
+}
+
+.btn-liberar:hover {
+    transform: translateY(-2px);
+}
+
+.btn-excluir {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-excluir:hover {
+    transform: translateY(-2px);
+}
+
+/* ==========================================
+FUNCIONÁRIO CARD
+========================================== */
+
+.funcionario-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    transition: .3s;
+}
+
+.funcionario-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+}
+
+.funcionario-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.funcionario-topo h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 18px;
+}
+
+.funcionario-topo span {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+/* ==========================================
+STATUS
+========================================== */
+
+.ativo {
+    background: #10b98120;
+    color: #10b981;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.bloqueado {
+    background: #ef444420;
+    color: #ef4444;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ==========================================
+MODAL BONITO
+========================================== */
+
+.modal-funcionario {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .6);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-funcionario-content {
+    width: 100%;
+    max-width: 600px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 25px;
+    position: relative;
+    animation: modalShow .25s ease;
+}
+
+@keyframes modalShow {
+
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+.fechar-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    cursor: pointer;
+    font-size: 22px;
+    color: var(--text-secondary);
+}
+
+.fechar-modal:hover {
+    color: var(--text);
+}
+
+/* ==========================================
+MODAL DETALHES FUNCIONÁRIO
+========================================== */
+
+#conteudoDetalhes h2 {
+    color: var(--primary);
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+#conteudoDetalhes p {
+    margin-bottom: 10px;
+    color: var(--text);
+}
+
+#conteudoDetalhes b {
+    color: var(--text-secondary);
+}
+
+/* ==========================================
+HISTÓRICO DE VENDAS
+========================================== */
+
+.historico-vendas {
+    max-height: 320px;
+    overflow-y: auto;
+    margin-top: 15px;
+    padding-right: 5px;
+}
+
+.historico-vendas::-webkit-scrollbar {
+    width: 6px;
+}
+
+.historico-vendas::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 20px;
+}
+
+.item-historico {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    transition: .3s;
+}
+
+.item-historico:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.item-historico strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 8px;
+    color: var(--primary);
+}
+
+.item-historico p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* ==========================================
+AÇÕES MODAL
+========================================== */
+
+.acoes-modal {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.acoes-modal a {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: .3s;
+}
+
+/* Bloquear */
+
+.btn-bloquear {
+    background: #0f104b;
+    border: #ffffff;
+    color: rgb(255, 255, 255);
+}
+
+.btn-bloquear:hover {
+    transform: translateY(-2px);
+}
+
+/* Liberar */
+
+.btn-liberar {
+    background: #0f104b;
+    border: #ffffff;
+    color: rgb(255, 255, 255);
+}
+
+.btn-liberar:hover {
+    transform: translateY(-2px);
+}
+
+/* Excluir */
+
+.btn-excluir {
+   background: #0f104b;
+    border: #ffffff;
+    color: rgb(255, 255, 255);
+}
+
+.btn-excluir:hover {
+    transform: translateY(-2px);
+}
+
+.btn-dashboard {
+    background: #0f104b;
+    border: #ffffff;
+    color: rgb(255, 255, 255);
+}
+
+.btn-dashboard:hover {
+    transform: translateY(-2px);
+
+}
+
+/* ==========================================
+RESUMO FUNCIONÁRIO
+========================================== */
+
+.estatisticas-funcionario {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.estatisticas-funcionario div {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+}
+
+.estatisticas-funcionario small {
+    display: block;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.estatisticas-funcionario strong {
+    color: var(--primary);
+    font-size: 16px;
+}
+
+
+/* ==========================================
+RESPONSIVO
+========================================== */
+
+@media (max-width: 768px) {
+
+    /* =========================
+       HEADER
+    ========================= */
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .page-header h1 {
+        font-size: 26px;
+    }
+
+    .page-header p {
+        font-size: 14px;
+    }
+
+    .btn-novo-funcionario {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* =========================
+       CADASTRO
+    ========================= */
+    .cadastro-box {
+        padding: 18px;
+    }
+
+    .cadastro-box input,
+    .cadastro-box button {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    /* =========================
+       GRID FUNCIONÁRIOS
+    ========================= */
+    .funcionarios-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .funcionario-card {
+        padding: 16px;
+    }
+
+    /* =========================
+       TOPO CARD
+    ========================= */
+    .funcionario-topo {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .funcionario-topo h3 {
+        font-size: 18px;
+    }
+
+    /* =========================
+       STATUS
+    ========================= */
+    .ativo,
+    .bloqueado {
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+
+    /* =========================
+       ESTATÍSTICAS
+    ========================= */
+    .estatisticas-funcionario {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .estatisticas-funcionario div {
+        padding: 10px;
+    }
+
+    /* =========================
+       DROPDOWN AÇÕES
+    ========================= */
+    .dropdown-content {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .dropdown-content a {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    /* =========================
+       MODAL
+    ========================= */
+    .modal-funcionario-content {
+        width: 92%;
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .fechar-modal {
+        font-size: 20px;
+        top: 12px;
+        right: 15px;
+    }
+
+    /* =========================
+       AÇÕES MODAL
+    ========================= */
+    .acoes-modal {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .acoes-modal a {
+        width: 100%;
+        font-size: 14px;
+    }
+}
+
