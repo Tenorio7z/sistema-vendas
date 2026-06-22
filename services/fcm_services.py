@@ -1,12 +1,18 @@
+import os
+import json
 import firebase_admin
 from firebase_admin import credentials, messaging
 
 
 # Inicializa uma única vez
 if not firebase_admin._apps:
-    cred = credentials.Certificate(
-        "firebase_key.json"
-    )
+
+    if os.getenv("FIREBASE_CREDENTIALS"):
+        cred_dict = json.loads(os.getenv("FIREBASE_CREDENTIALS"))
+        cred = credentials.Certificate(cred_dict)
+    else:
+        cred = credentials.Certificate("firebase_key.json")
+
     firebase_admin.initialize_app(cred)
 
 
