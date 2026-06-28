@@ -13,7 +13,9 @@ def registrar_rotas(app):
         conn = conectar()
         cursor = criar_cursor(conn)
 
-        empresa_id = session["empresa_id"]
+        empresa_id = session.get("empresa_id")
+        if not empresa_id:
+            return redirect("/")
 
         # PRODUTOS
 
@@ -74,89 +76,36 @@ def registrar_rotas(app):
             caixa_id = None
 
 
-        # ==========================================
-        # VENDAS
-        # ==========================================
-
         if caixa_id:
 
             cursor.execute("""
 
-            SELECT COUNT(*) as total
+            SELECT
+                COUNT(*) as total_vendas,
+                COALESCE(SUM(valor), 0) as faturamento,
+                COALESCE(SUM(quantidade), 0) as itens_vendidos
 
             FROM vendas
 
             WHERE caixa_id = %s
+            AND cancelada = 0
 
             """, (caixa_id,))
 
-            total_vendas = cursor.fetchone()["total"]
+            dados = cursor.fetchone()
+
+            total_vendas = dados["total_vendas"]
+            faturamento = dados["faturamento"]
+            itens_vendidos = dados["itens_vendidos"]
+
+            clientes_atendidos = total_vendas
 
         else:
 
             total_vendas = 0
-
-        # ==========================================
-        # FATURAMENTO
-        # ==========================================
-
-        if caixa_id:
-
-            cursor.execute("""
-
-            SELECT COALESCE(SUM(valor), 0) as faturamento
-
-            FROM vendas
-
-            WHERE caixa_id = %s
-
-            """, (caixa_id,))
-
-            faturamento = cursor.fetchone()["faturamento"]
-
-        else:
-
             faturamento = 0
-
-        # CLIENTES
-
-        if caixa_id:
-
-            cursor.execute("""
-
-            SELECT COUNT(*) as total
-
-            FROM vendas
-
-            WHERE caixa_id = %s
-
-            """, (caixa_id,))
-
-            clientes_atendidos = cursor.fetchone()["total"]
-
-        else:
-
-            clientes_atendidos = 0
-
-        # ITENS VENDIDOS
-
-        if caixa_id:
-
-            cursor.execute("""
-
-            SELECT COALESCE(SUM(quantidade),0) as total
-
-            FROM vendas
-
-            WHERE caixa_id = %s
-
-            """, (caixa_id,))
-
-            itens_vendidos = cursor.fetchone()["total"]
-
-        else:
-
             itens_vendidos = 0
+            clientes_atendidos = 0
 
         # ALERTAS
 
@@ -222,7 +171,9 @@ def registrar_rotas(app):
         conn = conectar()
         cursor = criar_cursor(conn)
 
-        empresa_id = session["empresa_id"]
+        empresa_id = session.get("empresa_id")
+        if not empresa_id:
+            return redirect("/")
 
         cursor.execute("""
 
@@ -252,6 +203,7 @@ def registrar_rotas(app):
             FROM vendas
 
             WHERE caixa_id = %s
+            AND cancelada = 0
 
             """, (caixa_id,))
 
@@ -264,6 +216,7 @@ def registrar_rotas(app):
             FROM vendas
 
             WHERE caixa_id = %s
+            AND cancelada = 0
 
             """, (caixa_id,))
 
@@ -276,6 +229,7 @@ def registrar_rotas(app):
             FROM vendas
 
             WHERE caixa_id = %s
+            AND cancelada = 0
 
             """, (caixa_id,))
 
