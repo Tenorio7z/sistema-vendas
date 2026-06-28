@@ -144,7 +144,7 @@ def registrar_rotas(app):
 
             cursor.execute("""
 
-            SELECT IFNULL(SUM(quantidade),0) as total
+            SELECT COALESCE(SUM(quantidade),0) as total
 
             FROM vendas
 
@@ -271,7 +271,7 @@ def registrar_rotas(app):
 
             cursor.execute("""
 
-            SELECT IFNULL(SUM(quantidade),0) as total
+            SELECT COALESCE(SUM(quantidade),0) as total
 
             FROM vendas
 
