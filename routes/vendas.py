@@ -310,7 +310,8 @@ def registrar_rotas(app, socketio):
                     "nome": produto["nome"],
                     "quantidade": item["quantidade"],
                     "valor": valor_total,
-                    "pagamento": forma_pagamento
+                    "pagamento": forma_pagamento,
+                    "empresa_id": empresa_id
                 })
                 
                 
@@ -367,7 +368,7 @@ def registrar_rotas(app, socketio):
         # ==========================================
         # CUPOM
         # ==========================================
-        pdf = gerar_cupom_venda(vendas_cupom)
+        pdf = gerar_cupom_venda(vendas_cupom, empresa_id)
 
         session["carrinho"] = []
         session["ultimo_cupom"] = pdf
