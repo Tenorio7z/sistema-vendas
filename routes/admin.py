@@ -1,5 +1,7 @@
 from flask import *
-from database import conectar
+from database import conectar, criar_cursor
+import psycopg2.extras
+
 
 from werkzeug.security import (
     generate_password_hash
@@ -21,7 +23,7 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         if request.method == "POST":
 
@@ -34,23 +36,18 @@ def registrar_rotas(app):
             )
 
             cursor.execute("""
-
-            INSERT INTO empresa(
-
-            nome,
-            plano
-
-            )
-
-            VALUES(?,?)
-
+                INSERT INTO empresa(
+                    nome,
+                    plano
+                )
+                VALUES(%s, %s)
+                RETURNING id
             """, (
-
                 nome_empresa,
                 plano
             ))
 
-            empresa_id = cursor.lastrowid
+            empresa_id = cursor.fetchone()["id"]
 
             cursor.execute("""
 
@@ -64,7 +61,7 @@ def registrar_rotas(app):
 
             )
 
-            VALUES(?,?,?,?,?)
+            VALUES(%s,%s,%s,%s,%s)
 
             """, (
 
@@ -188,7 +185,7 @@ def registrar_rotas(app):
 
         )
         
-            # ==========================================
+    # ==========================================
     # BLOQUEAR USUÁRIO
     # ==========================================
 
@@ -202,15 +199,15 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
         UPDATE usuarios
 
-        SET status = ?
+        SET status = %s
 
-        WHERE id = ?
+        WHERE id = %s
 
         """, (
 
@@ -244,15 +241,15 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
         UPDATE usuarios
 
-        SET status = ?
+        SET status = %s
 
-        WHERE id = ?
+        WHERE id = %s
 
         """, (
 
@@ -286,7 +283,7 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -294,7 +291,7 @@ def registrar_rotas(app):
 
         FROM usuarios
 
-        WHERE id = ?
+        WHERE id = %s
 
         """, (id,))
 
@@ -308,7 +305,7 @@ def registrar_rotas(app):
 
             DELETE FROM usuarios
 
-            WHERE empresa_id = ?
+            WHERE empresa_id = %s
 
             """, (empresa_id,))
 
@@ -316,7 +313,7 @@ def registrar_rotas(app):
 
             DELETE FROM empresa
 
-            WHERE id = ?
+            WHERE id = %s
 
             """, (empresa_id,))
 
