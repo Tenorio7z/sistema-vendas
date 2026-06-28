@@ -104,7 +104,7 @@ def registrar_rotas(app):
 
             cursor.execute("""
 
-            SELECT IFNULL(SUM(valor),0) as faturamento
+            SELECT COALESCE(SUM(valor), 0) as faturamento
 
             FROM vendas
 
@@ -259,7 +259,7 @@ def registrar_rotas(app):
 
             cursor.execute("""
 
-            SELECT IFNULL(SUM(valor),0) as faturamento
+            SELECT COALESCE(SUM(valor), 0) as faturamento
 
             FROM vendas
 
