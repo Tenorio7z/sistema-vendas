@@ -199,7 +199,7 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = criar_cursor(conn)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("""
 
@@ -241,7 +241,7 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = criar_cursor(conn)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("""
 
@@ -283,7 +283,7 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = criar_cursor(conn)
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute("""
 
