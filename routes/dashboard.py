@@ -15,6 +15,7 @@ def registrar_rotas(app):
 
         empresa_id = session.get("empresa_id")
         if not empresa_id:
+            conn.close()
             return redirect("/")
 
         # PRODUTOS
@@ -173,7 +174,8 @@ def registrar_rotas(app):
 
         empresa_id = session.get("empresa_id")
         if not empresa_id:
-            return redirect("/")
+            conn.close()
+            return jsonify({"erro": "empresa não encontrada"})
 
         cursor.execute("""
 
@@ -198,7 +200,10 @@ def registrar_rotas(app):
 
             cursor.execute("""
 
-            SELECT COUNT(*) as total
+            SELECT
+                COUNT(*) as total_vendas,
+                COALESCE(SUM(valor), 0) as faturamento,
+                COALESCE(SUM(quantidade), 0) as itens_vendidos
 
             FROM vendas
 
@@ -207,33 +212,11 @@ def registrar_rotas(app):
 
             """, (caixa_id,))
 
-            total_vendas = cursor.fetchone()["total"]
+            dados = cursor.fetchone()
 
-            cursor.execute("""
-
-            SELECT COALESCE(SUM(valor), 0) as faturamento
-
-            FROM vendas
-
-            WHERE caixa_id = %s
-            AND cancelada = 0
-
-            """, (caixa_id,))
-
-            faturamento = cursor.fetchone()["faturamento"]
-
-            cursor.execute("""
-
-            SELECT COALESCE(SUM(quantidade),0) as total
-
-            FROM vendas
-
-            WHERE caixa_id = %s
-            AND cancelada = 0
-
-            """, (caixa_id,))
-
-            itens_vendidos = cursor.fetchone()["total"]
+            total_vendas = dados["total_vendas"]
+            faturamento = dados["faturamento"]
+            itens_vendidos = dados["itens_vendidos"]
 
             clientes_atendidos = total_vendas
 
