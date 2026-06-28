@@ -113,9 +113,10 @@ def registrar_rotas(app):
                     valor_inicial,
                     valor_final,
                     status,
-                    empresa_id
+                    empresa_id,
+                    data_abertura
                 )
-                VALUES(%s,%s,%s,%s)
+                VALUES(%s,%s,%s,%s,NOW())
                 RETURNING id
                 """, (
                     valor,
