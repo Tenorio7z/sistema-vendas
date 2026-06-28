@@ -1,6 +1,7 @@
 from flask import *
 
 from database import conectar
+import psycopg2.extras
 
 from werkzeug.security import (
     check_password_hash
@@ -17,7 +18,7 @@ def registrar_rotas(app):
             senha = request.form["senha"]
 
             conn = conectar()
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
             cursor.execute("""
 
@@ -25,7 +26,7 @@ def registrar_rotas(app):
 
             FROM usuarios
 
-            WHERE usuario = ?
+            WHERE usuario = %s
 
             """, (usuario,))
 
@@ -34,22 +35,7 @@ def registrar_rotas(app):
             
             empresa = None
             
-            if user:
-
-                cursor.execute("""
-
-                SELECT plano
-
-                FROM empresa
-
-                WHERE id = ?
-
-                """, (user["empresa_id"],))
-
-                empresa = cursor.fetchone() 
             
-    
-
             if user:
 
                 if user["status"] == "bloqueado":
@@ -74,7 +60,7 @@ def registrar_rotas(app):
 
                     FROM empresa
 
-                    WHERE id = ?
+                    WHERE id = %s
 
                     """, (
 
@@ -93,15 +79,6 @@ def registrar_rotas(app):
                     if empresa:
                         session["plano"] = empresa["plano"]
                     else:
-                        session["plano"] = "comum"
-
-
-                    if empresa:
-
-                        session["plano"] = empresa["plano"]
-
-                    else:
-
                         session["plano"] = "comum"
 
                     conn.close()

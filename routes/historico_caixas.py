@@ -19,7 +19,7 @@ def registrar_rotas(app):
 
         FROM caixa
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         AND status = 'fechado'
 
         ORDER BY id DESC
@@ -63,8 +63,8 @@ def registrar_rotas(app):
 
         FROM caixa
 
-        WHERE id = ?
-        AND empresa_id = ?
+        WHERE id = %s
+        AND empresa_id = %s
 
         """, (
 
@@ -99,7 +99,7 @@ def registrar_rotas(app):
         INNER JOIN produtos
         ON produtos.id = vendas.produto_id
 
-        WHERE vendas.caixa_id = ?
+        WHERE vendas.caixa_id = %s
 
         ORDER BY vendas.id DESC
 
@@ -117,11 +117,11 @@ def registrar_rotas(app):
 
         cursor.execute("""
 
-        SELECT IFNULL(SUM(valor),0) as total
+        SELECT COALESCE(SUM(valor),0) as total
 
         FROM vendas
 
-        WHERE caixa_id = ?
+        WHERE caixa_id = %s
 
         """, (
 
@@ -138,11 +138,11 @@ def registrar_rotas(app):
 
         cursor.execute("""
 
-        SELECT IFNULL(SUM(valor),0) as total
+        SELECT COALESCE(SUM(valor),0) as total
 
         FROM vendas
 
-        WHERE caixa_id = ?
+        WHERE caixa_id = %s
         AND pagamento = 'PIX'
 
         """, (
@@ -159,11 +159,11 @@ def registrar_rotas(app):
 
         cursor.execute("""
 
-        SELECT IFNULL(SUM(valor),0) as total
+        SELECT COALESCE(SUM(valor),0) as total
 
         FROM vendas
 
-        WHERE caixa_id = ?
+        WHERE caixa_id = %s
         AND pagamento = 'Dinheiro'
 
         """, (
@@ -180,11 +180,11 @@ def registrar_rotas(app):
 
         cursor.execute("""
 
-        SELECT IFNULL(SUM(valor),0) as total
+        SELECT COALESCE(SUM(valor),0) as total
 
         FROM vendas
 
-        WHERE caixa_id = ?
+        WHERE caixa_id = %s
         AND pagamento = 'Cartão'
 
         """, (
@@ -201,11 +201,11 @@ def registrar_rotas(app):
 
         cursor.execute("""
 
-        SELECT IFNULL(SUM(quantidade),0) as total
+        SELECT COALESCE(SUM(quantidade),0) as total
 
         FROM vendas
 
-        WHERE caixa_id = ?
+        WHERE caixa_id = %s
 
         """, (
 

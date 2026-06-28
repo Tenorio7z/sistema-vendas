@@ -1,5 +1,5 @@
 from flask import *
-from database import conectar
+from database import conectar, criar_cursor
 
 
 def registrar_rotas(app):
@@ -15,7 +15,7 @@ def registrar_rotas(app):
             return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         empresa_id = session["empresa_id"]
 
@@ -45,7 +45,7 @@ def registrar_rotas(app):
 
                 FROM produtos
 
-                WHERE empresa_id = ?
+                WHERE empresa_id = %s
 
                 """, (
 
@@ -67,8 +67,8 @@ def registrar_rotas(app):
                     return redirect("/produtos")
 
             nome = request.form["nome"]
-            preco = request.form["preco"]
-            estoque = request.form["estoque"]
+            preco = float(request.form["preco"].replace(",", "."))
+            estoque = int(request.form["estoque"])
             codigo_barras = request.form["codigo_barras"]
 
             cursor.execute("""
@@ -83,7 +83,7 @@ def registrar_rotas(app):
 
             )
 
-            VALUES(?,?,?,?,?)
+            VALUES(%s,%s,%s,%s,%s)
 
             """, (
 
@@ -108,7 +108,7 @@ def registrar_rotas(app):
 
         FROM produtos
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         ORDER BY id DESC
 
@@ -147,14 +147,14 @@ def registrar_rotas(app):
             return redirect("/produtos")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
         DELETE FROM produtos
 
-        WHERE id = ?
-        AND empresa_id = ?
+        WHERE id = %s
+        AND empresa_id = %s
 
         """, (
 
@@ -193,15 +193,15 @@ def registrar_rotas(app):
             return redirect("/produtos")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         empresa_id = session["empresa_id"]
 
         if request.method == "POST":
 
             nome = request.form["nome"]
-            preco = request.form["preco"]
-            estoque = request.form["estoque"]
+            preco = float(request.form["preco"].replace(",", "."))
+            estoque = int(request.form["estoque"])
             codigo_barras = request.form["codigo_barras"]
 
             cursor.execute("""
@@ -210,13 +210,13 @@ def registrar_rotas(app):
 
             SET
 
-                nome = ?,
-                preco = ?,
-                estoque = ?,
-                codigo_barras = ?
+                nome = %s,
+                preco = %s,
+                estoque = %s,
+                codigo_barras = %s
 
-            WHERE id = ?
-            AND empresa_id = ?
+            WHERE id = %s
+            AND empresa_id = %s
 
             """, (
 
@@ -245,8 +245,8 @@ def registrar_rotas(app):
 
         FROM produtos
 
-        WHERE id = ?
-        AND empresa_id = ?
+        WHERE id = %s
+        AND empresa_id = %s
 
         """, (
 

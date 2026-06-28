@@ -1,7 +1,7 @@
 from flask import *
-from database import conectar
+from database import conectar, criar_cursor
 from services.cupom_service import gerar_cupom_venda
-from datetime import datetime
+from datetime import datetime, timezone
 from services.notificacoes import notificar_gerente
 from services.fcm_services import enviar_notificacao
 
@@ -18,92 +18,53 @@ def registrar_rotas(app, socketio):
             return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         empresa_id = session["empresa_id"]
 
-        cursor.execute(
-            """
-
-        SELECT *
-
-        FROM caixa
-
-        WHERE empresa_id = ?
-        AND status = 'aberto'
-
-        ORDER BY id DESC
-
-        LIMIT 1
-
-        """,
-            (empresa_id,),
-        )
+        # ==========================================
+        # BUSCAR CAIXA ABERTO (OBRIGATÓRIO)
+        # ==========================================
+        cursor.execute("""
+            SELECT *
+            FROM caixa
+            WHERE empresa_id = %s
+            AND status = 'aberto'
+            ORDER BY id DESC
+            LIMIT 1
+        """, (empresa_id,))
 
         caixa = cursor.fetchone()
 
         if not caixa:
-
             conn.close()
-
             return render_template("vendas.html", caixa_fechado=True)
 
-        cursor.execute(
-            """
-
-        SELECT *
-
-        FROM produtos
-
-        WHERE empresa_id = ?
-
-        """,
-            (empresa_id,),
-        )
+        # ==========================================
+        # BUSCAR PRODUTOS
+        # ==========================================
+        cursor.execute("""
+            SELECT *
+            FROM produtos
+            WHERE empresa_id = %s
+        """, (empresa_id,))
 
         produtos = cursor.fetchall()
 
+        # ==========================================
+        # CARRINHO DA SESSÃO
+        # ==========================================
         carrinho = session.get("carrinho", [])
 
-        total = sum(item["preco"] * item["quantidade"] for item in carrinho)
-        
-       
+        total = sum(float(item["preco"]) * int(item["quantidade"]) for item in carrinho)
 
-        cursor.execute(
-            """
-
-        SELECT id
-
-        FROM caixa
-
-        WHERE empresa_id = ?
-        AND status = 'aberto'
-
-        ORDER BY id DESC
-
-        LIMIT 1
-
-        """,
-            (session["empresa_id"],),
-        )
-
-        caixa = cursor.fetchone()
-
-        if not caixa:
-
-            flash("Nenhum caixa aberto", "erro")
-
-        
-            return redirect("/vendas")
-        
         conn.close()
 
-        abrir_cupom = False
+        # ==========================================
+        # CONTROLE DO CUPOM
+        # ==========================================
+        abrir_cupom = bool(session.get("ultimo_cupom"))
 
-        if session.get("ultimo_cupom"):
-            
-            abrir_cupom = True
-        
         return render_template(
             "vendas.html",
             produtos=produtos,
@@ -124,7 +85,7 @@ def registrar_rotas(app, socketio):
             return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute(
             """
@@ -133,8 +94,8 @@ def registrar_rotas(app, socketio):
 
         FROM produtos
 
-        WHERE id = ?
-        AND empresa_id = ?
+        WHERE id = %s
+        AND empresa_id = %s
 
         """,
             (id, session["empresa_id"]),
@@ -237,73 +198,48 @@ def registrar_rotas(app, socketio):
             return redirect("/")
 
         forma_pagamento = request.form["pagamento"]
-
         carrinho = session.get("carrinho", [])
 
         if not carrinho:
-
             flash("Carrinho vazio", "erro")
-
             return redirect("/vendas")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         # ==========================================
         # BUSCAR CAIXA ABERTO
         # ==========================================
-
-        cursor.execute(
-            """
-
-        SELECT *
-
-        FROM caixa
-
-        WHERE empresa_id = ?
-        AND status = 'aberto'
-
-        ORDER BY id DESC
-
-        LIMIT 1
-
-        """,
-            (session["empresa_id"],),
-        )
+        cursor.execute("""
+            SELECT *
+            FROM caixa
+            WHERE empresa_id = %s
+            AND status = 'aberto'
+            ORDER BY id DESC
+            LIMIT 1
+        """, (session["empresa_id"],))
 
         caixa = cursor.fetchone()
 
         if not caixa:
-
             conn.close()
-
             flash("Nenhum caixa aberto", "erro")
-
             return redirect("/vendas")
 
         valor_venda = 0
-
         vendas_cupom = []
-        
-        # ==========================================
-        # PROCESSAR ITENS
-        # ==========================================
 
+        # ==========================================
+        # PROCESSAR ITENS DO CARRINHO
+        # ==========================================
         for item in carrinho:
 
-            cursor.execute(
-                """
-
-            SELECT *
-
-            FROM produtos
-
-            WHERE id = ?
-            AND empresa_id = ?
-
-            """,
-                (item["id"], session["empresa_id"]),
-            )
+            cursor.execute("""
+                SELECT *
+                FROM produtos
+                WHERE id = %s
+                AND empresa_id = %s
+            """, (item["id"], session["empresa_id"]))
 
             produto = cursor.fetchone()
 
@@ -311,159 +247,104 @@ def registrar_rotas(app, socketio):
                 continue
 
             if produto["estoque"] < item["quantidade"]:
-
-                flash(f'Estoque insuficiente para {produto["nome"]}', "erro")
-
                 conn.close()
-
+                flash(f'Estoque insuficiente para {produto["nome"]}', "erro")
                 return redirect("/vendas")
 
             novo_estoque = produto["estoque"] - item["quantidade"]
-
             valor_total = item["preco"] * item["quantidade"]
 
             valor_venda += valor_total
-            
-            # Atualiza estoque
 
-            cursor.execute(
-                """
+            # ==========================================
+            # ATUALIZAR ESTOQUE
+            # ==========================================
+            cursor.execute("""
+                UPDATE produtos
+                SET estoque = %s
+                WHERE id = %s
+                AND empresa_id = %s
+            """, (novo_estoque, item["id"], session["empresa_id"]))
 
-            UPDATE produtos
+            # ==========================================
+            # REGISTRAR VENDA
+            # ==========================================
+            cursor.execute("""
+                INSERT INTO vendas (
+                    produto_id,
+                    quantidade,
+                    valor,
+                    pagamento,
+                    empresa_id,
+                    caixa_id,
+                    usuario_id,
+                    data_venda
+                )
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+            """, (
+                item["id"],
+                item["quantidade"],
+                valor_total,
+                forma_pagamento,
+                session["empresa_id"],
+                caixa["id"],
+                session["usuario_id"],
+                datetime.now(timezone.utc)
+            ))
 
-            SET estoque = ?
-
-            WHERE id = ?
-
-            """,
-                (novo_estoque, item["id"]),
-            )
-
-            # Registra venda
-
-            cursor.execute(
-                """
-
-            INSERT INTO vendas(
-
-                produto_id,
-                quantidade,
-                valor,
-                pagamento,
-                empresa_id,
-                caixa_id,
-                usuario_id,
-                data_venda
-
-            )
-
-            VALUES(?,?,?,?,?,?,?,?)
-
-            """,
-                (
-                    item["id"],
-                    item["quantidade"],
-                    valor_total,
-                    forma_pagamento,
-                    session["empresa_id"],  
-                    caixa["id"],
-                    session["usuario"],
-                    datetime.now()
-                ),
-            )
-            
             vendas_cupom.append({
+                "nome": produto["nome"],
+                "quantidade": item["quantidade"],
+                "valor": valor_total,
+                "pagamento": forma_pagamento
+            })
 
-                    "nome": produto["nome"],
-                    "quantidade": item["quantidade"],
-                    "valor": valor_total,
-                    "pagamento": forma_pagamento,
-                    "empresa_id": session["empresa_id"]
-
-                })
-            
         # ==========================================
-        # SOMAR AO CAIXA
+        # ATUALIZAR CAIXA
         # ==========================================
-
-        cursor.execute(
-            """
-
-        UPDATE caixa
-
-        SET valor_final = valor_final + ?
-
-        WHERE id = ?
-
-        """,
-            (valor_venda, caixa["id"]),
-        )
+        cursor.execute("""
+            UPDATE caixa
+            SET valor_final = valor_final + %s
+            WHERE id = %s
+        """, (valor_venda, caixa["id"]))
 
         conn.commit()
-        
+
+        # ==========================================
+        # NOTIFICAÇÃO GERENTE (CORRIGIDA)
+        # ==========================================
         notificar_gerente(
-                session["usuario"],
-                produto["nome"],
-                valor_total,
-                session["empresa_id"]
-            )
-        
-        # ==========================================
-        # ENVIAR PUSH PARA GERENTE
-        # ==========================================
+            session["usuario_id"],
+            "Venda realizada",
+            valor_venda,
+            session["empresa_id"]
+        )
 
+        # ==========================================
+        # PUSH NOTIFICATION
+        # ==========================================
         cursor.execute("""
-
-        SELECT fcm_token
-
-        FROM usuarios
-
-        WHERE empresa_id = ?
-        AND nivel = 'gerente'
-
-        LIMIT 1
-
+            SELECT fcm_token
+            FROM usuarios
+            WHERE empresa_id = %s
+            AND nivel = 'gerente'
+            LIMIT 1
         """, (session["empresa_id"],))
 
         gerente = cursor.fetchone()
 
         if gerente and gerente["fcm_token"]:
-
             enviar_notificacao(
-
                 gerente["fcm_token"],
-
                 "Nova Venda",
-
-                f'{session["usuario"]} vendeu {produto["nome"]} por R$ {valor_total:.2f}'
-
+                f'{session["usuario_id"]} realizou uma venda de R$ {valor_venda:.2f}'
             )
-        
-        socketio.emit(
-            "nova_venda",
-            {
-                "produto": produto["nome"],
-                "valor": valor_total,
-                "usuario": session["usuario"],
-                "empresa_id": session["empresa_id"]
-            }
-        )
-        
-        socketio.emit(
-            "nova_notificacao",
-            {
-                "produto": produto["nome"],
-                "valor": valor_total,
-                "funcionario": session["usuario"],
-                "empresa_id": session["empresa_id"]
-            }
-        )
-        
+
         conn.close()
 
-      
-
-        # LIMPA O CARRINHO IMEDIATAMENTE
+        # ==========================================
+        # CUPOM
+        # ==========================================
         pdf = gerar_cupom_venda(vendas_cupom)
 
         session["carrinho"] = []
@@ -481,7 +362,7 @@ def registrar_rotas(app, socketio):
             return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute(
             """
@@ -490,8 +371,8 @@ def registrar_rotas(app, socketio):
 
             FROM produtos
 
-            WHERE codigo_barras = ?
-            AND empresa_id = ?
+            WHERE codigo_barras = %s
+            AND empresa_id = %s
 
             """,
             (codigo, session["empresa_id"]),

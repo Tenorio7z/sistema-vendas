@@ -33,7 +33,7 @@ def registrar_rotas(app):
                 """
                 SELECT id
                 FROM usuarios
-                WHERE usuario = ?
+                WHERE usuario = %s
                 """,
                 (usuario,)
             )
@@ -58,7 +58,7 @@ def registrar_rotas(app):
 
                 FROM usuarios
 
-                WHERE empresa_id = ?
+                WHERE empresa_id = %s
                 AND nivel = 'funcionario'
 
                 """, (
@@ -117,7 +117,7 @@ def registrar_rotas(app):
 
             )
 
-            VALUES(?,?,?,?,?,?)
+            VALUES(%s,%s,%s,%s,%s,%s)
 
             """
 
@@ -160,7 +160,7 @@ def registrar_rotas(app):
 
                 usuarios.*,
 
-                IFNULL(
+                COALESCE(
                     SUM(vendas.valor),
                     0
                 ) as total_vendido,
@@ -174,7 +174,7 @@ def registrar_rotas(app):
             LEFT JOIN vendas
             ON vendas.usuario_id = usuarios.id
 
-            WHERE usuarios.empresa_id = ?
+            WHERE usuarios.empresa_id = %s
             AND usuarios.nivel = 'funcionario'
 
             GROUP BY usuarios.id
@@ -239,8 +239,8 @@ def registrar_rotas(app):
         LEFT JOIN produtos
             ON produtos.id = vendas.produto_id
 
-        WHERE vendas.usuario_id = ?
-        AND vendas.empresa_id = ?
+        WHERE vendas.usuario_id = %s
+        AND vendas.empresa_id = %s
 
         ORDER BY vendas.id DESC
 
@@ -274,7 +274,7 @@ def registrar_rotas(app):
         return jsonify(resultado)
     
     
-    @app.route("/funcionario/<int:id>")
+    @ app.route("/funcionario/<int:id>")
     def dashboard_funcionario(id):
 
         if not session.get("logado"):
@@ -284,132 +284,77 @@ def registrar_rotas(app):
         cursor = conn.cursor()
 
         cursor.execute("""
-
-        SELECT *
-
-        FROM usuarios
-
-        WHERE id = ?
-        AND empresa_id = ?
-
-        """, (
-
-            id,
-            session["empresa_id"]
-
-        ))
+            SELECT *
+            FROM usuarios
+            WHERE id = %s
+            AND empresa_id = %s
+        """, (id, session["empresa_id"]))
 
         funcionario = cursor.fetchone()
 
-    
-        mes_atual = datetime.now().strftime("%Y-%m")
-        ano_atual = datetime.now().strftime("%Y")
-        
         if not funcionario:
-
             conn.close()
-
-            flash(
-                "Funcionário não encontrado",
-                "erro"
-            )
-
+            flash("Funcionário não encontrado", "erro")
             return redirect("/perfis")
 
+        # segurança contra NULL
+        comissao = float(funcionario["comissao"] or 0)
 
         # ==========================================
-        # FATURAMENTO HOJE
+        # HOJE
         # ==========================================
-
         cursor.execute("""
-        SELECT
-            IFNULL(SUM(valor),0) AS total
-        FROM vendas
-        WHERE usuario_id = ?
-        AND DATE(data_venda) = DATE('now')
+            SELECT COALESCE(SUM(valor), 0) AS total
+            FROM vendas
+            WHERE usuario_id = %s
+            AND DATE(data_venda) = CURRENT_DATE
         """, (id,))
-
         vendas_hoje = cursor.fetchone()["total"]
 
-
         # ==========================================
-        # FATURAMENTO MÊS
+        # MÊS
         # ==========================================
-
         cursor.execute("""
-        SELECT
-            IFNULL(SUM(valor),0) AS total
-        FROM vendas
-        WHERE usuario_id = ?
-        AND strftime('%Y-%m', data_venda) = ?
-        """, (id, mes_atual))
-
+            SELECT COALESCE(SUM(valor), 0) AS total
+            FROM vendas
+            WHERE usuario_id = %s
+            AND DATE_TRUNC('month', data_venda) = DATE_TRUNC('month', CURRENT_DATE)
+        """, (id,))
         vendas_mes = cursor.fetchone()["total"]
 
-
         # ==========================================
-        # FATURAMENTO ANO
+        # ANO
         # ==========================================
-
         cursor.execute("""
-        SELECT
-            IFNULL(SUM(valor),0) AS total
-        FROM vendas
-        WHERE usuario_id = ?
-        AND strftime('%Y', data_venda) = ?
-        """, (id, ano_atual))
-
+            SELECT COALESCE(SUM(valor), 0) AS total
+            FROM vendas
+            WHERE usuario_id = %s
+            AND DATE_TRUNC('year', data_venda) = DATE_TRUNC('year', CURRENT_DATE)
+        """, (id,))
         vendas_ano = cursor.fetchone()["total"]
 
-
         # ==========================================
-        # FATURAMENTO TOTAL
+        # TOTAL
         # ==========================================
-
         cursor.execute("""
-        SELECT
-            IFNULL(SUM(valor),0) AS total
-        FROM vendas
-        WHERE usuario_id = ?
+            SELECT COALESCE(SUM(valor), 0) AS total
+            FROM vendas
+            WHERE usuario_id = %s
         """, (id,))
-
         vendas_total = cursor.fetchone()["total"]
-
 
         # ==========================================
         # COMISSÕES
         # ==========================================
+        comissao_hoje = (vendas_hoje * comissao) / 100
+        comissao_mes = (vendas_mes * comissao) / 100
+        comissao_ano = (vendas_ano * comissao) / 100
+        comissao_total = (vendas_total * comissao) / 100
 
-        comissao = funcionario["comissao"]
-
-        comissao_hoje = (
-            vendas_hoje * comissao
-        ) / 100
-
-        comissao_mes = (
-            vendas_mes * comissao
-        ) / 100
-
-        comissao_ano = (
-            vendas_ano * comissao
-        ) / 100
-
-        comissao_total = (
-            vendas_total * comissao
-        ) / 100
-        
-
-        print("HOJE:", vendas_hoje)
-        print("MES:", vendas_mes)
-        print("ANO:", vendas_ano)
-        print("TOTAL:", vendas_total)
-        
         conn.close()
 
         return render_template(
-
-        "dashboard_funcionario.html",
-
+            "dashboard_funcionario.html",
             funcionario=funcionario,
             vendas_hoje=vendas_hoje,
             vendas_mes=vendas_mes,
@@ -419,7 +364,6 @@ def registrar_rotas(app):
             comissao_mes=comissao_mes,
             comissao_ano=comissao_ano,
             comissao_total=comissao_total
-           
         )
     
     
@@ -440,10 +384,10 @@ def registrar_rotas(app):
 
         UPDATE usuarios
 
-        SET status = ?
+        SET status = %s
 
-        WHERE id = ?
-        AND empresa_id = ?
+        WHERE id = %s
+        AND empresa_id = %s
 
         """,
             ("bloqueado", id, session["empresa_id"]),
@@ -477,10 +421,10 @@ def registrar_rotas(app):
 
         UPDATE usuarios
 
-        SET status = ?
+        SET status = %s
 
-        WHERE id = ?
-        AND empresa_id = ?
+        WHERE id = %s
+        AND empresa_id = %s
         
         
         """,
@@ -518,8 +462,8 @@ def registrar_rotas(app):
 
         DELETE FROM usuarios
 
-        WHERE id = ?
-        AND empresa_id = ?
+        WHERE id = %s
+        AND empresa_id = %s
         AND nivel = 'funcionario'
 
         """,

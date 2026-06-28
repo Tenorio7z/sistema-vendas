@@ -1,81 +1,60 @@
 from werkzeug.security import generate_password_hash
-import sqlite3
+from database import conectar, criar_cursor
 
-conn = sqlite3.connect(
-    "database/database.db"
-)
-
-cursor = conn.cursor()
+conn = conectar()
+cursor = criar_cursor(conn)
 
 # ==========================================
 # EMPRESA MASTER
 # ==========================================
 
 cursor.execute("""
-
-INSERT INTO empresa(
-
+INSERT INTO empresa (
     nome,
     plano
-
 )
-
-VALUES(?,?)
-
+VALUES (%s, %s)
+RETURNING id
 """, (
-
     "Nexus Master",
     "premium"
-
 ))
 
-empresa_id = cursor.lastrowid
+empresa_id = cursor.fetchone()["id"]
 
 # ==========================================
 # ADMIN MASTER
 # ==========================================
 
-senha = generate_password_hash(
-    "admin123"
-)
+senha = generate_password_hash("admin123")
 
 cursor.execute("""
-
-INSERT INTO usuarios(
-
+INSERT INTO usuarios (
     usuario,
     senha,
     nivel,
-    empresa_id,
-    status
-
+    empresa_id
+    
 )
-
-VALUES(?,?,?,?,?)
-
+VALUES (%s, %s, %s, %s)
 """, (
-
     "admin",
     senha,
     "master",
-    empresa_id,
-    "ativo"
-
+    empresa_id
+    
 ))
 
 conn.commit()
-
 conn.close()
 
 print("""
-
 ==================================
-MASTER CRIADO
+MASTER CRIADO NO POSTGRES
 ==================================
 
 usuario: admin
 senha: admin123
 
 ==================================
-
 """)

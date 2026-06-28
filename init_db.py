@@ -3,7 +3,7 @@ from database import conectar, criar_cursor
 conn = conectar()
 cursor = criar_cursor(conn)
 
-# EMPRESA
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS empresa (
     id SERIAL PRIMARY KEY,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS empresa (
 )
 """)
 
-# USUÁRIOS
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
@@ -21,35 +21,32 @@ CREATE TABLE IF NOT EXISTS usuarios (
     nivel TEXT,
     status TEXT,
     empresa_id INTEGER,
-    comissao REAL DEFAULT 0,
+    comissao NUMERIC DEFAULT 0,
     fcm_token TEXT
 )
 """)
 
-# API TOKENS
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS api_tokens (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER NOT NULL,
     token TEXT NOT NULL,
-    data_criacao TEXT NOT NULL,
-    expira_em TEXT
+    data_criacao TIMESTAMP NOT NULL,
+    expira_em TIMESTAMP
 )
 """)
 
-# PRODUTOS
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS produtos (
     id SERIAL PRIMARY KEY,
     nome TEXT,
-    preco REAL,
+    preco NUMERIC,
     estoque INTEGER,
     codigo_barras TEXT,
     empresa_id INTEGER
 )
 """)
 
-# CLIENTES
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS clientes (
     id SERIAL PRIMARY KEY,
@@ -58,12 +55,11 @@ CREATE TABLE IF NOT EXISTS clientes (
 )
 """)
 
-# CAIXA
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS caixa (
     id SERIAL PRIMARY KEY,
-    valor_inicial REAL,
-    valor_final REAL,
+    valor_inicial NUMERIC,
+    valor_final NUMERIC,
     status TEXT,
     empresa_id INTEGER,
     data_abertura TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -71,26 +67,27 @@ CREATE TABLE IF NOT EXISTS caixa (
 )
 """)
 
-# MOVIMENTAÇÕES DO CAIXA
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS movimentacoes_caixa (
     id SERIAL PRIMARY KEY,
     tipo TEXT,
     descricao TEXT,
-    valor REAL,
+    valor NUMERIC,
     empresa_id INTEGER,
     caixa_id INTEGER,
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 """)
 
-# VENDAS
+
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS vendas (
     id SERIAL PRIMARY KEY,
     produto_id INTEGER,
     quantidade INTEGER,
-    valor REAL,
+    valor NUMERIC,
     pagamento TEXT,
     empresa_id INTEGER,
     caixa_id INTEGER,
@@ -101,16 +98,17 @@ CREATE TABLE IF NOT EXISTS vendas (
 )
 """)
 
-# NOTIFICAÇÕES
+
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS notificacoes (
     id SERIAL PRIMARY KEY,
     empresa_id INTEGER,
     funcionario TEXT,
-    valor REAL,
+    valor NUMERIC,
     titulo TEXT,
     mensagem TEXT,
-    data TEXT,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     lida INTEGER DEFAULT 0,
     produto TEXT
 )

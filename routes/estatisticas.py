@@ -33,7 +33,7 @@ def registrar_rotas(app):
 
         FROM vendas
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         """, (
 
@@ -49,11 +49,11 @@ def registrar_rotas(app):
 
         cursor.execute("""
 
-        SELECT IFNULL(SUM(valor),0) as total
+        SELECT COALESCE(SUM(valor),0) as total
 
         FROM vendas
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         """, (
 
@@ -69,12 +69,12 @@ def registrar_rotas(app):
 
         cursor.execute("""
 
-        SELECT IFNULL(SUM(valor),0) as total
+        SELECT COALESCE(SUM(valor),0) as total
 
         FROM vendas
 
-        WHERE empresa_id = ?
-        AND DATE(data) = DATE('now','localtime')
+        WHERE empresa_id = %s
+        AND DATE(data) = CURRENT_DATE
 
         """, (
 
@@ -90,13 +90,13 @@ def registrar_rotas(app):
 
         cursor.execute("""
 
-        SELECT IFNULL(SUM(valor),0) as total
+        SELECT COALESCE(SUM(valor),0) as total
 
         FROM vendas
 
-        WHERE empresa_id = ?
-        AND strftime('%Y-%m', data) =
-            strftime('%Y-%m','now','localtime')
+        WHERE empresa_id = %s
+        AND TO_CHAR('%Y-%m', data) =
+            TO_CHAR('%Y-%m','now','localtime')
 
         """, (
 
@@ -112,13 +112,13 @@ def registrar_rotas(app):
 
         cursor.execute("""
 
-        SELECT IFNULL(SUM(valor),0) as total
+        SELECT COALESCE(SUM(valor),0) as total
 
         FROM vendas
 
-        WHERE empresa_id = ?
-        AND strftime('%Y', data) =
-            strftime('%Y','now','localtime')
+        WHERE empresa_id = %s
+        AND TO_CHAR('%Y', data) =
+            TO_CHAR('%Y','now','localtime')
 
         """, (
 
@@ -157,7 +157,7 @@ def registrar_rotas(app):
         INNER JOIN produtos
         ON produtos.id = vendas.produto_id
 
-        WHERE vendas.empresa_id = ?
+        WHERE vendas.empresa_id = %s
 
         GROUP BY produtos.nome
 
@@ -194,7 +194,7 @@ def registrar_rotas(app):
 
         FROM vendas
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         GROUP BY DATE(data)
 

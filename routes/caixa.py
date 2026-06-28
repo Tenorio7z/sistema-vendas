@@ -1,5 +1,6 @@
 from flask import *
 from database import conectar
+import psycopg2.extras
 
 from werkzeug.security import (
     check_password_hash
@@ -19,7 +20,7 @@ def registrar_rotas(app):
             return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         empresa_id = session["empresa_id"]
 
@@ -33,7 +34,7 @@ def registrar_rotas(app):
 
         FROM caixa
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         AND status = 'aberto'
 
         ORDER BY id DESC
@@ -62,7 +63,7 @@ def registrar_rotas(app):
 
             FROM usuarios
 
-            WHERE usuario = ?
+            WHERE usuario = %s
 
             """, (
 
@@ -108,28 +109,22 @@ def registrar_rotas(app):
                 )
 
                 cursor.execute("""
-
                 INSERT INTO caixa(
-
                     valor_inicial,
                     valor_final,
                     status,
                     empresa_id
-
                 )
-
-                VALUES(?,?,?,?)
-
+                VALUES(%s,%s,%s,%s)
+                RETURNING id
                 """, (
-
                     valor,
                     valor,
                     "aberto",
                     empresa_id
-
                 ))
 
-                caixa_id = cursor.lastrowid
+                caixa_id = cursor.fetchone()["id"]
 
                 cursor.execute("""
 
@@ -143,7 +138,7 @@ def registrar_rotas(app):
 
                 )
 
-                VALUES(?,?,?,?,?)
+                VALUES(%s,%s,%s,%s,%s)
 
                 """, (
 
@@ -185,9 +180,9 @@ def registrar_rotas(app):
 
                 UPDATE caixa
 
-                SET valor_final = ?
+                SET valor_final = %s
 
-                WHERE id = ?
+                WHERE id = %s
 
                 """, (
 
@@ -208,7 +203,7 @@ def registrar_rotas(app):
 
                 )
 
-                VALUES(?,?,?,?,?)
+                VALUES(%s,%s,%s,%s,%s)
 
                 """, (
 
@@ -250,9 +245,9 @@ def registrar_rotas(app):
 
                 UPDATE caixa
 
-                SET valor_final = ?
+                SET valor_final = %s
 
-                WHERE id = ?
+                WHERE id = %s
 
                 """, (
 
@@ -273,7 +268,7 @@ def registrar_rotas(app):
 
                 )
 
-                VALUES(?,?,?,?,?)
+                VALUES(%s,%s,%s,%s,%s)
 
                 """, (
 
@@ -321,11 +316,11 @@ def registrar_rotas(app):
 
                 SET
 
-                    valor_final = ?,
-                    status = ?,
+                    valor_final = %s,
+                    status = %s,
                     data_fechamento = CURRENT_TIMESTAMP
 
-                WHERE id = ?
+                WHERE id = %s
 
                 """, (
 
@@ -352,6 +347,8 @@ def registrar_rotas(app):
                     "sucesso"
                 )
 
+                conn.close()
+                
                 return send_file(
                     pdf,
                     as_attachment=False
@@ -371,7 +368,7 @@ def registrar_rotas(app):
 
             FROM movimentacoes_caixa
 
-            WHERE caixa_id = ?
+            WHERE caixa_id = %s
 
             ORDER BY id DESC
 
@@ -409,7 +406,7 @@ def registrar_rotas(app):
             INNER JOIN produtos
             ON vendas.produto_id = produtos.id
 
-            WHERE vendas.caixa_id = ?
+            WHERE vendas.caixa_id = %s
             AND vendas.cancelada = 0
 
             ORDER BY vendas.id DESC
@@ -476,7 +473,7 @@ def registrar_rotas(app):
             return redirect("/caixa")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # ==========================
         # BUSCAR VENDA
@@ -488,7 +485,7 @@ def registrar_rotas(app):
 
         FROM vendas
 
-        WHERE id = ?
+        WHERE id = %s
 
         """, (
 
@@ -517,9 +514,9 @@ def registrar_rotas(app):
 
         UPDATE produtos
 
-        SET estoque = estoque + ?
+        SET estoque = estoque + %s
 
-        WHERE id = ?
+        WHERE id = %s
 
         """, (
 
@@ -536,9 +533,9 @@ def registrar_rotas(app):
 
         UPDATE caixa
 
-        SET valor_final = valor_final - ?
+        SET valor_final = valor_final - %s
 
-        WHERE id = ?
+        WHERE id = %s
 
         """, (
 
@@ -557,7 +554,7 @@ def registrar_rotas(app):
 
         SET cancelada = 1
 
-        WHERE id = ?
+        WHERE id = %s
 
         """, (
 
@@ -581,7 +578,7 @@ def registrar_rotas(app):
 
         )
 
-        VALUES(?,?,?,?,?)
+        VALUES(%s,%s,%s,%s,%s)
 
         """, (
 

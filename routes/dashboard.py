@@ -1,5 +1,5 @@
 from flask import *
-from database import conectar
+from database import conectar, criar_cursor
 
 def registrar_rotas(app):
 
@@ -11,7 +11,7 @@ def registrar_rotas(app):
             return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         empresa_id = session["empresa_id"]
 
@@ -22,7 +22,7 @@ def registrar_rotas(app):
         SELECT COUNT(*) as total
         FROM produtos
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         """, (empresa_id,))
 
@@ -38,7 +38,7 @@ def registrar_rotas(app):
 
         FROM empresa
 
-        WHERE id = ?
+        WHERE id = %s
 
         """, (empresa_id,))
 
@@ -52,7 +52,7 @@ def registrar_rotas(app):
 
         FROM caixa
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         AND status = 'aberto'
 
         ORDER BY id DESC
@@ -86,7 +86,7 @@ def registrar_rotas(app):
 
             FROM vendas
 
-            WHERE caixa_id = ?
+            WHERE caixa_id = %s
 
             """, (caixa_id,))
 
@@ -108,7 +108,7 @@ def registrar_rotas(app):
 
             FROM vendas
 
-            WHERE caixa_id = ?
+            WHERE caixa_id = %s
 
             """, (caixa_id,))
 
@@ -128,7 +128,7 @@ def registrar_rotas(app):
 
             FROM vendas
 
-            WHERE caixa_id = ?
+            WHERE caixa_id = %s
 
             """, (caixa_id,))
 
@@ -148,7 +148,7 @@ def registrar_rotas(app):
 
             FROM vendas
 
-            WHERE caixa_id = ?
+            WHERE caixa_id = %s
 
             """, (caixa_id,))
 
@@ -166,7 +166,7 @@ def registrar_rotas(app):
 
         FROM produtos
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         AND estoque <= 5
 
         ORDER BY estoque ASC
@@ -220,7 +220,7 @@ def registrar_rotas(app):
             return jsonify({"erro": "não autorizado"})
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         empresa_id = session["empresa_id"]
 
@@ -230,7 +230,7 @@ def registrar_rotas(app):
 
         FROM caixa
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         AND status = 'aberto'
 
         ORDER BY id DESC
@@ -251,7 +251,7 @@ def registrar_rotas(app):
 
             FROM vendas
 
-            WHERE caixa_id = ?
+            WHERE caixa_id = %s
 
             """, (caixa_id,))
 
@@ -263,7 +263,7 @@ def registrar_rotas(app):
 
             FROM vendas
 
-            WHERE caixa_id = ?
+            WHERE caixa_id = %s
 
             """, (caixa_id,))
 
@@ -275,7 +275,7 @@ def registrar_rotas(app):
 
             FROM vendas
 
-            WHERE caixa_id = ?
+            WHERE caixa_id = %s
 
             """, (caixa_id,))
 

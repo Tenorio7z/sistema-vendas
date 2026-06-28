@@ -44,7 +44,7 @@ def registrar_rotas(app):
 
         FROM notificacoes
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         ORDER BY id DESC
 
