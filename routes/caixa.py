@@ -25,19 +25,25 @@ def registrar_rotas(app):
         empresa_id = session["empresa_id"]
 
         # ==========================================
-        # CAIXA ABERTO
+        # ÚLTIMO CAIXA
         # ==========================================
 
         cursor.execute("""
-            SELECT *
-            FROM caixa
-            WHERE empresa_id = %s
-            AND status = 'aberto'
-            ORDER BY id DESC
-            LIMIT 1
+
+        SELECT *
+
+        FROM caixa
+
+        WHERE empresa_id = %s
+        AND status = 'aberto'
+
+        ORDER BY id DESC
+
+        LIMIT 1
+
         """, (empresa_id,))
 
-        caixa_aberto = cursor.fetchone()
+        caixa = cursor.fetchone()
 
    
 
@@ -48,25 +54,37 @@ def registrar_rotas(app):
         if request.method == "POST":
 
             acao = request.form["acao"]
+
             senha = request.form["senha"]
 
             cursor.execute("""
-                SELECT *
-                FROM usuarios
-                WHERE usuario = %s
-            """, (session["usuario"],))
+
+            SELECT *
+
+            FROM usuarios
+
+            WHERE usuario = %s
+
+            """, (
+
+                session["usuario"],
+
+            ))
 
             usuario = cursor.fetchone()
 
-            if not check_password_hash(usuario["senha"], senha):
-                flash("Senha incorreta", "erro")
-                conn.close()
-                return redirect("/caixa")
+            if not check_password_hash(
+                usuario["senha"],
+                senha
+            ):
 
-            # 🚨 proteção global contra None
-            if not caixa_aberto and acao != "abrir":
-                flash("Nenhum caixa aberto", "erro")
+                flash(
+                    "Senha incorreta",
+                    "erro"
+                )
+
                 conn.close()
+
                 return redirect("/caixa")
 
             # ======================================
@@ -75,22 +93,30 @@ def registrar_rotas(app):
 
             if acao == "abrir":
 
-                if caixa_aberto and caixa_aberto["status"] == "aberto":
-                    flash("Já existe um caixa aberto", "erro")
+                if caixa and caixa["status"] == "aberto":
+
+                    flash(
+                        "Já existe um caixa aberto",
+                        "erro"
+                    )
+
                     conn.close()
+
                     return redirect("/caixa")
 
-                valor = float(request.form["valor"])
+                valor = float(
+                    request.form["valor"]
+                )
 
                 cursor.execute("""
-                    INSERT INTO caixa(
-                        valor_inicial,
-                        valor_final,
-                        status,
-                        empresa_id
-                    )
-                    VALUES(%s,%s,%s,%s)
-                    RETURNING id
+                INSERT INTO caixa(
+                    valor_inicial,
+                    valor_final,
+                    status,
+                    empresa_id
+                )
+                VALUES(%s,%s,%s,%s)
+                RETURNING id
                 """, (
                     valor,
                     valor,
@@ -141,15 +167,29 @@ def registrar_rotas(app):
 
             elif acao == "adicionar":
 
-                valor = float(request.form["valor"])
+                valor = float(
+                    request.form["valor"]
+                )
 
-                novo_valor = float(caixa_aberto["valor_final"]) + valor
+                novo_valor = (
+                    float(caixa["valor_final"])
+                    + valor
+                )
 
                 cursor.execute("""
-                    UPDATE caixa
-                    SET valor_final = %s
-                    WHERE id = %s
-                """, (novo_valor, caixa_aberto["id"]))
+
+                UPDATE caixa
+
+                SET valor_final = %s
+
+                WHERE id = %s
+
+                """, (
+
+                    novo_valor,
+                    caixa["id"]
+
+                ))
 
                 cursor.execute("""
 
@@ -192,15 +232,29 @@ def registrar_rotas(app):
 
             elif acao == "sacar":
 
-                valor = float(request.form["valor"])
+                valor = float(
+                    request.form["valor"]
+                )
 
-                novo_valor = float(caixa_aberto["valor_final"]) - valor
+                novo_valor = (
+                    float(caixa["valor_final"])
+                    - valor
+                )
 
                 cursor.execute("""
-                    UPDATE caixa
-                    SET valor_final = %s
-                    WHERE id = %s
-                """, (novo_valor, caixa_aberto["id"]))
+
+                UPDATE caixa
+
+                SET valor_final = %s
+
+                WHERE id = %s
+
+                """, (
+
+                    novo_valor,
+                    caixa["id"]
+
+                ))
 
                 cursor.execute("""
 
@@ -243,55 +297,90 @@ def registrar_rotas(app):
 
             elif acao == "fechar":
 
-                if not caixa_aberto:
-                    flash("Nenhum caixa aberto encontrado", "erro")
+                if not caixa:
+
+                    flash(
+                        "Nenhum caixa aberto encontrado",
+                        "erro"
+                    )
+
                     conn.close()
+
                     return redirect("/caixa")
 
-                valor_final = float(caixa_aberto["valor_final"])
+                valor_final = float(caixa["valor_final"])
 
                 cursor.execute("""
-                    UPDATE caixa
-                    SET valor_final = %s,
-                        status = %s,
-                        data_fechamento = CURRENT_TIMESTAMP
-                    WHERE id = %s
+
+                UPDATE caixa
+
+                SET
+
+                    valor_final = %s,
+                    status = %s,
+                    data_fechamento = CURRENT_TIMESTAMP
+
+                WHERE id = %s
+
                 """, (
+
                     valor_final,
                     "fechado",
-                    caixa_aberto["id"]
+                    caixa["id"]
+
                 ))
 
                 conn.commit()
 
-                caixa_id = caixa_aberto["id"]
+                caixa_id = caixa["id"]
+
                 conn.close()
 
-                pdf = gerar_pdf_fechamento(caixa_id)
+                pdf = gerar_pdf_fechamento(
+                    caixa_id
+                )
 
                 session["carrinho"] = []
 
-                flash("Caixa fechado com sucesso", "sucesso")
+                flash(
+                    "Caixa fechado com sucesso",
+                    "sucesso"
+                )
 
-                return send_file(pdf, as_attachment=False)
+            
+                
+                return send_file(
+                    pdf,
+                    as_attachment=False
+                )
 
         # ==========================================
         # MOVIMENTAÇÕES
         # ==========================================
 
-            movimentacoes = []
+        movimentacoes = []
 
-        if caixa_aberto:
+        if caixa:
 
             cursor.execute("""
-            SELECT *
-            FROM movimentacoes_caixa
-            WHERE caixa_id = %s
-            ORDER BY id DESC
-            LIMIT 15
-        """, (caixa_aberto["id"],))
 
-        movimentacoes = cursor.fetchall()
+            SELECT *
+
+            FROM movimentacoes_caixa
+
+            WHERE caixa_id = %s
+
+            ORDER BY id DESC
+
+            LIMIT 15
+
+            """, (
+
+                caixa["id"],
+
+            ))
+
+            movimentacoes = cursor.fetchall()
 
         # ==========================================
         # HISTÓRICO DE VENDAS
@@ -299,23 +388,36 @@ def registrar_rotas(app):
 
         historico_vendas = []
 
-        if caixa_aberto:
+        if caixa:
 
             cursor.execute("""
-                SELECT
-                    vendas.id,
-                    produtos.nome,
-                    vendas.quantidade,
-                    vendas.valor,
-                    vendas.pagamento,
-                    vendas.data
-                FROM vendas
-                INNER JOIN produtos ON vendas.produto_id = produtos.id
-                WHERE vendas.caixa_id = %s
-                AND vendas.cancelada = 0
-                ORDER BY vendas.id DESC
-                LIMIT 20
-            """, (caixa_aberto["id"],))
+
+            SELECT
+
+                vendas.id,
+                produtos.nome,
+                vendas.quantidade,
+                vendas.valor,
+                vendas.pagamento,
+                vendas.data
+
+            FROM vendas
+
+            INNER JOIN produtos
+            ON vendas.produto_id = produtos.id
+
+            WHERE vendas.caixa_id = %s
+            AND vendas.cancelada = 0
+
+            ORDER BY vendas.id DESC
+
+            LIMIT 20
+
+            """, (
+
+                caixa["id"],
+
+            ))
 
             historico_vendas = cursor.fetchall()
 
