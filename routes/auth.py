@@ -38,16 +38,11 @@ def registrar_rotas(app):
             
             if user:
 
-                if user["status"] == "bloqueado":
-
-                    conn.close()
-
-                    flash(
-                        "Usuário bloqueado, consulte o suporte.",
-                        "erro"
-                    )
-
-                    return redirect("/")
+                if user.get("nivel") != "master":
+                    if user.get("status") == "bloqueado":
+                        conn.close()
+                        flash("Usuário bloqueado, consulte o suporte.", "erro")
+                        return redirect("/")
 
                 if check_password_hash(
                     user["senha"],
