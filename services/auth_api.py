@@ -1,5 +1,5 @@
 from flask import request
-from database import conectar
+from database import conectar, criar_cursor
 from datetime import datetime
 
 
@@ -13,7 +13,7 @@ def validar_token():
         return None
 
     conn = conectar()
-    cursor = conn.cursor()
+    cursor = criar_cursor(conn)
 
     cursor.execute("""
 
@@ -21,7 +21,7 @@ def validar_token():
 
     FROM api_tokens
 
-    WHERE token = ?
+    WHERE token = %s
 
     """,
 
@@ -46,7 +46,7 @@ def validar_token():
 
         DELETE FROM api_tokens
 
-        WHERE id = ?
+        WHERE id = %s
 
         """,
 
@@ -65,7 +65,7 @@ def validar_token():
 
     FROM usuarios
 
-    WHERE id = ?
+    WHERE id = %s
 
     """,
 

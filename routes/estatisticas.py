@@ -1,5 +1,5 @@
 from flask import *
-from database import conectar
+from database import conectar, criar_cursor
 
 def registrar_rotas(app):
 
@@ -19,7 +19,7 @@ def registrar_rotas(app):
 )
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         empresa_id = session["empresa_id"]
 
@@ -95,8 +95,7 @@ def registrar_rotas(app):
         FROM vendas
 
         WHERE empresa_id = %s
-        AND TO_CHAR('%Y-%m', data) =
-            TO_CHAR('%Y-%m','now','localtime')
+        AND TO_CHAR(data, 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')
 
         """, (
 
@@ -117,8 +116,7 @@ def registrar_rotas(app):
         FROM vendas
 
         WHERE empresa_id = %s
-        AND TO_CHAR('%Y', data) =
-            TO_CHAR('%Y','now','localtime')
+        AND TO_CHAR(data, 'YYYY') = TO_CHAR(NOW(), 'YYYY')
 
         """, (
 

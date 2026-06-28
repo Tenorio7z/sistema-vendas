@@ -34,7 +34,7 @@ def gerar_pdf_fechamento(caixa_id):
     INNER JOIN empresa
     ON empresa.id = caixa.empresa_id
 
-    WHERE caixa.id = ?
+    WHERE caixa.id = %s
 
     """, (caixa_id,))
 
@@ -50,7 +50,7 @@ def gerar_pdf_fechamento(caixa_id):
 
     FROM vendas
 
-    WHERE caixa_id = ?
+    WHERE caixa_id = %s
     AND pagamento = 'PIX'
 
     """, (caixa_id,))
@@ -63,7 +63,7 @@ def gerar_pdf_fechamento(caixa_id):
 
     FROM vendas
 
-    WHERE caixa_id = ?
+    WHERE caixa_id = %s
     AND pagamento = 'Dinheiro'
 
     """, (caixa_id,))
@@ -76,7 +76,7 @@ def gerar_pdf_fechamento(caixa_id):
 
     FROM vendas
 
-    WHERE caixa_id = ?
+    WHERE caixa_id = %s
     AND pagamento = 'Cartão'
 
     """, (caixa_id,))
@@ -93,7 +93,7 @@ def gerar_pdf_fechamento(caixa_id):
 
     FROM movimentacoes_caixa
 
-    WHERE caixa_id = ?
+    WHERE caixa_id = %s
     AND descricao = 'Adição manual'
 
     """, (caixa_id,))
@@ -110,7 +110,7 @@ def gerar_pdf_fechamento(caixa_id):
 
     FROM movimentacoes_caixa
 
-    WHERE caixa_id = ?
+    WHERE caixa_id = %s
     AND descricao = 'Sangria'
 
     """, (caixa_id,))
@@ -135,7 +135,7 @@ def gerar_pdf_fechamento(caixa_id):
     INNER JOIN produtos
     ON produtos.id = vendas.produto_id
 
-    WHERE vendas.caixa_id = ?
+    WHERE vendas.caixa_id = %s
 
     ORDER BY produtos.nome
 
@@ -154,7 +154,7 @@ def gerar_pdf_fechamento(caixa_id):
 
     FROM vendas
 
-    WHERE caixa_id = ?
+    WHERE caixa_id = %s
 
     """, (caixa_id,))
 
@@ -167,7 +167,7 @@ def gerar_pdf_fechamento(caixa_id):
 
     FROM vendas
 
-    WHERE caixa_id = ?
+    WHERE caixa_id = %s
 
     """, (caixa_id,))
 

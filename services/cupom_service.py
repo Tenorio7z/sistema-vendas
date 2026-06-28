@@ -25,7 +25,7 @@ def gerar_cupom_venda(venda_ids):
 
     FROM empresa
 
-    WHERE id = ?
+    WHERE id = %s
 
     """, (
 

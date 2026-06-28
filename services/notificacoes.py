@@ -28,7 +28,7 @@ def notificar_gerente(funcionario, produto, valor, empresa_id):
 
         )
 
-        VALUES (?,?,?,?,?,?,?,?)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
         """,
         (
 

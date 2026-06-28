@@ -97,13 +97,10 @@ def registrar_rotas(app, socketio):
         
         cursor.execute(
             """
-
         SELECT *
         FROM produtos
         WHERE id = %s
         AND empresa_id = %s
-        
-        
         """,
             (id, empresa_id),
         )

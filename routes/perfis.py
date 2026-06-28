@@ -1,5 +1,5 @@
 from flask import *
-from database import conectar
+from database import conectar, criar_cursor
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 
@@ -17,7 +17,7 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         empresa_id = session["empresa_id"]
 
@@ -226,7 +226,7 @@ def registrar_rotas(app):
             return jsonify([])
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -281,7 +281,7 @@ def registrar_rotas(app):
             return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
             SELECT *
@@ -377,7 +377,7 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute(
             """
@@ -414,7 +414,7 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute(
             """
@@ -455,7 +455,7 @@ def registrar_rotas(app):
             return redirect("/dashboard")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute(
             """

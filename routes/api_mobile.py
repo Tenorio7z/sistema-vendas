@@ -1,5 +1,5 @@
 from flask import *
-from database import conectar
+from database import conectar, criar_cursor
 import secrets
 from datetime import datetime
 from services.auth_api import validar_token
@@ -15,7 +15,7 @@ def registrar_rotas(app, socketio):
         senha = dados.get("senha")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -23,7 +23,7 @@ def registrar_rotas(app, socketio):
 
         FROM usuarios
 
-        WHERE usuario = ?
+        WHERE usuario = %s
 
         """, (usuario,))
 
@@ -66,7 +66,7 @@ def registrar_rotas(app, socketio):
         )
         
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -79,7 +79,7 @@ def registrar_rotas(app, socketio):
 
         )
 
-        VALUES (?,?,?,?)
+        VALUES (%s,%s,%s,%s)
 
         """,
 
@@ -133,7 +133,7 @@ def registrar_rotas(app, socketio):
             }), 403
         
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -141,7 +141,7 @@ def registrar_rotas(app, socketio):
 
         FROM vendas
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         """, (empresa_id,))
 
@@ -153,7 +153,7 @@ def registrar_rotas(app, socketio):
 
         FROM vendas
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         """, (empresa_id,))
 
@@ -187,7 +187,7 @@ def registrar_rotas(app, socketio):
             }), 403
         
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -195,7 +195,7 @@ def registrar_rotas(app, socketio):
 
         FROM notificacoes
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         ORDER BY id DESC
 
@@ -241,7 +241,7 @@ def registrar_rotas(app, socketio):
             }), 403
         
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -254,7 +254,7 @@ def registrar_rotas(app, socketio):
 
         FROM produtos
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         ORDER BY nome
 
@@ -299,7 +299,7 @@ def registrar_rotas(app, socketio):
             }), 403
         
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -307,7 +307,7 @@ def registrar_rotas(app, socketio):
 
         FROM produtos
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
 
         """, (empresa_id,))
 
@@ -319,7 +319,7 @@ def registrar_rotas(app, socketio):
 
         FROM produtos
 
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         AND estoque <= 5
 
         """, (empresa_id,))
@@ -354,7 +354,7 @@ def registrar_rotas(app, socketio):
             }), 403
         
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -368,7 +368,7 @@ def registrar_rotas(app, socketio):
         INNER JOIN produtos p
             ON p.id = v.produto_id
 
-        WHERE v.empresa_id = ?
+        WHERE v.empresa_id = %s
 
         ORDER BY v.id DESC
 
@@ -410,13 +410,13 @@ def registrar_rotas(app, socketio):
             }), 401
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
         DELETE FROM api_tokens
 
-        WHERE token = ?
+        WHERE token = %s
 
         """,
 
@@ -485,15 +485,15 @@ def registrar_rotas(app, socketio):
         fcm_token = dados.get("fcm_token")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
         UPDATE usuarios
 
-        SET fcm_token = ?
+        SET fcm_token = %s
 
-        WHERE id = ?
+        WHERE id = %s
 
         """, (fcm_token, usuario["id"]))
 

@@ -1,5 +1,5 @@
 from flask import *
-from database import conectar
+from database import conectar, criar_cursor
 
 def registrar_rotas(app):
 
@@ -7,7 +7,7 @@ def registrar_rotas(app):
     def notificacoes():
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -36,7 +36,7 @@ def registrar_rotas(app):
     def api_notificacoes():
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 

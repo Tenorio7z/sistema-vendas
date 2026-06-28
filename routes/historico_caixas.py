@@ -1,5 +1,5 @@
 from flask import *
-from database import conectar
+from database import conectar, criar_cursor
 from services.pdf_service import gerar_pdf_fechamento
 
 def registrar_rotas(app):
@@ -11,7 +11,7 @@ def registrar_rotas(app):
             return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         cursor.execute("""
 
@@ -49,7 +49,7 @@ def registrar_rotas(app):
             return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor()
+        cursor = criar_cursor(conn)
 
         empresa_id = session["empresa_id"]
 
