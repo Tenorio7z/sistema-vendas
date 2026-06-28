@@ -12,7 +12,7 @@ from reportlab.lib.units import mm
 import os
 
 
-def gerar_cupom_venda(venda_ids):
+def gerar_cupom_venda(venda_ids, empresa_id):
 
     conn = conectar()
     cursor = conn.cursor()
@@ -29,7 +29,7 @@ def gerar_cupom_venda(venda_ids):
 
     """, (
 
-        venda_ids[0]["empresa_id"],
+        empresa_id,
 
     ))
 
