@@ -112,11 +112,12 @@ def registrar_rotas(app):
                 nivel,
                 status,
                 empresa_id,
-                comissao
+                comissao,
+                data_venda
 
             )
 
-            VALUES(%s,%s,%s,%s,%s,%s)
+            VALUES(%s,%s,%s,%s,%s,%s, NOW())
 
             """
 
