@@ -314,7 +314,7 @@ def registrar_rotas(app):
             SELECT COALESCE(SUM(valor), 0) AS total
             FROM vendas
             WHERE usuario_id = %s
-            AND DATE(data_venda) = CURRENT_DATE
+            AND data_venda::date = CURRENT_DATE
         """, (id,))
         vendas_hoje = float(
             cursor.fetchone()["total"] or 0
@@ -327,7 +327,8 @@ def registrar_rotas(app):
             SELECT COALESCE(SUM(valor), 0) AS total
             FROM vendas
             WHERE usuario_id = %s
-            AND DATE_TRUNC('month', data_venda) = DATE_TRUNC('month', CURRENT_DATE)
+            AND EXTRACT(MONTH FROM data_venda) = EXTRACT(MONTH FROM CURRENT_DATE)
+            AND EXTRACT(YEAR FROM data_venda) = EXTRACT(YEAR FROM CURRENT_DATE)
         """, (id,))
         vendas_mes = float(
             cursor.fetchone()["total"] or 0
@@ -340,7 +341,7 @@ def registrar_rotas(app):
             SELECT COALESCE(SUM(valor), 0) AS total
             FROM vendas
             WHERE usuario_id = %s
-            AND DATE_TRUNC('year', data_venda) = DATE_TRUNC('year', CURRENT_DATE)
+            AND EXTRACT(YEAR FROM data_venda) = EXTRACT(YEAR FROM CURRENT_DATE)
         """, (id,))
         vendas_ano = float(
             cursor.fetchone()["total"] or 0
