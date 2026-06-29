@@ -1,7 +1,7 @@
 from flask import *
 from database import conectar, criar_cursor
 from werkzeug.security import generate_password_hash
-from datetime import datetime
+
 
 def registrar_rotas(app):
 
@@ -25,17 +25,14 @@ def registrar_rotas(app):
 
             usuario = request.form["usuario"]
 
-            senha = generate_password_hash(
-                request.form["senha"]
-            )
-
             cursor.execute(
                 """
                 SELECT id
                 FROM usuarios
                 WHERE usuario = %s
+                AND empresa_id = %s
                 """,
-                (usuario,)
+                (usuario, empresa_id)
             )
 
             usuario_existente = cursor.fetchone()
@@ -102,7 +99,9 @@ def registrar_rotas(app):
 
                 return redirect("/perfis")
 
-            comissao = float(comissao)
+            comissao = float(
+                comissao.replace(",", ".")
+            )
 
             sql = """
 
@@ -153,6 +152,10 @@ def registrar_rotas(app):
                 "sucesso"
             )
 
+            conn.close()
+
+            return redirect("/perfis")
+
         cursor.execute(
             """
 
@@ -193,9 +196,13 @@ def registrar_rotas(app):
 
         for funcionario in funcionarios:
 
-            total_vendido = funcionario["total_vendido"]
+            total_vendido = float(
+                funcionario["total_vendido"] or 0
+            )
 
-            comissao_percentual = funcionario["comissao"]
+            comissao_percentual = float(
+                funcionario["comissao"] or 0
+            )
 
             valor_comissao = (
                 total_vendido *
@@ -265,16 +272,16 @@ def registrar_rotas(app):
 
                 "produto": venda["produto_nome"],
                 "quantidade": venda["quantidade"],
-                "valor": venda["valor"],
+                "valor": float(venda["valor"]),
                 "pagamento": venda["pagamento"],
-                "data": venda["data_venda"]
+                "data": str(venda["data_venda"])
 
             })
 
         return jsonify(resultado)
     
     
-    @ app.route("/funcionario/<int:id>")
+    @app.route("/funcionario/<int:id>")
     def dashboard_funcionario(id):
 
         if not session.get("logado"):
@@ -309,7 +316,9 @@ def registrar_rotas(app):
             WHERE usuario_id = %s
             AND DATE(data_venda) = CURRENT_DATE
         """, (id,))
-        vendas_hoje = cursor.fetchone()["total"]
+        vendas_hoje = float(
+            cursor.fetchone()["total"] or 0
+        )
 
         # ==========================================
         # MÊS
@@ -320,7 +329,9 @@ def registrar_rotas(app):
             WHERE usuario_id = %s
             AND DATE_TRUNC('month', data_venda) = DATE_TRUNC('month', CURRENT_DATE)
         """, (id,))
-        vendas_mes = cursor.fetchone()["total"]
+        vendas_mes = float(
+            cursor.fetchone()["total"] or 0
+        )
 
         # ==========================================
         # ANO
@@ -331,7 +342,9 @@ def registrar_rotas(app):
             WHERE usuario_id = %s
             AND DATE_TRUNC('year', data_venda) = DATE_TRUNC('year', CURRENT_DATE)
         """, (id,))
-        vendas_ano = cursor.fetchone()["total"]
+        vendas_ano = float(
+            cursor.fetchone()["total"] or 0
+        )
 
         # ==========================================
         # TOTAL
@@ -341,7 +354,9 @@ def registrar_rotas(app):
             FROM vendas
             WHERE usuario_id = %s
         """, (id,))
-        vendas_total = cursor.fetchone()["total"]
+        vendas_total = float(
+            cursor.fetchone()["total"] or 0
+        )
 
         # ==========================================
         # COMISSÕES
