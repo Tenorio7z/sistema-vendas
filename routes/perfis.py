@@ -105,19 +105,17 @@ def registrar_rotas(app):
 
             sql = """
 
-            INSERT INTO usuarios(
-
-                usuario,
-                senha,
-                nivel,
-                status,
+            INSERT INTO vendas (
+                produto_id,
+                quantidade,
+                valor,
+                pagamento,
                 empresa_id,
-                comissao,
+                caixa_id,
+                usuario_id,
                 data_venda
-
             )
-
-            VALUES(%s,%s,%s,%s,%s,%s, NOW())
+            VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
 
             """
 
@@ -128,18 +126,10 @@ def registrar_rotas(app):
                 "funcionario",
                 "ativo",
                 empresa_id,
-                comissao
+                comissao,
+            
 
             )
-
-            print("SQL:")
-            print(sql)
-
-            print("VALORES:")
-            print(valores)
-
-            print("TOTAL DE VALORES:")
-            print(len(valores))
 
             cursor.execute(
                 sql,
@@ -313,26 +303,27 @@ def registrar_rotas(app):
         print("EMPRESA SESSAO:", session["empresa_id"])
         
         cursor.execute("""
-            SELECT
-                COALESCE(SUM(valor) FILTER (
-                    WHERE data_venda >= CURRENT_DATE
-                    AND data_venda < CURRENT_DATE + INTERVAL '1 day'
-                ), 0) AS vendas_hoje,
+        SELECT
+            COALESCE(SUM(valor) FILTER (
+                WHERE data_venda >= CURRENT_DATE
+                AND data_venda < CURRENT_DATE + INTERVAL '1 day'
+            ), 0) AS vendas_hoje,
 
-                COALESCE(SUM(valor) FILTER (
-                    WHERE data_venda >= date_trunc('month', CURRENT_DATE)
-                    AND data_venda < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'
-                ), 0) AS vendas_mes,
+            COALESCE(SUM(valor) FILTER (
+                WHERE data_venda >= date_trunc('month', CURRENT_DATE)
+                AND data_venda < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'
+            ), 0) AS vendas_mes,
 
-                COALESCE(SUM(valor) FILTER (
-                    WHERE data_venda >= date_trunc('year', CURRENT_DATE)
-                    AND data_venda < date_trunc('year', CURRENT_DATE) + INTERVAL '1 year'
-                ), 0) AS vendas_ano,
+            COALESCE(SUM(valor) FILTER (
+                WHERE data_venda >= date_trunc('year', CURRENT_DATE)
+                AND data_venda < date_trunc('year', CURRENT_DATE) + INTERVAL '1 year'
+            ), 0) AS vendas_ano,
 
-                COALESCE(SUM(valor), 0) AS vendas_total
-            FROM vendas
-            WHERE usuario_id = %s
-            AND empresa_id = %s
+            COALESCE(SUM(valor), 0) AS vendas_total
+        FROM vendas
+        WHERE usuario_id = %s
+        AND empresa_id = %s
+        AND cancelada = 0
         """, (id, session["empresa_id"]))
 
         row = cursor.fetchone()

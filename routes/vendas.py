@@ -299,9 +299,10 @@ def registrar_rotas(app, socketio):
                     pagamento,
                     empresa_id,
                     caixa_id,
-                    usuario_id
+                    usuario_id,
+                    data_venda
                 )
-                VALUES (%s,%s,%s,%s,%s,%s,%s)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
                 """, (
                     item["id"],
                     item["quantidade"],
