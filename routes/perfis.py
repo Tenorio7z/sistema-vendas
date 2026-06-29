@@ -307,69 +307,35 @@ def registrar_rotas(app):
         # segurança contra NULL
         comissao = float(funcionario["comissao"] or 0)
 
-        # ==========================================
-        # HOJE
-        # ==========================================
         cursor.execute("""
-            SELECT COALESCE(SUM(valor), 0) AS total
+            SELECT
+                COALESCE(SUM(valor) FILTER (
+                    WHERE data_venda >= CURRENT_DATE
+                    AND data_venda < CURRENT_DATE + INTERVAL '1 day'
+                ), 0) AS vendas_hoje,
+
+                COALESCE(SUM(valor) FILTER (
+                    WHERE data_venda >= date_trunc('month', CURRENT_DATE)
+                    AND data_venda < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'
+                ), 0) AS vendas_mes,
+
+                COALESCE(SUM(valor) FILTER (
+                    WHERE data_venda >= date_trunc('year', CURRENT_DATE)
+                    AND data_venda < date_trunc('year', CURRENT_DATE) + INTERVAL '1 year'
+                ), 0) AS vendas_ano,
+
+                COALESCE(SUM(valor), 0) AS vendas_total
             FROM vendas
             WHERE usuario_id = %s
-            AND DATE(data_venda) = CURRENT_DATE
-        """, (id,))
+            AND empresa_id = %s
+        """, (id, session["empresa_id"]))
 
-        vendas_hoje = float(
-            cursor.fetchone()["total"] or 0
-        )
+        row = cursor.fetchone()
 
-        print("HOJE:", vendas_hoje)
-
-        # ==========================================
-        # MÊS
-        # ==========================================
-        cursor.execute("""
-            SELECT COALESCE(SUM(valor), 0) AS total
-            FROM vendas
-            WHERE usuario_id = %s
-            AND EXTRACT(MONTH FROM data_venda) = EXTRACT(MONTH FROM CURRENT_DATE)
-            AND EXTRACT(YEAR FROM data_venda) = EXTRACT(YEAR FROM CURRENT_DATE)
-        """, (id,))
-
-        vendas_mes = float(
-            cursor.fetchone()["total"] or 0
-        )
-
-        print("MES:", vendas_mes)
-
-        # ==========================================
-        # ANO
-        # ==========================================
-        cursor.execute("""
-            SELECT COALESCE(SUM(valor), 0) AS total
-            FROM vendas
-            WHERE usuario_id = %s
-            AND EXTRACT(YEAR FROM data_venda) = EXTRACT(YEAR FROM CURRENT_DATE)
-        """, (id,))
-
-        vendas_ano = float(
-            cursor.fetchone()["total"] or 0
-        )
-
-        print("ANO:", vendas_ano)
-
-        # ==========================================
-        # TOTAL
-        # ==========================================
-        cursor.execute("""
-            SELECT COALESCE(SUM(valor), 0) AS total
-            FROM vendas
-            WHERE usuario_id = %s
-        """, (id,))
-
-        vendas_total = float(
-            cursor.fetchone()["total"] or 0
-        )
-
-        print("TOTAL:", vendas_total)
+        vendas_hoje = float(row["vendas_hoje"] or 0)
+        vendas_mes = float(row["vendas_mes"] or 0)
+        vendas_ano = float(row["vendas_ano"] or 0)
+        vendas_total = float(row["vendas_total"] or 0)
 
         # ==========================================
         # COMISSÕES
