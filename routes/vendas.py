@@ -18,8 +18,10 @@ def registrar_rotas(app, socketio):
 
         conn = conectar()
         cursor = criar_cursor(conn)
-
+        conn.autocommit = False
+        
         empresa_id = session.get("empresa_id")
+        usuario_id = session.get("usuario_id") or None
         if not empresa_id:
             conn.close()
             return redirect("/")
@@ -88,8 +90,10 @@ def registrar_rotas(app, socketio):
 
         conn = conectar()
         cursor = criar_cursor(conn)
-
+        conn.autocommit = False
+        
         empresa_id = session.get("empresa_id")
+        usuario_id = session.get("usuario_id") or None
 
         if not empresa_id:
             conn.close()
@@ -199,6 +203,13 @@ def registrar_rotas(app, socketio):
         if not session.get("logado"):
             return redirect("/")
 
+        usuario_id = session.get("usuario_id")
+        empresa_id = session.get("empresa_id")
+
+        if not usuario_id or not empresa_id:
+            flash("Sessão inválida. Faça login novamente.", "erro")
+            return redirect("/vendas")
+        
         forma_pagamento = request.form["pagamento"]
         carrinho = session.get("carrinho", [])
 
@@ -208,16 +219,11 @@ def registrar_rotas(app, socketio):
 
         conn = conectar()
         cursor = criar_cursor(conn)
-
+        conn.autocommit = False
+        
         # ==========================================
         # BUSCAR CAIXA ABERTO
         # ==========================================
-        
-        empresa_id = session.get("empresa_id")
-
-        if not empresa_id:
-            conn.close()
-            return redirect("/")
         
         cursor.execute("""
             SELECT *
@@ -297,13 +303,13 @@ def registrar_rotas(app, socketio):
                 )
                 VALUES (%s,%s,%s,%s,%s,%s,%s)
                 """, (
-                item["id"],
-                item["quantidade"],
-                valor_total,
-                forma_pagamento,
-                empresa_id,
-                caixa["id"],
-                session["usuario_id"]
+                    item["id"],
+                    item["quantidade"],
+                    valor_total,
+                    forma_pagamento,
+                    empresa_id,
+                    caixa["id"],
+                    usuario_id
                 ))
 
                 vendas_cupom.append({
@@ -337,7 +343,7 @@ def registrar_rotas(app, socketio):
         # NOTIFICAÇÃO GERENTE (CORRIGIDA)
         # ==========================================
         notificar_gerente(
-            session["usuario_id"],
+            usuario_id,
             "Venda realizada",
             valor_venda,
             empresa_id
@@ -386,8 +392,12 @@ def registrar_rotas(app, socketio):
 
         conn = conectar()
         cursor = criar_cursor(conn)
-
+        conn.autocommit = False
+        
+        
         empresa_id = session.get("empresa_id")
+        usuario_id = session.get("usuario_id")
+        
 
         if not empresa_id:
             conn.close()

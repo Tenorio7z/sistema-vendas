@@ -176,6 +176,7 @@ def registrar_rotas(app):
 
             LEFT JOIN vendas
             ON vendas.usuario_id = usuarios.id
+            AND vendas.empresa_id = usuarios.empresa_id
 
             WHERE usuarios.empresa_id = %s
             AND usuarios.nivel = 'funcionario'
@@ -305,8 +306,11 @@ def registrar_rotas(app):
             return redirect("/perfis")
 
         # segurança contra NULL
-        comissao = float(funcionario["comissao"] or 0)
+        comissao = float(funcionario.get("comissao") or 0)
 
+        print("FUNCIONARIO ID:", id)
+        print("EMPRESA SESSAO:", session["empresa_id"])
+        
         cursor.execute("""
             SELECT
                 COALESCE(SUM(valor) FILTER (
@@ -331,6 +335,14 @@ def registrar_rotas(app):
         """, (id, session["empresa_id"]))
 
         row = cursor.fetchone()
+
+        if not row:
+            row = {
+                "vendas_hoje": 0,
+                "vendas_mes": 0,
+                "vendas_ano": 0,
+                "vendas_total": 0
+            }
 
         vendas_hoje = float(row["vendas_hoje"] or 0)
         vendas_mes = float(row["vendas_mes"] or 0)
