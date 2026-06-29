@@ -67,20 +67,13 @@ def registrar_rotas(app):
         # FATURAMENTO HOJE
         # ==========================================
 
+        # FATURAMENTO HOJE
         cursor.execute("""
-
         SELECT COALESCE(SUM(valor),0) as total
-
         FROM vendas
-
         WHERE empresa_id = %s
-        AND DATE(data) = CURRENT_DATE
-
-        """, (
-
-            empresa_id,
-
-        ))
+        AND data_venda::date = CURRENT_DATE
+        """, (empresa_id,))
 
         faturamento_dia = cursor.fetchone()["total"]
 
@@ -88,20 +81,14 @@ def registrar_rotas(app):
         # FATURAMENTO MÊS
         # ==========================================
 
+        # FATURAMENTO MÊS
         cursor.execute("""
-
         SELECT COALESCE(SUM(valor),0) as total
-
         FROM vendas
-
         WHERE empresa_id = %s
-        AND TO_CHAR(data, 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')
-
-        """, (
-
-            empresa_id,
-
-        ))
+        AND EXTRACT(MONTH FROM data_venda) = EXTRACT(MONTH FROM NOW())
+        AND EXTRACT(YEAR FROM data_venda) = EXTRACT(YEAR FROM NOW())
+        """, (empresa_id,))
 
         faturamento_mes = cursor.fetchone()["total"]
 
@@ -109,20 +96,15 @@ def registrar_rotas(app):
         # FATURAMENTO ANO
         # ==========================================
 
+        # FATURAMENTO ANO
         cursor.execute("""
-
         SELECT COALESCE(SUM(valor),0) as total
-
         FROM vendas
-
         WHERE empresa_id = %s
-        AND TO_CHAR(data, 'YYYY') = TO_CHAR(NOW(), 'YYYY')
+        AND EXTRACT(YEAR FROM data_venda) = EXTRACT(YEAR FROM NOW())
+        """, (empresa_id,))
 
-        """, (
-
-            empresa_id,
-
-        ))
+        
 
         faturamento_ano = cursor.fetchone()["total"]
 
@@ -183,26 +165,16 @@ def registrar_rotas(app):
         # GRÁFICO
         # ==========================================
 
+        # GRÁFICO
         cursor.execute("""
-
         SELECT
-
-            DATE(data) as dia,
+            DATE(data_venda) as dia,
             SUM(valor) as total
-
         FROM vendas
-
         WHERE empresa_id = %s
-
-        GROUP BY DATE(data)
-
-        ORDER BY DATE(data)
-
-        """, (
-
-            empresa_id,
-
-        ))
+        GROUP BY DATE(data_venda)
+        ORDER BY DATE(data_venda)
+        """, (empresa_id,))
 
         dados_grafico = cursor.fetchall()
 
