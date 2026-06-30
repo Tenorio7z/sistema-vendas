@@ -105,17 +105,15 @@ def registrar_rotas(app):
 
             sql = """
 
-            INSERT INTO vendas (
-                produto_id,
-                quantidade,
-                valor,
-                pagamento,
+            INSERT INTO usuarios (
+                usuario,
+                senha,
+                nivel,
+                status,
                 empresa_id,
-                caixa_id,
-                usuario_id,
-                data_venda
+                comissao
             )
-            VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
+            VALUES (%s, %s, %s, %s, %s, %s)
 
             """
 
