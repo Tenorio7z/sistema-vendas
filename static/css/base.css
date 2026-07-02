@@ -99,8 +99,9 @@ SIDEBAR
 
 .sidebar-top {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
     width: 100%;
 }
 
@@ -559,6 +560,7 @@ RESPONSIVO
 
     .sidebar-top {
         display: flex;
+        flex-direction: row;
         align-items: center;
         justify-content: space-between;
         width: 100%;
