@@ -29,17 +29,23 @@
 
     <aside class="sidebar">
 
-        <button id="toggleMenu" class="menu-toggle">
-            <img id="menuIcon" src="/static/img/menu-aberto.png" alt="Menu">
-        </button>
+        <div class="sidebar-top">
 
-        <button onclick="alternarTema()" class="menu-toggle">
-            <img src="/static/img/DarkMode.png" alt="menu">
-        </button>
+            <div class="sidebar-actions">
 
-        <h2>
-            Nexus PVD
-        </h2>
+                <button id="toggleMenu" class="menu-toggle">
+                    <img id="menuIcon" src="/static/img/menu-aberto.png" alt="Menu">
+                </button>
+
+                <button onclick="alternarTema()" class="menu-toggle">
+                    <img src="/static/img/DarkMode.png" alt="Tema">
+                </button>
+
+            </div>
+
+            <h2>Nexus PVD</h2>
+
+        </div>
 
 
         <nav>
@@ -178,7 +184,7 @@
 
         })
 
-        
+
 
 
         // função do tema (ÚNICA)
