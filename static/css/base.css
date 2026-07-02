@@ -541,16 +541,35 @@ RESPONSIVO
     }
 
     .sidebar nav{
-        display: flex;
-        gap: 10px;
-        overflow-x: auto;
+    position: absolute;
+    top: 70px;
+    left: 15px;
+    right: 15px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: .3s;
+}
+
+    .sidebar.aberta nav{
+        opacity: 1;
+        pointer-events: all;
+        transform: translateY(0);
     }
 
     .sidebar a{
-        white-space: nowrap;
-        font-size: 13px;
-        padding: 10px 12px;
-    }
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+}
 
     /* =========================
        BOTÃO MENU

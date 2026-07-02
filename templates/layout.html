@@ -161,15 +161,24 @@
         // sidebar toggle
         toggle.addEventListener("click", () => {
 
-            sidebar.classList.toggle("fechada")
+            if (window.innerWidth <= 900) {
+                sidebar.classList.toggle("aberta")
+            } else {
+                sidebar.classList.toggle("fechada")
+            }
 
-            if (sidebar.classList.contains("fechada")) {
+            if (
+                sidebar.classList.contains("fechada") ||
+                sidebar.classList.contains("aberta")
+            ) {
                 menuIcon.src = "/static/img/menu-fechado.png"
             } else {
                 menuIcon.src = "/static/img/menu-aberto.png"
             }
 
         })
+
+        
 
 
         // função do tema (ÚNICA)
