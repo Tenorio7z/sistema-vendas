@@ -107,6 +107,7 @@ SIDEBAR
 
 .sidebar-actions {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 10px;
 }
@@ -699,7 +700,8 @@ RESPONSIVO
 }
 
 .sidebar-actions {
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
 }
 
 .sidebar h2 {
