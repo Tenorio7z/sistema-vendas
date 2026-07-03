@@ -31,84 +31,91 @@
 
         <div class="sidebar-top">
 
-            <div class="sidebar-actions">
+            <div class="sidebar-top">
 
-                <button id="toggleMenu" class="menu-toggle">
-                    <img id="menuIcon" src="/static/img/menu-aberto.png" alt="Menu">
-                </button>
+                <div class="sidebar-header">
 
-                <button onclick="alternarTema()" class="menu-toggle">
-                    <img src="/static/img/DarkMode.png" alt="Tema">
-                </button>
+                    <div class="sidebar-actions">
+
+                        <button id="toggleMenu" class="menu-toggle">
+                            <img id="menuIcon" src="/static/img/menu-aberto.png" alt="Menu">
+                        </button>
+
+                        <button onclick="alternarTema()" class="theme-toggle">
+                            <img src="/static/img/DarkMode.png" alt="Tema">
+                        </button>
+
+                    </div>
+
+                    <div class="sidebar-logo">
+                        <h2>Nexus PDV</h2>
+                        <span>Sistema operacional</span>
+                    </div>
+
+                </div>
 
             </div>
-            
-            <h2>
-                Nexus PDV
-            </h2>
-
-        </div>
 
 
-        <nav>
+            <nav>
 
-            <a href="/dashboard">
-                Dashboard
-            </a>
+                <a href="/dashboard">
+                    Dashboard
+                </a>
 
-            {% if session["nivel"] == "gerente" %}
+                {% if session["nivel"] == "gerente" %}
 
-            <a href="/perfis">
+                <a href="/perfis">
 
-                Gerenciar Perfis
+                    Gerenciar Perfis
 
-            </a>
+                </a>
 
-            {% endif %}
+                {% endif %}
 
-            {% if session["nivel"] == "master" %}
+                {% if session["nivel"] == "master" %}
 
-            <a href="/admin">
-                Painel Master
-            </a>
+                <a href="/admin">
+                    Painel Master
+                </a>
 
-            {% endif %}
+                {% endif %}
 
-            {% if session["nivel"] != "funcionario" %}
+                {% if session["nivel"] != "funcionario" %}
 
-            <a href="/produtos">
-                Produtos
-            </a>
+                <a href="/produtos">
+                    Produtos
+                </a>
 
-            {% endif %}
+                {% endif %}
 
-            <a href="/vendas">
-                Vendas
-            </a>
+                <a href="/vendas">
+                    Vendas
+                </a>
 
-            <a href="/caixa">
-                Caixa
-            </a>
-            {% if session["nivel"] == "gerente" %}
+                <a href="/caixa">
+                    Caixa
+                </a>
+                {% if session["nivel"] == "gerente" %}
 
-            <a href="/estatisticas">
+                <a href="/estatisticas">
 
-                Estatísticas
+                    Estatísticas
 
-            </a>
+                </a>
 
-            {% endif %}
+                {% endif %}
 
-            <a href="/planos">
+                <a href="/planos">
 
-                Planos
+                    Planos
 
-            </a>
-            <a href="/logout">
-                Sair
-            </a>
+                </a>
+                <a href="/logout">
+                    Sair
+                </a>
 
-        </nav>
+            </nav>
 
     </aside>
 
