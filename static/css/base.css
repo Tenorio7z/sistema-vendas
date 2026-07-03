@@ -89,7 +89,13 @@ SIDEBAR
     z-index: 1000;
 }
 
+.sidebar h2 {
+    color: var(--text);
+}
 
+.sidebar h2 {
+    color: var(--text);
+}
 
 .sidebar-top {
     display: flex;
@@ -561,7 +567,10 @@ RESPONSIVO
         width: 100%;
     }
 
-
+    .sidebar h2 {
+        font-size: 18px;
+        display: block;
+    }
 
     .sidebar-actions {
         flex-direction: row;
@@ -700,3 +709,7 @@ RESPONSIVO
     align-items: center;
 }
 
+.sidebar h2 {
+    font-size: 16px;
+    margin-left: auto;
+}
