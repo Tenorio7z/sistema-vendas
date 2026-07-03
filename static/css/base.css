@@ -93,13 +93,6 @@ SIDEBAR
     color: var(--text);
 }
 
-.sidebar h2 {
-    color: var(--text);
-}
-
-
-
-
 
 .sidebar nav {
     margin-top: 25px;
@@ -706,16 +699,9 @@ RESPONSIVO
     }
 }
 
-.sidebar-top {
-    width: 100%;
+
+
+.sidebar-logo h2 {
+    margin-left: 0;
 }
 
-.sidebar-actions {
-    flex-direction: row;
-    align-items: center;
-}
-
-.sidebar h2 {
-    font-size: 16px;
-    margin-left: auto;
-}
