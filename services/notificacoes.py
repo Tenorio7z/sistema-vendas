@@ -45,7 +45,7 @@ def notificar_gerente(usuario_id, produto, valor, empresa_id):
         "Nova Venda",
         f"{funcionario} realizou uma venda de R$ {valor:.2f}",
         datetime.now(),
-        False,
+        0,
         produto
 
     ))
