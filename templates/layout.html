@@ -41,9 +41,20 @@
                             <img id="menuIcon" src="/static/img/menu-aberto.png" alt="Menu">
                         </button>
 
-                        <button onclick="alternarTema()" class="theme-toggle">
-                            <img src="/static/img/DarkMode.png" alt="Tema">
-                        </button>
+                        <div class="theme-wrapper">
+
+                            <!-- Ícone LUA -->
+                            <img src="/static/icons/light.png" alt="Modo escuro" class="theme-side-icon">
+
+                            <!-- SWITCH -->
+                            <div class="theme-switch" onclick="alternarTema()">
+                                <div class="switch-ball"></div>
+                            </div>
+
+                            <!-- Ícone SOL -->
+                            <img src="/static/icons/dark.png" alt="Modo claro" class="theme-side-icon">
+
+                        </div>
 
                     </div>
 
@@ -54,21 +65,23 @@
 
                 </div>
 
+                <div class="sidebar-divider"></div>
+
             </div>
 
 
             <nav>
 
                 <a href="/dashboard">
-                    Dashboard
+                    <img src="/static/icons/dashboard.png" class="nav-icon" alt="">
+                    <span class="link-text">Dashboard</span>
                 </a>
 
                 {% if session["nivel"] == "gerente" %}
 
                 <a href="/perfis">
-
-                    Gerenciar Perfis
-
+                    <img src="/static/icons/perfis.png" class="nav-icon" alt="">
+                    <span class="link-text">Gerenciar Perfis</span>
                 </a>
 
                 {% endif %}
@@ -76,7 +89,8 @@
                 {% if session["nivel"] == "master" %}
 
                 <a href="/admin">
-                    Painel Master
+                    <img src="/static/icons/master.png" class="nav-icon" alt="">
+                    <span class="link-text">Painel Master</span>
                 </a>
 
                 {% endif %}
@@ -84,35 +98,39 @@
                 {% if session["nivel"] != "funcionario" %}
 
                 <a href="/produtos">
-                    Produtos
+                    <img src="/static/icons/produtos.png" class="nav-icon" alt="">
+                    <span class="link-text">Produtos</span>
                 </a>
 
                 {% endif %}
 
                 <a href="/vendas">
-                    Vendas
+                    <img src="/static/icons/vendas.png" class="nav-icon" alt="">
+                    <span class="link-text">Vendas</span>
                 </a>
 
                 <a href="/caixa">
-                    Caixa
+                    <img src="/static/icons/caixa.png" class="nav-icon" alt="">
+                    <span class="link-text">Caixa</span>
                 </a>
+
                 {% if session["nivel"] == "gerente" %}
 
                 <a href="/estatisticas">
-
-                    Estatísticas
-
+                    <img src="/static/icons/estatisticas.png" class="nav-icon" alt="">
+                    <span class="link-text">Estatísticas</span>
                 </a>
 
                 {% endif %}
 
                 <a href="/planos">
-
-                    Planos
-
+                    <img src="/static/icons/planos.png" class="nav-icon" alt="">
+                    <span class="link-text">Planos</span>
                 </a>
+
                 <a href="/logout">
-                    Sair
+                    <img src="/static/icons/sair.png" class="nav-icon" alt="">
+                    <span class="link-text">Sair</span>
                 </a>
 
             </nav>
@@ -163,6 +181,7 @@
         const toggle = document.getElementById("toggleMenu")
         const sidebar = document.querySelector(".sidebar")
         const menuIcon = document.getElementById("menuIcon")
+        const switchBall = document.querySelector(".switch-ball")
 
         // aplica tema salvo ao carregar
         const temaSalvo = localStorage.getItem("tema")
@@ -171,6 +190,10 @@
             document.body.classList.add("dark")
         }
 
+        // posiciona a bolinha corretamente ao carregar
+        atualizarSwitch()
+
+        // atualiza ícones do sistema
         atualizarIcones(document.body.classList.contains("dark"))
 
         // sidebar toggle
@@ -193,27 +216,46 @@
 
         })
 
-
-
-
-        // função do tema (ÚNICA)
+        // alterna tema
         function alternarTema() {
 
             document.body.classList.toggle("dark")
 
             const isDark = document.body.classList.contains("dark")
 
-            localStorage.setItem("tema", isDark ? "dark" : "light")
+            localStorage.setItem(
+                "tema",
+                isDark ? "dark" : "light"
+            )
 
+            atualizarSwitch()
             atualizarIcones(isDark)
         }
 
+        // move a bolinha do switch
+        function atualizarSwitch() {
+
+            const isDark =
+                document.body.classList.contains("dark")
+
+            if (isDark) {
+                switchBall.style.transform =
+                    "translateX(30px)"
+            } else {
+                switchBall.style.transform =
+                    "translateX(0)"
+            }
+
+        }
 
         // troca ícones do sistema
         function atualizarIcones(isDark) {
 
             document.querySelectorAll(".icon-acao").forEach(img => {
-                img.src = isDark ? img.dataset.dark : img.dataset.light
+                img.src =
+                    isDark
+                        ? img.dataset.dark
+                        : img.dataset.light
             })
 
         }

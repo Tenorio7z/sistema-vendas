@@ -89,54 +89,117 @@ SIDEBAR
     z-index: 1000;
 }
 
-.sidebar h2 {
-    color: var(--text);
-}
-
-
-.sidebar nav {
-    margin-top: 25px;
-}
-
-.sidebar a {
-    display: block;
-
-    text-decoration: none;
-
-    color: var(--text-secondary);
-
-    padding: 14px;
-
-    border-radius: 12px;
-
-    transition: .3s;
-}
-
-.sidebar a:hover {
-    background: var(--card-hover);
-    color: var(--text);
-}
+/* TOPO */
 
 .sidebar-top {
     width: 100%;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .sidebar-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 25px;
+    gap: 18px;
 }
+
+/* MENU + SWITCH */
 
 .sidebar-actions {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
 }
+
+/* BOTÃO MENU */
+
+.menu-toggle {
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 14px;
+    background: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .3s;
+}
+
+.menu-toggle img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    transition: .3s;
+}
+
+.menu-toggle:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.menu-toggle:hover img {
+    transform: scale(1.1);
+}
+
+/* WRAPPER DO SWITCH */
+
+.theme-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ÍCONES LATERAIS */
+
+.theme-side-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    opacity: .8;
+    transition: .3s;
+}
+
+.theme-side-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* SWITCH */
+
+.theme-switch {
+    width: 72px;
+    height: 38px;
+    background: var(--card-hover);
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    transition: .3s;
+}
+
+.switch-ball {
+    width: 28px;
+    height: 28px;
+    background: white;
+    border-radius: 50%;
+    transition: .35s ease;
+    transform: translateX(0);
+}
+
+body.dark .switch-ball {
+    transform: translateX(30px);
+}
+
+/* LOGO */
 
 .sidebar-logo {
     text-align: center;
+    margin-top: 5px;
 }
 
 .sidebar-logo h2 {
@@ -151,40 +214,50 @@ SIDEBAR
     color: var(--text-secondary);
 }
 
-.menu-toggle,
-.theme-toggle {
-    width: 50px;
-    height: 50px;
-    border: none;
-    border-radius: 14px;
-    background: var(--primary);
-    cursor: pointer;
+/* DIVISOR */
+
+.sidebar-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin-top: 15px;
+}
+
+/* LINKS */
+
+.sidebar nav {
+    margin-top: 20px;
+}
+
+.sidebar a {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    padding: 14px;
+    border-radius: 12px;
     transition: .3s;
 }
 
-.menu-toggle img,
-.theme-toggle img {
-    width: 24px;
-    height: 24px;
+.sidebar a:hover {
+    background: var(--card-hover);
+    color: var(--text);
+}
+
+/* ÍCONES DOS LINKS */
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
     object-fit: contain;
+    flex-shrink: 0;
     transition: .3s;
 }
 
-.menu-toggle:hover,
-.theme-toggle:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
+.sidebar a:hover .nav-icon {
+    transform: scale(1.08);
 }
-
-.menu-toggle:hover img,
-.theme-toggle:hover img {
-    transform: scale(1.1);
-}
-
-
 
 /* ==========================================
 SIDEBAR FECHADA
@@ -194,16 +267,47 @@ SIDEBAR FECHADA
     width: 90px;
 }
 
-.sidebar.fechada h2 {
+/* some logo */
+.sidebar.fechada .sidebar-logo {
     display: none;
 }
 
-.sidebar.fechada a {
-    font-size: 0;
+/* some switch */
+.sidebar.fechada .theme-wrapper {
+    display: none;
 }
 
-.sidebar.fechada nav {
-    gap: 12px;
+/* mantém menu */
+.sidebar.fechada .sidebar-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* divisor */
+.sidebar.fechada .sidebar-divider {
+    margin: 15px 0;
+}
+
+/* centraliza links */
+.sidebar.fechada a {
+    justify-content: center;
+    padding: 14px 0;
+}
+
+/* esconde texto */
+.sidebar.fechada .link-text {
+    display: none;
+}
+
+/* aumenta ícones */
+.sidebar.fechada .nav-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.sidebar.fechada .link-text {
+    display: none;
 }
 
 /* ==========================================
@@ -704,4 +808,3 @@ RESPONSIVO
 .sidebar-logo h2 {
     margin-left: 0;
 }
-
