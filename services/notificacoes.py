@@ -2,13 +2,13 @@ from database import conectar
 from datetime import datetime
 
 
-def notificar_gerente(usuario_id, produto, valor, empresa_id):
+def notificar_gerente(funcionario, produto, valor, empresa_id):
 
     conn = conectar()
     cursor = conn.cursor()
 
     print("SALVANDO NOTIFICAÇÃO")
-    print("FUNCIONARIO:", usuario_id)
+    print("FUNCIONARIO:", funcionario)
     print("PRODUTO:", produto)
     print("VALOR:", valor)
     print("EMPRESA:", empresa_id)
@@ -18,7 +18,7 @@ def notificar_gerente(usuario_id, produto, valor, empresa_id):
         INSERT INTO notificacoes (
 
             empresa_id,
-            usuario_id,
+            funcionario,
             produto,
             valor,
             titulo,
@@ -33,11 +33,11 @@ def notificar_gerente(usuario_id, produto, valor, empresa_id):
         (
 
             empresa_id,
-            usuario_id,
+            funcionario,
             produto,
             valor,
             "Nova Venda",
-            f"{usuario_id} vendeu {produto} por R$ {valor:.2f}",
+            f"{funcionario} vendeu {produto} por R$ {valor:.2f}",
             str(datetime.now()),
             0
 
