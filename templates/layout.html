@@ -127,12 +127,15 @@
                     <img src="/static/icons/planos.png" class="nav-icon" alt="">
                     <span class="link-text">Planos</span>
                 </a>
+                
+                {% if session["nivel"] == "gerente" %}
 
                 <a href="/ia">
                     <img src="/static/icons/ia.png" class="nav-icon" alt="">
                     <span class="link-text">Assistente IA</span>
                 </a>
-
+                
+                {% endif %}
                 <a href="/logout">
                     <img src="/static/icons/sair.png" class="nav-icon" alt="">
                     <span class="link-text">Sair</span>
