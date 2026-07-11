@@ -1,258 +1,908 @@
-/* ==========================================
-PLANOS
-========================================== */
+/* =========================================
+   PLANOS — NEXUS
+========================================= */
 
-.planos-container{
-
-    max-width:1200px;
-    margin:auto;
+.planos-container,
+.planos-container * {
+    box-sizing: border-box;
 }
 
-.planos-container h1{
+.planos-container {
+    --plano-azul: #318bff;
+    --plano-azul-claro: #65bdff;
+    --plano-roxo: #7768ff;
+    --plano-verde: #2bd298;
+    --plano-dourado: #ffb84d;
+    --plano-laranja: #f28a3e;
 
-    font-size:38px;
-    color:var(--text);
-    margin-bottom:10px;
+    --plano-texto:
+        var(--text, #f7faff);
+
+    --plano-texto-secundario:
+        var(--text-secondary, #94a3b8);
+
+    --plano-card:
+        rgba(24, 39, 64, 0.72);
+
+    --plano-card-claro:
+        rgba(255, 255, 255, 0.055);
+
+    --plano-borda:
+        rgba(255, 255, 255, 0.1);
+
+    --plano-sombra:
+        0 22px 55px rgba(0, 0, 0, 0.22);
+
+    position: relative;
+
+    width: min(100%, 1250px);
+
+    margin: 0 auto;
+
+    color: var(--plano-texto);
+
+    isolation: isolate;
 }
 
-.subtitulo{
+.planos-container::before,
+.planos-container::after {
+    content: "";
 
-    color:var(--text-secondary);
-    margin-bottom:35px;
-    font-size:16px;
+    position: fixed;
+    z-index: -1;
+
+    width: 340px;
+    height: 340px;
+
+    border-radius: 50%;
+
+    opacity: 0.12;
+    filter: blur(110px);
+
+    pointer-events: none;
 }
 
-/* ==========================================
-GRID
-========================================== */
+.planos-container::before {
+    top: 80px;
+    left: 250px;
 
-.planos-grid{
-
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
-    gap:30px;
+    background: var(--plano-azul);
 }
 
-/* ==========================================
-CARD
-========================================== */
+.planos-container::after {
+    right: -100px;
+    bottom: -100px;
 
-.plano-card{
-
-    position:relative;
-
-    background:var(--card);
-
-    border:1px solid var(--border);
-
-    border-radius:24px;
-
-    padding:35px;
-
-    transition:.3s;
-
-    overflow:hidden;
+    background: var(--plano-roxo);
 }
 
-.plano-card:hover{
 
-    transform:translateY(-8px);
+/* =========================================
+   CABEÇALHO
+========================================= */
 
-    box-shadow:
-    0 20px 40px rgba(0,0,0,.25);
-}
+.planos-header {
+    position: relative;
 
-/* ==========================================
-COMUM
-========================================== */
+    width: 100%;
+    min-height: 155px;
 
-.comum{
+    margin-bottom: 22px;
+    padding: 28px 30px;
 
-    border-left:6px solid #64748b;
-}
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
 
-/* ==========================================
-PREMIUM
-========================================== */
+    overflow: hidden;
 
-.premium{
-
-    border-left:6px solid #f59e0b;
+    border: 1px solid var(--plano-borda);
+    border-radius: 24px;
 
     background:
-    linear-gradient(
-        180deg,
-        rgba(245,158,11,.05),
-        transparent
-    ),
-    var(--card);
+        linear-gradient(
+            120deg,
+            rgba(49, 139, 255, 0.17),
+            rgba(119, 104, 255, 0.08) 55%,
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--plano-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.09),
+        var(--plano-sombra);
+
+    backdrop-filter: blur(26px) saturate(140%);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
 }
 
-/* ==========================================
-DESTAQUE
-========================================== */
+.planos-header::before {
+    content: "";
 
-.destaque{
+    position: absolute;
 
-    position:absolute;
+    top: -110px;
+    right: -70px;
 
-    top:20px;
-    right:20px;
+    width: 285px;
+    height: 285px;
 
-    background:#f59e0b;
+    border-radius: 50%;
 
-    color:white;
+    background:
+        radial-gradient(
+            circle,
+            rgba(74, 158, 255, 0.4),
+            rgba(74, 158, 255, 0.04) 65%,
+            transparent 72%
+        );
 
-    padding:8px 14px;
-
-    border-radius:999px;
-
-    font-size:12px;
-
-    font-weight:700;
-
-    letter-spacing:.5px;
+    pointer-events: none;
 }
 
-/* ==========================================
-TÍTULOS
-========================================== */
+.planos-header::after {
+    content: "PRO";
 
-.plano-card h2{
+    position: absolute;
 
-    font-size:32px;
+    right: 45px;
+    bottom: -15px;
 
-    margin-bottom:10px;
+    color: rgba(255, 255, 255, 0.025);
 
-    color:var(--text);
+    font-size: clamp(5rem, 11vw, 8rem);
+    font-weight: 900;
+    line-height: 1;
+
+    pointer-events: none;
 }
 
-.preco{
-
-    font-size:42px;
-
-    font-weight:800;
-
-    color:var(--primary);
-
-    margin-bottom:25px;
+.planos-header > div {
+    position: relative;
+    z-index: 1;
 }
 
-.preco span{
+.planos-label {
+    display: block;
 
-    font-size:16px;
+    margin-bottom: 5px;
 
-    color:var(--text-secondary);
+    color: var(--plano-azul-claro);
+
+    font-size: 0.69rem;
+    font-weight: 800;
+
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
 }
 
-/* ==========================================
-LISTA
-========================================== */
+.planos-header h1 {
+    margin: 0;
 
-.plano-card ul{
+    color: var(--plano-texto);
 
-    list-style:none;
+    font-size: clamp(1.7rem, 4vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.15;
 
-    margin-top:20px;
+    letter-spacing: -0.045em;
 }
 
-.plano-card li{
+.planos-header p {
+    max-width: 560px;
 
-    padding:12px 0;
+    margin: 8px 0 0;
 
-    border-bottom:1px solid var(--border);
+    color: var(--plano-texto-secundario);
 
-    color:var(--text);
-
-    font-size:15px;
+    font-size: 0.85rem;
+    line-height: 1.5;
 }
 
-.plano-card li:last-child{
 
-    border-bottom:none;
+/* =========================================
+   PLANO ATUAL
+========================================= */
+
+.plano-atual {
+    flex: 0 0 auto;
+
+    min-width: 155px;
+
+    padding: 13px 16px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    border: 1px solid var(--plano-borda);
+    border-radius: 15px;
+
+    background: rgba(255, 255, 255, 0.055);
+
+    text-align: right;
 }
 
-/* ==========================================
-BOTÃO
-========================================== */
+.plano-atual span {
+    color: var(--plano-texto-secundario);
 
-.btn-plano{
-
-    width:100%;
-
-    margin-top:30px;
-
-    padding:15px;
-
-    border:none;
-
-    border-radius:14px;
-
-    font-size:15px;
-
-    font-weight:700;
-
-    cursor:pointer;
-
-    transition:.3s;
+    font-size: 0.67rem;
 }
 
-.btn-comum{
+.plano-atual strong {
+    color: var(--plano-azul-claro);
 
-    background:#334155;
+    font-size: 0.9rem;
+    font-weight: 850;
 
-    color:white;
+    letter-spacing: 0.06em;
 }
 
-.btn-premium{
 
-    background:#f59e0b;
+/* =========================================
+   GRID
+========================================= */
 
-    color:white;
+.planos-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 18px;
 }
 
-.btn-plano:hover{
 
-    transform:translateY(-3px);
+/* =========================================
+   CARD DO PLANO
+========================================= */
+
+.plano-card {
+    position: relative;
+
+    min-width: 0;
+    min-height: 650px;
+
+    padding: 28px;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border: 1px solid var(--plano-borda);
+    border-radius: 24px;
+
+    color: var(--plano-texto);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.075),
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--plano-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.075),
+        var(--plano-sombra);
+
+    backdrop-filter: blur(26px) saturate(140%);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
 }
 
-/* ==========================================
-PLANO ATUAL
-========================================== */
+.plano-card::before {
+    content: "";
 
-.plano-atual{
+    position: absolute;
 
-    margin-bottom:30px;
+    top: 0;
+    left: 15px;
+    right: 15px;
 
-    padding:15px 20px;
+    height: 3px;
 
-    background:var(--card);
+    border-radius: 0 0 999px 999px;
 
-    border:1px solid var(--border);
-
-    border-radius:14px;
-
-    font-weight:600;
+    background:
+        linear-gradient(
+            90deg,
+            currentColor,
+            transparent 90%
+        );
 }
 
-.plano-atual strong{
+.plano-card::after {
+    position: absolute;
 
-    color:var(--primary);
+    right: -10px;
+    bottom: -18px;
+
+    color: currentColor;
+
+    font-size: 10rem;
+    font-weight: 900;
+    line-height: 1;
+
+    opacity: 0.025;
+
+    pointer-events: none;
 }
 
-/* ==========================================
-RESPONSIVO
-========================================== */
+.plano-card.comum {
+    color: var(--plano-azul-claro);
+}
 
-@media(max-width:768px){
+.plano-card.comum::after {
+    content: "N";
+}
 
-    .planos-grid{
+.plano-card.premium {
+    color: var(--plano-dourado);
 
-        grid-template-columns:1fr;
+    border-color: rgba(255, 184, 77, 0.2);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 184, 77, 0.09),
+            rgba(119, 104, 255, 0.055),
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--plano-card);
+}
+
+.plano-card.premium::after {
+    content: "✦";
+}
+
+.plano-card:hover {
+    transform: translateY(-6px);
+
+    border-color: rgba(101, 189, 255, 0.31);
+
+    box-shadow:
+        0 31px 68px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.plano-card.premium:hover {
+    border-color: rgba(255, 184, 77, 0.34);
+}
+
+
+/* =========================================
+   DESTAQUE PREMIUM
+========================================= */
+
+.destaque {
+    position: absolute;
+    z-index: 2;
+
+    top: 20px;
+    right: 20px;
+
+    min-height: 28px;
+
+    padding: 6px 10px;
+
+    display: inline-flex;
+    align-items: center;
+
+    border: 1px solid rgba(255, 211, 145, 0.25);
+    border-radius: 999px;
+
+    color: #ffda9e;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 184, 77, 0.2),
+            rgba(242, 138, 62, 0.13)
+        );
+
+    font-size: 0.6rem;
+    font-weight: 850;
+
+    letter-spacing: 0.07em;
+}
+
+
+/* =========================================
+   TOPO DO PLANO
+========================================= */
+
+.plano-topo {
+    position: relative;
+    z-index: 1;
+
+    padding-right: 115px;
+
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.comum .plano-topo {
+    padding-right: 0;
+}
+
+.plano-icone {
+    flex: 0 0 auto;
+
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid;
+    border-radius: 15px;
+
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.comum-icone {
+    color: var(--plano-azul-claro);
+
+    border-color: rgba(101, 189, 255, 0.25);
+    background: rgba(49, 139, 255, 0.09);
+}
+
+.premium-icone {
+    color: #ffd18a;
+
+    border-color: rgba(255, 184, 77, 0.27);
+    background: rgba(255, 184, 77, 0.1);
+}
+
+.plano-tipo {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--plano-texto-secundario);
+
+    font-size: 0.65rem;
+    font-weight: 650;
+}
+
+.plano-card h2 {
+    margin: 0;
+
+    color: var(--plano-texto);
+
+    font-size: 1.6rem;
+    font-weight: 800;
+
+    letter-spacing: -0.035em;
+}
+
+
+/* =========================================
+   PREÇO
+========================================= */
+
+.preco {
+    position: relative;
+    z-index: 1;
+
+    margin: 27px 0 13px;
+
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+
+    color: var(--plano-texto);
+}
+
+.preco .moeda {
+    margin-bottom: 7px;
+
+    color: currentColor;
+
+    font-size: 0.85rem;
+    font-weight: 750;
+}
+
+.preco strong {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 850;
+    line-height: 0.95;
+
+    letter-spacing: -0.06em;
+}
+
+.preco .periodo {
+    margin-bottom: 6px;
+
+    color: var(--plano-texto-secundario);
+
+    font-size: 0.72rem;
+}
+
+.descricao-plano {
+    position: relative;
+    z-index: 1;
+
+    min-height: 48px;
+
+    margin: 0;
+
+    color: var(--plano-texto-secundario);
+
+    font-size: 0.76rem;
+    line-height: 1.55;
+}
+
+.separador-plano {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    height: 1px;
+
+    margin: 22px 0;
+
+    background: var(--plano-borda);
+}
+
+.recursos-titulo {
+    position: relative;
+    z-index: 1;
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--plano-texto);
+
+    font-size: 0.72rem;
+    font-weight: 750;
+}
+
+
+/* =========================================
+   RECURSOS
+========================================= */
+
+.plano-card ul {
+    position: relative;
+    z-index: 1;
+
+    margin: 0 0 23px;
+    padding: 0;
+
+    list-style: none;
+}
+
+.plano-card li {
+    position: relative;
+
+    min-height: 42px;
+
+    padding: 10px 0 10px 27px;
+
+    display: flex;
+    align-items: center;
+
+    border-bottom: 1px solid var(--plano-borda);
+
+    color: var(--plano-texto);
+
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.plano-card li::before {
+    content: "✓";
+
+    position: absolute;
+
+    left: 0;
+
+    width: 18px;
+    height: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(43, 210, 152, 0.23);
+    border-radius: 6px;
+
+    color: #64e5b7;
+    background: rgba(43, 210, 152, 0.08);
+
+    font-size: 0.6rem;
+    font-weight: 900;
+}
+
+.plano-card li:last-child {
+    border-bottom: 0;
+}
+
+
+/* =========================================
+   DESTAQUE DA IA
+========================================= */
+
+.plano-card li.recurso-ia {
+    margin: 10px 0;
+    padding: 13px;
+
+    align-items: flex-start;
+    gap: 11px;
+
+    border: 1px solid rgba(119, 104, 255, 0.25);
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(49, 139, 255, 0.1),
+            rgba(119, 104, 255, 0.1)
+        );
+}
+
+.plano-card li.recurso-ia::before {
+    display: none;
+}
+
+.icone-ia {
+    flex: 0 0 auto;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(139, 207, 255, 0.27);
+    border-radius: 11px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--plano-azul),
+            var(--plano-roxo)
+        );
+
+    box-shadow:
+        0 8px 18px rgba(69, 112, 242, 0.22);
+
+    font-size: 0.65rem;
+    font-weight: 900;
+}
+
+.recurso-ia div {
+    min-width: 0;
+}
+
+.recurso-ia strong,
+.recurso-ia small {
+    display: block;
+}
+
+.recurso-ia strong {
+    color: var(--plano-texto);
+
+    font-size: 0.76rem;
+}
+
+.recurso-ia small {
+    margin-top: 4px;
+
+    color: var(--plano-texto-secundario);
+
+    font-size: 0.66rem;
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   BOTÃO E PLANO ATUAL
+========================================= */
+
+.btn-plano,
+.plano-selecionado {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    min-height: 46px;
+
+    margin-top: auto;
+    padding: 10px 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    font-size: 0.8rem;
+    font-weight: 780;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-premium {
+    border: 1px solid rgba(255, 211, 145, 0.27);
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--plano-dourado),
+            var(--plano-laranja)
+        );
+
+    box-shadow:
+        0 13px 28px rgba(255, 184, 77, 0.22);
+
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
+}
+
+.btn-premium:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.06);
+}
+
+.plano-selecionado {
+    border: 1px solid rgba(101, 189, 255, 0.22);
+
+    color: var(--plano-azul-claro);
+    background: rgba(49, 139, 255, 0.08);
+}
+
+.premium-selecionado {
+    color: #ffd18a;
+
+    border-color: rgba(255, 184, 77, 0.25);
+    background: rgba(255, 184, 77, 0.09);
+}
+
+
+/* =========================================
+   TEMA CLARO
+========================================= */
+
+body:not(.dark) .planos-container {
+    --plano-card:
+        rgba(255, 255, 255, 0.76);
+
+    --plano-card-claro:
+        rgba(15, 23, 42, 0.035);
+
+    --plano-borda:
+        rgba(44, 77, 120, 0.13);
+
+    --plano-sombra:
+        0 20px 48px rgba(31, 65, 110, 0.1);
+}
+
+body:not(.dark) .planos-header {
+    background:
+        linear-gradient(
+            120deg,
+            rgba(49, 139, 255, 0.13),
+            rgba(119, 104, 255, 0.055) 55%,
+            rgba(255, 255, 255, 0.5)
+        ),
+        rgba(255, 255, 255, 0.74);
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 900px) {
+    .planos-header {
+        min-height: 145px;
+
+        padding: 23px;
+
+        border-radius: 21px;
     }
 
-    .preco{
+    .planos-grid {
+        grid-template-columns: 1fr;
+    }
 
-        font-size:32px;
+    .plano-card {
+        min-height: auto;
+    }
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media (max-width: 600px) {
+    .planos-header {
+        min-height: 0;
+
+        margin-bottom: 14px;
+        padding: 20px;
+
+        align-items: stretch;
+        flex-direction: column;
+
+        border-radius: 18px;
+    }
+
+    .planos-header::after {
+        display: none;
+    }
+
+    .planos-header h1 {
+        font-size: 1.55rem;
+    }
+
+    .plano-atual {
+        min-width: 0;
+        width: 100%;
+
+        text-align: left;
+    }
+
+    .planos-grid {
+        gap: 13px;
+    }
+
+    .plano-card {
+        padding: 20px 16px;
+
+        border-radius: 19px;
+    }
+
+    .plano-topo {
+        padding-right: 0;
+    }
+
+    .destaque {
+        position: static;
+
+        width: fit-content;
+
+        margin-bottom: 15px;
+    }
+
+    .preco {
+        margin-top: 23px;
+    }
+
+    .preco strong {
+        font-size: 2.65rem;
+    }
+}
+
+
+/* =========================================
+   ACESSIBILIDADE
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .plano-card,
+    .btn-premium {
+        transition: none;
     }
 }

@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ia.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="ia-container">
+
+    <div class="ia-header">
+        <h1>Assistente Nexus</h1>
+        <p>Seu assistente inteligente para o PDV.</p>
+    </div>
+
+    <div id="chat" class="chat">
+
+        <div class="mensagem ia">
+            👋 Olá! Sou o Assistente Nexus.
+
+            <br><br>
+
+            Posso ajudar com:
+
+            <ul>
+                <li>Vendas</li>
+                <li>Estoque</li>
+                <li>Caixa</li>
+                <li>Produtos</li>
+                <li>Relatórios</li>
+            </ul>
+
+        </div>
+
+    </div>
+
+    <div class="chat-input">
+
+        <input
+            type="text"
+            id="pergunta"
+            placeholder="Digite sua pergunta..."
+        >
+
+        <button id="enviar">
+            Enviar
+        </button>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/ia.js') }}"></script>
+
+{% endblock %}

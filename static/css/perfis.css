@@ -1,816 +1,1324 @@
-/* ==========================================
-PÁGINA
-========================================== */
+/* =========================================
+   GERENCIAR PERFIS — NEXUS
+========================================= */
+
+.perfis,
+.perfis * {
+    box-sizing: border-box;
+}
 
 .perfis {
-    width: 100%;
+    --perfil-azul: #318bff;
+    --perfil-azul-claro: #65bdff;
+    --perfil-roxo: #7768ff;
+    --perfil-verde: #2bd298;
+    --perfil-laranja: #ffad4d;
+    --perfil-vermelho: #ff687a;
+
+    --perfil-texto:
+        var(--text, #f7faff);
+
+    --perfil-texto-secundario:
+        var(--text-secondary, #94a3b8);
+
+    --perfil-card:
+        rgba(24, 39, 64, 0.72);
+
+    --perfil-card-claro:
+        rgba(255, 255, 255, 0.055);
+
+    --perfil-borda:
+        rgba(255, 255, 255, 0.1);
+
+    --perfil-sombra:
+        0 22px 55px rgba(0, 0, 0, 0.22);
+
+    position: relative;
+
+    width: min(100%, 1450px);
+
+    margin: 0 auto;
+
+    color: var(--perfil-texto);
+
+    isolation: isolate;
 }
+
+.perfis::before,
+.perfis::after {
+    content: "";
+
+    position: fixed;
+    z-index: -1;
+
+    width: 340px;
+    height: 340px;
+
+    border-radius: 50%;
+
+    opacity: 0.13;
+    filter: blur(110px);
+
+    pointer-events: none;
+}
+
+.perfis::before {
+    top: 80px;
+    left: 230px;
+
+    background: var(--perfil-azul);
+}
+
+.perfis::after {
+    right: -100px;
+    bottom: -100px;
+
+    background: var(--perfil-roxo);
+}
+
+
+/* =========================================
+   CABEÇALHO
+========================================= */
 
 .page-header {
+    position: relative;
+
+    width: 100%;
+    min-height: 135px;
+
+    margin-bottom: 22px;
+    padding: 27px 29px;
+
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    justify-content: space-between;
+    gap: 20px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--perfil-borda);
+    border-radius: 24px;
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(49, 139, 255, 0.17),
+            rgba(119, 104, 255, 0.08) 55%,
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--perfil-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.09),
+        var(--perfil-sombra);
+
+    backdrop-filter: blur(26px) saturate(140%);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
 }
 
+.page-header::before {
+    content: "";
+
+    position: absolute;
+
+    top: -105px;
+    right: -65px;
+
+    width: 280px;
+    height: 280px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(74, 158, 255, 0.38),
+            rgba(74, 158, 255, 0.04) 65%,
+            transparent 72%
+        );
+
+    pointer-events: none;
+}
+
+.page-header::after {
+    content: "FUNC";
+
+    position: absolute;
+
+    right: 35px;
+    bottom: -8px;
+
+    color: rgba(255, 255, 255, 0.025);
+
+    font-size: clamp(4rem, 9vw, 7rem);
+    font-weight: 900;
+    line-height: 1;
+
+    pointer-events: none;
+}
+
+.page-header > div,
+.page-header > button {
+    position: relative;
+    z-index: 1;
+}
 
 .page-header h1 {
-    font-size: 42px;
-    margin-bottom: 5px;
-    color: var(--text);
+    margin: 0;
+
+    color: var(--perfil-texto);
+
+    font-size: clamp(1.65rem, 4vw, 2.5rem);
+    font-weight: 790;
+    line-height: 1.15;
+
+    letter-spacing: -0.045em;
 }
 
 .page-header p {
-    color: var(--text-secondary);
+    margin: 8px 0 0;
+
+    color: var(--perfil-texto-secundario);
+
+    font-size: 0.88rem;
 }
 
+
+/* =========================================
+   BOTÃO NOVO FUNCIONÁRIO
+========================================= */
+
 .btn-novo-funcionario {
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    padding: 12px 18px;
-    border-radius: 12px;
+    flex: 0 0 auto;
+
+    min-height: 45px;
+
+    padding: 0 18px;
+
+    border: 1px solid rgba(145, 210, 255, 0.28);
+    border-radius: 14px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--perfil-azul-claro),
+            var(--perfil-azul) 52%,
+            #4d68ed
+        );
+
+    box-shadow:
+        0 13px 28px rgba(49, 139, 255, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24);
+
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 750;
+
     cursor: pointer;
-    font-weight: 600;
+
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .btn-novo-funcionario:hover {
-    opacity: .9;
+    transform: translateY(-3px);
+
+    filter: brightness(1.07);
+
+    box-shadow:
+        0 17px 34px rgba(49, 139, 255, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.27);
 }
 
-/* ==========================================
-CARD PADRÃO
-========================================== */
-
-.card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+.btn-novo-funcionario:active {
+    transform: translateY(0) scale(0.98);
 }
 
-/* ==========================================
-CADASTRO
-========================================== */
 
-.cadastro-box {
-    padding: 25px;
-    margin-bottom: 30px;
-}
-
-.cadastro-box h2 {
-    margin-bottom: 20px;
-    color: var(--text);
-}
-
-.cadastro-box form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.cadastro-box input {
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: var(--background-secondary);
-    color: var(--text);
-    font-size: 15px;
-}
-
-.cadastro-box input:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-.cadastro-box button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 12px;
-    background: var(--primary);
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: .3s;
-}
-
-.cadastro-box button:hover {
-    background: var(--primary-hover);
-}
-
-/* ==========================================
-GRID FUNCIONÁRIOS
-========================================== */
+/* =========================================
+   GRID DE FUNCIONÁRIOS
+========================================= */
 
 .funcionarios-grid {
+    width: 100%;
+
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
+    grid-template-columns:
+        repeat(auto-fill, minmax(330px, 1fr));
+    gap: 16px;
 }
 
-/* ==========================================
-CARD FUNCIONÁRIO
-========================================== */
+
+/* =========================================
+   CARD DO FUNCIONÁRIO
+========================================= */
 
 .funcionario-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 18px;
+    position: relative;
+
+    min-width: 0;
+    min-height: 220px;
+
     padding: 20px;
-    transition: .3s;
+
+    overflow: hidden;
+
+    border: 1px solid var(--perfil-borda);
+    border-radius: 21px;
+
+    color: var(--perfil-texto);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.075),
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--perfil-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.075),
+        var(--perfil-sombra);
+
+    backdrop-filter: blur(25px) saturate(135%);
+    -webkit-backdrop-filter: blur(25px) saturate(135%);
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.funcionario-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 3px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--perfil-azul),
+            var(--perfil-roxo),
+            transparent 90%
+        );
+}
+
+.funcionario-card::after {
+    content: "";
+
+    position: absolute;
+
+    right: -55px;
+    bottom: -65px;
+
+    width: 160px;
+    height: 160px;
+
+    border-radius: 50%;
+
+    opacity: 0.07;
+    filter: blur(6px);
+
+    background: var(--perfil-azul);
+
+    pointer-events: none;
 }
 
 .funcionario-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--primary);
+    transform: translateY(-5px);
+
+    border-color: rgba(94, 181, 255, 0.3);
+
+    box-shadow:
+        0 28px 60px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+
+/* =========================================
+   TOPO DO CARD
+========================================= */
+
 .funcionario-topo {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+
     margin-bottom: 20px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.funcionario-topo > div:first-child {
+    position: relative;
+
+    min-width: 0;
+
+    padding-left: 49px;
+}
+
+.funcionario-topo > div:first-child::before {
+    content: attr(data-inicial);
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(105, 191, 255, 0.27);
+    border-radius: 12px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--perfil-azul),
+            var(--perfil-roxo)
+        );
+
+    box-shadow:
+        0 10px 22px rgba(49, 139, 255, 0.2);
+
+    font-size: 0.8rem;
+    font-weight: 800;
 }
 
 .funcionario-topo h3 {
+    max-width: 190px;
+
     margin: 0;
-    font-size: 20px;
-    color: var(--text);
+
+    color: var(--perfil-texto);
+
+    font-size: 1.03rem;
+    font-weight: 750;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.funcionario-topo div span {
+.funcionario-topo > div:first-child > span {
     display: block;
+
     margin-top: 5px;
-    color: var(--text-secondary);
-    font-size: 14px;
+
+    color: var(--perfil-texto-secundario);
+
+    font-size: 0.7rem;
 }
 
-/* ==========================================
-STATUS
-========================================== */
+.lado-direito-funcionario {
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+/* =========================================
+   STATUS
+========================================= */
+
+.ativo,
+.bloqueado {
+    display: inline-flex !important;
+    align-items: center;
+
+    min-height: 27px;
+
+    margin: 0 !important;
+    padding: 5px 9px;
+
+    border: 1px solid;
+    border-radius: 999px;
+
+    font-size: 0.67rem !important;
+    font-weight: 750;
+}
 
 .ativo {
-    background: rgba(34, 197, 94, .15);
-    color: #22c55e !important;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 13px !important;
-    font-weight: 600;
+    color: #63e5b5 !important;
+
+    border-color: rgba(43, 210, 152, 0.27);
+    background: rgba(43, 210, 152, 0.09);
+}
+
+.ativo::before {
+    content: "";
+
+    width: 6px;
+    height: 6px;
+
+    margin-right: 6px;
+
+    border-radius: 50%;
+
+    background: var(--perfil-verde);
+
+    box-shadow:
+        0 0 9px rgba(43, 210, 152, 0.7);
 }
 
 .bloqueado {
-    background: rgba(239, 68, 68, .15);
-    color: #ef4444 !important;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 13px !important;
-    font-weight: 600;
+    color: #ff97a4 !important;
+
+    border-color: rgba(255, 104, 122, 0.27);
+    background: rgba(255, 104, 122, 0.09);
 }
 
-/* ==========================================
-AÇÕES
-========================================== */
+.bloqueado::before {
+    content: "";
 
-.dropdown-content {
+    width: 6px;
+    height: 6px;
+
+    margin-right: 6px;
+
+    border-radius: 50%;
+
+    background: var(--perfil-vermelho);
+}
+
+
+/* =========================================
+   BOTÃO DE OPÇÕES
+========================================= */
+
+.btn-opcoes {
+    flex: 0 0 auto;
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
     display: flex;
-    gap: 10px;
-}
-
-.dropdown-content a {
-    flex: 1;
-    text-align: center;
-    text-decoration: none;
-    padding: 10px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    transition: .2s;
-}
-
-/* Bloquear */
-
-.dropdown-content a:nth-child(1) {
-    background: rgba(239, 68, 68, .15);
-    color: #ef4444;
-}
-
-.dropdown-content a:nth-child(1):hover {
-    transform: translateY(-2px);
-}
-
-/* Liberar */
-
-.dropdown-content a:nth-child(2) {
-    background: rgba(34, 197, 94, .15);
-    color: #22c55e;
-}
-
-.dropdown-content a:nth-child(2):hover {
-    transform: translateY(-2px);
-}
-
-/* Excluir */
-
-.dropdown-content a:nth-child(3) {
-    background: rgba(168, 85, 247, .15);
-    color: #a855f7;
-}
-
-.dropdown-content a:nth-child(3):hover {
-    transform: translateY(-2px);
-}
-
-.modal-funcionario {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, .6);
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
 
-.modal-funcionario-content {
-    width: 450px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 25px;
-}
+    border: 1px solid var(--perfil-borda);
+    border-radius: 11px;
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
+    color: var(--perfil-texto-secundario);
+    background: var(--perfil-card-claro);
 
-.fechar-modal {
+    font-size: 1.2rem;
+    line-height: 1;
+
     cursor: pointer;
-    font-size: 22px;
+
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 
-.modal-funcionario form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.btn-opcoes:hover {
+    transform: translateY(-2px);
+
+    color: #ffffff;
+
+    border-color: rgba(95, 184, 255, 0.32);
+    background: rgba(49, 139, 255, 0.13);
 }
 
-.modal-funcionario input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: var(--background-secondary);
-    color: var(--text);
-}
 
-.modal-funcionario button {
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-/* ==========================================
-ESTATÍSTICAS FUNCIONÁRIO
-========================================== */
+/* =========================================
+   ESTATÍSTICAS
+========================================= */
 
 .estatisticas-funcionario {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 20px;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 9px;
 }
 
-.estatisticas-funcionario div {
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px;
+.estatisticas-funcionario > div {
+    min-width: 0;
+    min-height: 80px;
+
+    padding: 11px 8px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--perfil-borda);
+    border-radius: 13px;
+
     text-align: center;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.055),
+            rgba(255, 255, 255, 0.018)
+        );
 }
 
 .estatisticas-funcionario small {
     display: block;
-    color: var(--text-secondary);
-    font-size: 12px;
+
+    min-height: 28px;
+
     margin-bottom: 6px;
+
+    color: var(--perfil-texto-secundario);
+
+    font-size: 0.62rem;
+    line-height: 1.3;
 }
 
 .estatisticas-funcionario strong {
-    color: var(--primary);
-    font-size: 15px;
+    display: block;
+
+    max-width: 100%;
+
+    color: var(--perfil-azul-claro);
+
+    font-size: 0.77rem;
+    font-weight: 800;
+    line-height: 1.25;
+
+    overflow-wrap: anywhere;
 }
 
-/* ==========================================
-TOPO CARD
-========================================== */
-
-.lado-direito-funcionario {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.estatisticas-funcionario > div:nth-child(2) strong {
+    color: #b3aaff;
 }
 
-.btn-opcoes {
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 10px;
-    background: transparent;
-    color: var(--text);
-    cursor: pointer;
-    font-size: 20px;
-    transition: .2s;
+.estatisticas-funcionario > div:nth-child(3) strong {
+    color: #63e5b5;
 }
 
-.btn-opcoes:hover {
-    background: var(--background);
-}
 
-/* ==========================================
-MODAL DETALHES
-========================================== */
-
-#conteudoDetalhes {
-    margin-top: 10px;
-}
-
-#conteudoDetalhes h2 {
-    margin-bottom: 20px;
-    color: var(--text);
-}
-
-#conteudoDetalhes p {
-    margin-bottom: 12px;
-    color: var(--text-secondary);
-    font-size: 15px;
-}
-
-#conteudoDetalhes b {
-    color: var(--text);
-}
-
-#conteudoDetalhes hr {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 20px 0;
-}
-
-/* ==========================================
-AÇÕES MODAL
-========================================== */
-
-.acoes-modal {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.acoes-modal a {
-    flex: 1;
-    min-width: 120px;
-    text-align: center;
-    text-decoration: none;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: .2s;
-}
-
-.btn-bloquear {
-    background: #f59e0b;
-    color: white;
-}
-
-.btn-bloquear:hover {
-    transform: translateY(-2px);
-}
-
-.btn-liberar {
-    background: #10b981;
-    color: white;
-}
-
-.btn-liberar:hover {
-    transform: translateY(-2px);
-}
-
-.btn-excluir {
-    background: #ef4444;
-    color: white;
-}
-
-.btn-excluir:hover {
-    transform: translateY(-2px);
-}
-
-/* ==========================================
-FUNCIONÁRIO CARD
-========================================== */
-
-.funcionario-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 20px;
-    transition: .3s;
-}
-
-.funcionario-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--primary);
-}
-
-.funcionario-topo {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.funcionario-topo h3 {
-    margin: 0;
-    color: var(--text);
-    font-size: 18px;
-}
-
-.funcionario-topo span {
-    color: var(--text-secondary);
-    font-size: 13px;
-}
-
-/* ==========================================
-STATUS
-========================================== */
-
-.ativo {
-    background: #10b98120;
-    color: #10b981;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.bloqueado {
-    background: #ef444420;
-    color: #ef4444;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-/* ==========================================
-MODAL BONITO
-========================================== */
+/* =========================================
+   FUNDO DO MODAL
+========================================= */
 
 .modal-funcionario {
-    display: none;
     position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, .6);
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
     z-index: 9999;
+
+    inset: 0;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    background: rgba(4, 10, 21, 0.72);
+
+    backdrop-filter: blur(13px);
+    -webkit-backdrop-filter: blur(13px);
 }
+
+
+/* =========================================
+   CONTEÚDO DO MODAL
+========================================= */
 
 .modal-funcionario-content {
-    width: 100%;
-    max-width: 600px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 25px;
     position: relative;
-    animation: modalShow .25s ease;
+
+    width: min(100%, 620px);
+    max-height: calc(100dvh - 40px);
+
+    padding: 25px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    border: 1px solid var(--perfil-borda);
+    border-radius: 23px;
+
+    color: var(--perfil-texto);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.09),
+            rgba(255, 255, 255, 0.03)
+        ),
+        rgba(18, 31, 53, 0.94);
+
+    box-shadow:
+        0 35px 90px rgba(0, 0, 0, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.11);
+
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+
+    animation: modal-aparecendo 0.25s ease both;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(94, 181, 255, 0.35)
+        transparent;
 }
 
-@keyframes modalShow {
+.modal-funcionario-content::-webkit-scrollbar {
+    width: 6px;
+}
 
+.modal-funcionario-content::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(94, 181, 255, 0.35);
+}
+
+.modal-funcionario-content::before {
+    content: "";
+
+    position: absolute;
+
+    top: -90px;
+    right: -75px;
+
+    width: 210px;
+    height: 210px;
+
+    border-radius: 50%;
+
+    opacity: 0.15;
+    filter: blur(18px);
+
+    background: var(--perfil-azul);
+
+    pointer-events: none;
+}
+
+@keyframes modal-aparecendo {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(18px) scale(0.98);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
+}
 
+
+/* =========================================
+   CABEÇALHO DO MODAL
+========================================= */
+
+.modal-header {
+    position: relative;
+
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.modal-header h2,
+#conteudoDetalhes h2 {
+    margin: 0;
+
+    color: var(--perfil-texto);
+
+    font-size: 1.35rem;
+    font-weight: 780;
+
+    letter-spacing: -0.025em;
+}
+
+#conteudoDetalhes h2 {
+    margin-bottom: 20px;
+
+    color: var(--perfil-azul-claro);
 }
 
 .fechar-modal {
     position: absolute;
-    top: 15px;
-    right: 20px;
+
+    top: 17px;
+    right: 19px;
+    z-index: 2;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--perfil-borda);
+    border-radius: 11px;
+
+    color: var(--perfil-texto-secundario);
+    background: var(--perfil-card-claro);
+
+    font-size: 1rem;
+    line-height: 1;
+
     cursor: pointer;
-    font-size: 22px;
-    color: var(--text-secondary);
+
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.modal-header .fechar-modal {
+    position: static;
 }
 
 .fechar-modal:hover {
-    color: var(--text);
+    transform: rotate(8deg);
+
+    color: #ffffff;
+    background: rgba(255, 104, 122, 0.13);
 }
 
-/* ==========================================
-MODAL DETALHES FUNCIONÁRIO
-========================================== */
 
-#conteudoDetalhes h2 {
-    color: var(--primary);
-    margin-bottom: 20px;
-    font-size: 24px;
+/* =========================================
+   FORMULÁRIO DO MODAL
+========================================= */
+
+.modal-funcionario form {
+    position: relative;
+
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-#conteudoDetalhes p {
-    margin-bottom: 10px;
-    color: var(--text);
+.modal-funcionario input,
+.modal-funcionario select {
+    width: 100%;
+    height: 47px;
+
+    padding: 0 14px;
+
+    border: 1px solid var(--perfil-borda);
+    border-radius: 13px;
+    outline: 0;
+
+    color: var(--perfil-texto);
+    background: rgba(7, 18, 34, 0.5);
+
+    font: inherit;
+    font-size: 0.85rem;
+
+    color-scheme: dark;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
-#conteudoDetalhes b {
-    color: var(--text-secondary);
+.modal-funcionario input::placeholder {
+    color: rgba(210, 225, 244, 0.44);
 }
 
-/* ==========================================
-HISTÓRICO DE VENDAS
-========================================== */
+.modal-funcionario input:focus,
+.modal-funcionario select:focus {
+    border-color: rgba(94, 181, 255, 0.55);
+
+    box-shadow:
+        0 0 0 3px rgba(49, 139, 255, 0.11);
+}
+
+.modal-funcionario select option {
+    color: #ffffff;
+    background: #17263f;
+}
+
+.modal-funcionario form > button {
+    width: 100%;
+    min-height: 47px;
+
+    margin-top: 4px;
+
+    border: 1px solid rgba(142, 208, 255, 0.27);
+    border-radius: 13px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--perfil-azul-claro),
+            var(--perfil-azul) 52%,
+            #4c68ed
+        );
+
+    box-shadow:
+        0 12px 27px rgba(49, 139, 255, 0.23),
+        inset 0 1px 0 rgba(255, 255, 255, 0.23);
+
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
+}
+
+.modal-funcionario form > button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.07);
+}
+
+
+/* =========================================
+   DETALHES DO FUNCIONÁRIO
+========================================= */
+
+#conteudoDetalhes {
+    position: relative;
+
+    padding-top: 4px;
+}
+
+#conteudoDetalhes > p {
+    margin: 0;
+    padding: 10px 2px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    border-bottom: 1px solid var(--perfil-borda);
+
+    color: var(--perfil-texto);
+
+    font-size: 0.8rem;
+}
+
+#conteudoDetalhes > p b {
+    color: var(--perfil-texto-secundario);
+
+    font-weight: 650;
+}
+
+#conteudoDetalhes hr {
+    margin: 20px 0;
+
+    border: 0;
+    border-top: 1px solid var(--perfil-borda);
+}
+
+
+/* =========================================
+   HISTÓRICO
+========================================= */
 
 .historico-vendas {
-    max-height: 320px;
-    overflow-y: auto;
+    max-height: 340px;
+
     margin-top: 15px;
     padding-right: 5px;
-}
 
-.historico-vendas::-webkit-scrollbar {
-    width: 6px;
-}
+    overflow-y: auto;
 
-.historico-vendas::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 20px;
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(94, 181, 255, 0.35)
+        transparent;
 }
 
 .item-historico {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
+    margin-bottom: 10px;
+    padding: 13px;
+
+    border: 1px solid var(--perfil-borda);
     border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 12px;
-    transition: .3s;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.055),
+            rgba(255, 255, 255, 0.018)
+        );
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .item-historico:hover {
-    border-color: var(--primary);
-    transform: translateY(-2px);
+    transform: translateX(3px);
+
+    border-color: rgba(94, 181, 255, 0.28);
 }
 
 .item-historico strong {
     display: block;
-    font-size: 15px;
-    margin-bottom: 8px;
-    color: var(--primary);
+
+    margin-bottom: 7px;
+
+    color: var(--perfil-azul-claro);
+
+    font-size: 0.84rem;
 }
 
 .item-historico p {
-    margin: 4px 0;
-    font-size: 14px;
-    color: var(--text-secondary);
+    margin: 4px 0 !important;
+    padding: 0 !important;
+
+    display: block !important;
+
+    border: 0 !important;
+
+    color: var(--perfil-texto-secundario) !important;
+
+    font-size: 0.72rem !important;
 }
 
-/* ==========================================
-AÇÕES MODAL
-========================================== */
+
+/* =========================================
+   AÇÕES DO MODAL
+========================================= */
 
 .acoes-modal {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 20px;
+    width: 100%;
+
+    margin-top: 21px;
+
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 9px;
 }
 
 .acoes-modal a {
-    flex: 1;
+    min-width: 0;
+    min-height: 42px;
+
+    padding: 10px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--perfil-borda);
+    border-radius: 12px;
+
+    color: #ffffff;
+
+    font-size: 0.75rem;
+    font-weight: 750;
     text-align: center;
     text-decoration: none;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: .3s;
+
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease,
+        border-color 0.2s ease;
 }
 
-/* Bloquear */
-
-.btn-bloquear {
-    background: #0f104b;
-    border: #ffffff;
-    color: rgb(255, 255, 255);
-}
-
-.btn-bloquear:hover {
+.acoes-modal a:hover {
     transform: translateY(-2px);
-}
-
-/* Liberar */
-
-.btn-liberar {
-    background: #0f104b;
-    border: #ffffff;
-    color: rgb(255, 255, 255);
-}
-
-.btn-liberar:hover {
-    transform: translateY(-2px);
-}
-
-/* Excluir */
-
-.btn-excluir {
-   background: #0f104b;
-    border: #ffffff;
-    color: rgb(255, 255, 255);
-}
-
-.btn-excluir:hover {
-    transform: translateY(-2px);
+    filter: brightness(1.08);
 }
 
 .btn-dashboard {
-    background: #0f104b;
-    border: #ffffff;
-    color: rgb(255, 255, 255);
+    border-color: rgba(94, 181, 255, 0.27) !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(49, 139, 255, 0.88),
+            rgba(75, 103, 237, 0.88)
+        );
 }
 
-.btn-dashboard:hover {
-    transform: translateY(-2px);
+.btn-bloquear {
+    border-color: rgba(255, 173, 77, 0.28) !important;
 
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 173, 77, 0.88),
+            rgba(224, 125, 42, 0.88)
+        );
 }
 
-/* ==========================================
-RESUMO FUNCIONÁRIO
-========================================== */
+.btn-liberar {
+    border-color: rgba(43, 210, 152, 0.28) !important;
 
-.estatisticas-funcionario {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 20px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(43, 210, 152, 0.88),
+            rgba(21, 154, 115, 0.88)
+        );
 }
 
-.estatisticas-funcionario div {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px;
-    text-align: center;
-}
+.btn-excluir {
+    border-color: rgba(255, 104, 122, 0.28) !important;
 
-.estatisticas-funcionario small {
-    display: block;
-    color: var(--text-secondary);
-    margin-bottom: 5px;
-}
-
-.estatisticas-funcionario strong {
-    color: var(--primary);
-    font-size: 16px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 104, 122, 0.88),
+            rgba(211, 58, 84, 0.88)
+        );
 }
 
 
-/* ==========================================
-RESPONSIVO
-========================================== */
+/* =========================================
+   TEMA CLARO
+========================================= */
 
-@media (max-width: 768px) {
+body:not(.dark) .perfis {
+    --perfil-card:
+        rgba(255, 255, 255, 0.76);
 
-    /* =========================
-       HEADER
-    ========================= */
+    --perfil-card-claro:
+        rgba(15, 23, 42, 0.035);
+
+    --perfil-borda:
+        rgba(44, 77, 120, 0.13);
+
+    --perfil-sombra:
+        0 20px 48px rgba(31, 65, 110, 0.1);
+}
+
+body:not(.dark) .page-header {
+    background:
+        linear-gradient(
+            120deg,
+            rgba(49, 139, 255, 0.13),
+            rgba(119, 104, 255, 0.055) 55%,
+            rgba(255, 255, 255, 0.5)
+        ),
+        rgba(255, 255, 255, 0.74);
+}
+
+body:not(.dark) .modal-funcionario {
+    background: rgba(19, 36, 59, 0.42);
+}
+
+body:not(.dark) .modal-funcionario-content {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.92),
+            rgba(242, 247, 255, 0.88)
+        );
+}
+
+body:not(.dark) .modal-funcionario input,
+body:not(.dark) .modal-funcionario select {
+    color-scheme: light;
+
+    background: rgba(236, 243, 252, 0.8);
+}
+
+body:not(.dark) .modal-funcionario select option {
+    color: #0f172a;
+    background: #ffffff;
+}
+
+
+/* =========================================
+   NOTEBOOK
+========================================= */
+
+@media (max-width: 1150px) {
+    .funcionarios-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 800px) {
     .page-header {
+        min-height: 120px;
+
+        padding: 23px;
+
+        border-radius: 21px;
+    }
+
+    .funcionarios-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .funcionario-card {
+        min-height: 205px;
+    }
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media (max-width: 560px) {
+    .page-header {
+        min-height: 0;
+
+        margin-bottom: 15px;
+        padding: 20px;
+
+        align-items: stretch;
         flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+
+        border-radius: 18px;
+    }
+
+    .page-header::after {
+        display: none;
     }
 
     .page-header h1 {
-        font-size: 26px;
-    }
-
-    .page-header p {
-        font-size: 14px;
+        font-size: 1.5rem;
     }
 
     .btn-novo-funcionario {
         width: 100%;
-        text-align: center;
     }
 
-    /* =========================
-       CADASTRO
-    ========================= */
-    .cadastro-box {
-        padding: 18px;
-    }
-
-    .cadastro-box input,
-    .cadastro-box button {
-        font-size: 14px;
-        padding: 12px;
-    }
-
-    /* =========================
-       GRID FUNCIONÁRIOS
-    ========================= */
     .funcionarios-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
+        gap: 12px;
     }
 
     .funcionario-card {
+        min-height: 0;
+
         padding: 16px;
+
+        border-radius: 18px;
     }
 
-    /* =========================
-       TOPO CARD
-    ========================= */
     .funcionario-topo {
-        flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+    }
+
+    .funcionario-topo > div:first-child {
+        padding-left: 0;
+    }
+
+    .funcionario-topo > div:first-child::before {
+        display: none;
     }
 
     .funcionario-topo h3 {
-        font-size: 18px;
+        max-width: 145px;
     }
 
-    /* =========================
-       STATUS
-    ========================= */
-    .ativo,
-    .bloqueado {
-        font-size: 11px;
-        padding: 5px 10px;
+    .lado-direito-funcionario {
+        gap: 5px;
     }
 
-    /* =========================
-       ESTATÍSTICAS
-    ========================= */
     .estatisticas-funcionario {
         grid-template-columns: 1fr;
-        gap: 10px;
     }
 
-    .estatisticas-funcionario div {
+    .estatisticas-funcionario > div {
+        min-height: 62px;
+
+        padding: 10px 12px;
+
+        align-items: flex-start;
+
+        text-align: left;
+    }
+
+    .estatisticas-funcionario small {
+        min-height: 0;
+    }
+
+    .modal-funcionario {
         padding: 10px;
     }
 
-    /* =========================
-       DROPDOWN AÇÕES
-    ========================= */
-    .dropdown-content {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .dropdown-content a {
-        font-size: 13px;
-        padding: 10px;
-    }
-
-    /* =========================
-       MODAL
-    ========================= */
     .modal-funcionario-content {
-        width: 92%;
-        padding: 18px;
-        border-radius: 16px;
-    }
-
-    .fechar-modal {
-        font-size: 20px;
-        top: 12px;
-        right: 15px;
-    }
-
-    /* =========================
-       AÇÕES MODAL
-    ========================= */
-    .acoes-modal {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .acoes-modal a {
         width: 100%;
-        font-size: 14px;
+        max-height: calc(100dvh - 20px);
+
+        padding: 20px 16px;
+
+        border-radius: 18px;
+    }
+
+    .modal-header h2,
+    #conteudoDetalhes h2 {
+        padding-right: 40px;
+
+        font-size: 1.15rem;
+    }
+
+    #conteudoDetalhes > p {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .acoes-modal {
+        grid-template-columns: 1fr;
     }
 }
 
+
+/* =========================================
+   ACESSIBILIDADE
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .funcionario-card,
+    .btn-novo-funcionario,
+    .btn-opcoes,
+    .item-historico,
+    .acoes-modal a {
+        transition: none;
+    }
+
+    .modal-funcionario-content {
+        animation: none;
+    }
+}

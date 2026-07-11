@@ -268,7 +268,116 @@ def registrar_rotas(app):
 
         return redirect("/admin")
 
+    # ==========================================
+    # ALTERAR PLANO DA EMPRESA
+    # ==========================================
 
+    @app.route(
+        "/alterar_plano_empresa/<int:empresa_id>",
+        methods=["POST"]
+    )
+    def alterar_plano_empresa(
+        empresa_id
+    ):
+
+        if not session.get("logado"):
+            return redirect("/")
+
+        if session.get("nivel") != "master":
+            return redirect("/dashboard")
+
+        plano = request.form.get(
+            "plano",
+            ""
+        ).strip().lower()
+
+        planos_validos = (
+            "comum",
+            "premium"
+        )
+
+        if plano not in planos_validos:
+
+            flash(
+                "Plano inválido.",
+                "erro"
+            )
+
+            return redirect("/admin")
+
+        conn = conectar()
+
+        cursor = conn.cursor(
+            cursor_factory=(
+                psycopg2.extras.RealDictCursor
+            )
+        )
+
+        try:
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    nome,
+                    plano
+                FROM empresa
+                WHERE id = %s
+                """,
+                (
+                    empresa_id,
+                )
+            )
+
+            empresa = cursor.fetchone()
+
+            if not empresa:
+
+                flash(
+                    "Empresa não encontrada.",
+                    "erro"
+                )
+
+                return redirect("/admin")
+
+            cursor.execute(
+                """
+                UPDATE empresa
+                SET plano = %s
+                WHERE id = %s
+                """,
+                (
+                    plano,
+                    empresa_id
+                )
+            )
+
+            conn.commit()
+
+            flash(
+                (
+                    f"Plano da empresa "
+                    f"{empresa['nome']} alterado "
+                    f"para {plano.upper()}."
+                ),
+                "sucesso"
+            )
+
+        except Exception:
+
+            conn.rollback()
+
+            flash(
+                "Não foi possível alterar o plano.",
+                "erro"
+            )
+
+        finally:
+
+            cursor.close()
+            conn.close()
+
+        return redirect("/admin")
     # ==========================================
     # EXCLUIR EMPRESA
     # ==========================================

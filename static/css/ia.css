@@ -1,0 +1,729 @@
+
+/* =========================================
+   ASSISTENTE NEXUS
+========================================= */
+
+.ia-container,
+.ia-container * {
+    box-sizing: border-box;
+}
+
+.ia-container {
+    --ia-primary: #258cff;
+    --ia-primary-light: #55b7ff;
+    --ia-text: #f7fbff;
+    --ia-muted: rgba(224, 237, 255, 0.68);
+    --ia-glass: rgba(17, 28, 48, 0.58);
+    --ia-glass-light: rgba(255, 255, 255, 0.075);
+    --ia-border: rgba(255, 255, 255, 0.11);
+    --ia-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+
+    position: relative;
+
+    width: min(100%, 1100px);
+    height: calc(100dvh - 80px);
+    min-height: 560px;
+    max-height: 950px;
+
+    margin: 0 auto;
+    padding: 24px;
+
+    display: flex;
+    flex-direction: column;
+
+    color: var(--ia-text);
+
+    overflow: hidden;
+    isolation: isolate;
+}
+
+
+/* =========================================
+   LUZES DE FUNDO
+========================================= */
+
+.ia-container::before,
+.ia-container::after {
+    content: "";
+
+    position: absolute;
+    z-index: -1;
+
+    width: 320px;
+    height: 320px;
+
+    border-radius: 50%;
+
+    filter: blur(90px);
+    opacity: 0.22;
+
+    pointer-events: none;
+}
+
+.ia-container::before {
+    top: -150px;
+    left: -130px;
+
+    background: #168cff;
+}
+
+.ia-container::after {
+    right: -150px;
+    bottom: -160px;
+
+    background: #725bff;
+}
+
+
+/* =========================================
+   CABEÇALHO
+========================================= */
+
+.ia-header {
+    flex: 0 0 auto;
+
+    margin-bottom: 20px;
+    padding: 0 4px;
+}
+
+.ia-header h1 {
+    margin: 0;
+
+    font-size: clamp(1.55rem, 3vw, 2.15rem);
+    font-weight: 750;
+    line-height: 1.2;
+
+    color: var(--ia-text);
+
+    letter-spacing: -0.035em;
+}
+
+.ia-header p {
+    margin: 7px 0 0;
+
+    font-size: 0.95rem;
+    line-height: 1.5;
+
+    color: var(--ia-muted);
+}
+
+
+/* =========================================
+   ÁREA DO CHAT
+========================================= */
+
+.chat {
+    position: relative;
+
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+
+    padding: clamp(16px, 3vw, 28px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+
+    border: 1px solid var(--ia-border);
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.075),
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--ia-glass);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        var(--ia-shadow);
+
+    backdrop-filter: blur(28px) saturate(135%);
+    -webkit-backdrop-filter: blur(28px) saturate(135%);
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(112, 174, 255, 0.45)
+        transparent;
+}
+
+.chat::-webkit-scrollbar {
+    width: 7px;
+}
+
+.chat::-webkit-scrollbar-track {
+    margin: 18px 0;
+
+    background: transparent;
+}
+
+.chat::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background: rgba(112, 174, 255, 0.42);
+}
+
+.chat::-webkit-scrollbar-thumb:hover {
+    background: rgba(112, 174, 255, 0.65);
+}
+
+
+/* =========================================
+   BALÕES DE MENSAGEM
+========================================= */
+
+.mensagem {
+    position: relative;
+
+    width: fit-content;
+    min-width: 48px;
+    max-width: min(76%, 720px);
+
+    padding: 13px 17px;
+
+    border: 1px solid var(--ia-border);
+    border-radius: 20px;
+
+    font-size: 0.96rem;
+    line-height: 1.58;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+
+    box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.075);
+
+    backdrop-filter: blur(22px) saturate(135%);
+    -webkit-backdrop-filter: blur(22px) saturate(135%);
+
+    animation: mensagem-entrando 0.28s ease both;
+}
+
+
+/* =========================================
+   MENSAGEM DA IA
+========================================= */
+
+.mensagem.ia {
+    align-self: flex-start;
+
+    color: rgba(248, 251, 255, 0.96);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.105),
+            rgba(255, 255, 255, 0.045)
+        ),
+        rgba(17, 29, 49, 0.72);
+
+    border-bottom-left-radius: 7px;
+}
+
+.mensagem.ia::before {
+    content: "";
+
+    position: absolute;
+
+    left: -1px;
+    bottom: -1px;
+
+    width: 16px;
+    height: 16px;
+
+    border-bottom-left-radius: 7px;
+
+    box-shadow:
+        -5px 5px 0 -1px
+        rgba(17, 29, 49, 0.72);
+
+    pointer-events: none;
+}
+
+
+/* =========================================
+   MENSAGEM DO USUÁRIO
+========================================= */
+
+.mensagem.usuario {
+    align-self: flex-end;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(44, 151, 255, 0.94),
+            rgba(65, 99, 238, 0.9)
+        );
+
+    border-color: rgba(159, 213, 255, 0.3);
+    border-bottom-right-radius: 7px;
+
+    box-shadow:
+        0 13px 30px rgba(25, 105, 230, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.mensagem.usuario::after {
+    content: "";
+
+    position: absolute;
+
+    right: -1px;
+    bottom: -1px;
+
+    width: 16px;
+    height: 16px;
+
+    border-bottom-right-radius: 7px;
+
+    box-shadow:
+        5px 5px 0 -1px
+        rgba(65, 99, 238, 0.9);
+
+    pointer-events: none;
+}
+
+
+/* =========================================
+   CONTEÚDO DAS MENSAGENS
+========================================= */
+
+.mensagem p {
+    margin: 0;
+}
+
+.mensagem p + p {
+    margin-top: 10px;
+}
+
+.mensagem ul,
+.mensagem ol {
+    margin: 10px 0 0;
+    padding-left: 22px;
+
+    white-space: normal;
+}
+
+.mensagem li {
+    margin: 5px 0;
+
+    line-height: 1.45;
+}
+
+.mensagem strong {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.mensagem img {
+    display: block;
+
+    width: auto;
+    max-width: 100%;
+    max-height: min(420px, 55vh);
+
+    margin-top: 10px;
+
+    object-fit: contain;
+
+    border-radius: 14px;
+}
+
+.mensagem a {
+    color: #81c8ff;
+
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+
+/* =========================================
+   ESTADOS
+========================================= */
+
+.mensagem.carregando {
+    color: var(--ia-muted);
+
+    animation:
+        mensagem-entrando 0.28s ease both,
+        carregando-pulso 1.4s ease-in-out infinite;
+}
+
+.mensagem.erro {
+    color: #ffd5d5;
+
+    border-color: rgba(255, 98, 98, 0.35);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 79, 79, 0.14),
+            rgba(255, 79, 79, 0.06)
+        ),
+        rgba(35, 18, 25, 0.72);
+}
+
+
+/* =========================================
+   CAMPO DE ENVIO
+========================================= */
+
+.chat-input {
+    flex: 0 0 auto;
+
+    width: 100%;
+    min-width: 0;
+
+    margin-top: 16px;
+    padding: 7px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    border: 1px solid var(--ia-border);
+    border-radius: 22px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.035)
+        ),
+        rgba(14, 25, 43, 0.74);
+
+    box-shadow:
+        0 16px 38px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.075);
+
+    backdrop-filter: blur(24px) saturate(135%);
+    -webkit-backdrop-filter: blur(24px) saturate(135%);
+}
+
+.chat-input input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 48px;
+
+    padding: 0 15px;
+
+    border: 0;
+    outline: 0;
+
+    color: var(--ia-text);
+    background: transparent;
+
+    font: inherit;
+    font-size: 0.96rem;
+}
+
+.chat-input input::placeholder {
+    color: rgba(216, 230, 249, 0.48);
+}
+
+.chat-input input:focus::placeholder {
+    color: rgba(216, 230, 249, 0.3);
+}
+
+.chat-input:focus-within {
+    border-color: rgba(73, 164, 255, 0.48);
+
+    box-shadow:
+        0 16px 42px rgba(0, 84, 200, 0.16),
+        0 0 0 3px rgba(37, 140, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+
+/* =========================================
+   BOTÃO DE ENVIO
+========================================= */
+
+.chat-input button {
+    flex: 0 0 auto;
+
+    min-width: 105px;
+    height: 48px;
+
+    padding: 0 22px;
+
+    border: 1px solid rgba(154, 214, 255, 0.3);
+    border-radius: 16px;
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--ia-primary-light),
+            var(--ia-primary) 45%,
+            #4163ee
+        );
+
+    box-shadow:
+        0 10px 24px rgba(24, 116, 241, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24);
+
+    font: inherit;
+    font-size: 0.94rem;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.chat-input button:hover:not(:disabled) {
+    transform: translateY(-2px);
+
+    filter: brightness(1.07);
+
+    box-shadow:
+        0 14px 30px rgba(24, 116, 241, 0.36),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.chat-input button:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+.chat-input button:focus-visible {
+    outline: 3px solid rgba(85, 183, 255, 0.28);
+    outline-offset: 3px;
+}
+
+.chat-input button:disabled {
+    opacity: 0.55;
+
+    cursor: wait;
+    transform: none;
+}
+
+
+/* =========================================
+   ANIMAÇÕES
+========================================= */
+
+@keyframes mensagem-entrando {
+    from {
+        opacity: 0;
+        transform: translateY(9px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes carregando-pulso {
+    0%,
+    100% {
+        opacity: 0.55;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+/* =========================================
+   TABLETS
+========================================= */
+
+@media (max-width: 900px) {
+    .ia-container {
+        height: calc(100dvh - 68px);
+        min-height: 500px;
+
+        padding: 18px;
+    }
+
+    .mensagem {
+        max-width: 84%;
+    }
+}
+
+
+/* =========================================
+   CELULARES
+========================================= */
+
+@media (max-width: 600px) {
+    .ia-container {
+        width: 100%;
+        height: calc(100dvh - 58px);
+        min-height: 460px;
+        max-height: none;
+
+        padding: 12px;
+    }
+
+    .ia-header {
+        margin-bottom: 13px;
+    }
+
+    .ia-header h1 {
+        font-size: 1.45rem;
+    }
+
+    .ia-header p {
+        margin-top: 4px;
+
+        font-size: 0.86rem;
+    }
+
+    .chat {
+        gap: 13px;
+
+        padding: 14px;
+
+        border-radius: 22px;
+    }
+
+    .mensagem {
+        max-width: 90%;
+
+        padding: 11px 14px;
+
+        border-radius: 18px;
+
+        font-size: 0.91rem;
+        line-height: 1.5;
+    }
+
+    .mensagem.ia {
+        border-bottom-left-radius: 6px;
+    }
+
+    .mensagem.usuario {
+        border-bottom-right-radius: 6px;
+    }
+
+    .chat-input {
+        margin-top: 11px;
+        padding: 5px;
+
+        gap: 5px;
+
+        border-radius: 18px;
+    }
+
+    .chat-input input {
+        height: 44px;
+
+        padding: 0 11px;
+
+        font-size: 0.9rem;
+    }
+
+    .chat-input button {
+        min-width: auto;
+        height: 44px;
+
+        padding: 0 16px;
+
+        border-radius: 14px;
+
+        font-size: 0.88rem;
+    }
+}
+
+
+/* =========================================
+   CELULARES PEQUENOS
+========================================= */
+
+@media (max-width: 380px) {
+    .ia-container {
+        padding: 9px;
+    }
+
+    .ia-header p {
+        display: none;
+    }
+
+    .mensagem {
+        max-width: 94%;
+    }
+
+    .chat-input button {
+        padding: 0 13px;
+    }
+}
+
+
+/* =========================================
+   ALTURA REDUZIDA
+========================================= */
+
+@media (max-height: 650px) and (min-width: 601px) {
+    .ia-container {
+        height: calc(100dvh - 45px);
+        min-height: 430px;
+
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+
+    .ia-header {
+        margin-bottom: 12px;
+    }
+
+    .ia-header p {
+        margin-top: 3px;
+    }
+
+    .chat-input {
+        margin-top: 10px;
+    }
+}
+
+
+/* =========================================
+   ACESSIBILIDADE
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .chat {
+        scroll-behavior: auto;
+    }
+
+    .mensagem,
+    .mensagem.carregando {
+        animation: none;
+    }
+
+    .chat-input button {
+        transition: none;
+    }
+}
+
+/* Corrige apenas a mensagem inicial escrita no HTML */
+.chat > .mensagem.ia:first-child {
+    white-space: normal;
+    width: fit-content;
+    min-height: auto;
+}
+
+.chat > .mensagem.ia:first-child ul {
+    margin: 10px 0 0;
+    padding-left: 20px;
+}

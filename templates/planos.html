@@ -2,72 +2,277 @@
 
 {% block css %}
 
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/planos.css') }}">
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/planos.css') }}"
+>
 
 {% endblock %}
 
 
 {% block content %}
 
-<div class="planos-container">
+<section class="planos-container">
 
-    <h1>Planos Nexus PDV</h1>
+    <header class="planos-header">
 
-    <p class="subtitulo">
+        <div>
 
-        Seu plano atual:
-        <strong>{{ session["plano"]|upper }}</strong>
+            <span class="planos-label">
+                Planos Nexus
+            </span>
 
-    </p>
+            <h1>
+                Escolha o plano ideal
+            </h1>
+
+            <p>
+                Recursos para acompanhar o crescimento
+                do seu negócio.
+            </p>
+
+        </div>
+
+        <div class="plano-atual">
+
+            <span>Seu plano atual</span>
+
+            <strong>
+                {{ session["plano"]|upper }}
+            </strong>
+
+        </div>
+
+    </header>
+
 
     <div class="planos-grid">
 
-        <div class="plano-card comum">
+        <article class="plano-card comum">
 
-            <h2>Comum</h2>
+            <div class="plano-topo">
 
-            <div class="preco">
-                R$ 79,90/mês
+                <div class="plano-icone comum-icone">
+                    N
+                </div>
+
+                <div>
+
+                    <span class="plano-tipo">
+                        Essencial
+                    </span>
+
+                    <h2>
+                        Comum
+                    </h2>
+
+                </div>
+
             </div>
 
-            <ul>
-                <li>✓ Até 50 produtos</li>
-                <li>✓ Até 2 funcionários</li>
-                <li>✓ PDV completo</li>
-                <li>✓ Controle de estoque</li>
-                <li>✓ Controle de caixa</li>
-            </ul>
 
-        </div>
+            <div class="preco">
 
-        <div class="plano-card premium">
+                <span class="moeda">
+                    R$
+                </span>
 
-            <span class="destaque">
+                <strong>
+                    79,90
+                </strong>
 
-                MAIS VENDIDO
+                <span class="periodo">
+                    /mês
+                </span>
 
+            </div>
+
+
+            <p class="descricao-plano">
+                Para empresas que precisam organizar
+                vendas, produtos, estoque e caixa.
+            </p>
+
+
+            <div class="separador-plano"></div>
+
+
+            <span class="recursos-titulo">
+                Recursos incluídos
             </span>
 
-            <h2>Premium</h2>
-
-            <div class="preco">
-                R$ 149,90/mês
-            </div>
 
             <ul>
-                <li>✓ Produtos ilimitados</li>
-                <li>✓ Funcionários ilimitados</li>
-                <li>✓ Relatórios avançados</li>
-                <li>✓ Dashboard com gráficos</li>
-                <li>✓ Backup automático</li>
-                <li>✓ Recursos futuros</li>
-                <li>✓ Sistema de comissão</li>
+
+                <li>
+                    Até 50 produtos
+                </li>
+
+                <li>
+                    Até 2 funcionários
+                </li>
+
+                <li>
+                    PDV completo
+                </li>
+
+                <li>
+                    Controle de estoque
+                </li>
+
+                <li>
+                    Controle de caixa
+                </li>
+
             </ul>
 
-        </div>
+
+            {% if session["plano"]|lower == "comum" %}
+
+                <div class="plano-selecionado">
+                    Plano atual
+                </div>
+
+            {% endif %}
+
+        </article>
+
+
+        <article class="plano-card premium">
+
+            <span class="destaque">
+                MAIS VENDIDO
+            </span>
+
+
+            <div class="plano-topo">
+
+                <div class="plano-icone premium-icone">
+                    ✦
+                </div>
+
+                <div>
+
+                    <span class="plano-tipo">
+                        Experiência completa
+                    </span>
+
+                    <h2>
+                        Premium
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="preco">
+
+                <span class="moeda">
+                    R$
+                </span>
+
+                <strong>
+                    149,90
+                </strong>
+
+                <span class="periodo">
+                    /mês
+                </span>
+
+            </div>
+
+
+            <p class="descricao-plano">
+                Para empresas que querem inteligência,
+                automação e indicadores avançados.
+            </p>
+
+
+            <div class="separador-plano"></div>
+
+
+            <span class="recursos-titulo">
+                Tudo do Comum, mais:
+            </span>
+
+
+            <ul>
+
+                <li>
+                    Produtos ilimitados
+                </li>
+
+                <li>
+                    Funcionários ilimitados
+                </li>
+
+                <li>
+                    Relatórios avançados
+                </li>
+
+                <li>
+                    Dashboard com gráficos
+                </li>
+
+                <li class="recurso-ia">
+
+                    <span class="icone-ia">
+                        IA
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Assistente IA integrada
+                        </strong>
+
+                        <small>
+                            Consulte vendas, produtos,
+                            estoque, caixa e relatórios
+                            usando linguagem natural.
+                        </small>
+
+                    </div>
+
+                </li>
+
+                <li>
+                    Sistema de comissão
+                </li>
+
+                <li>
+                    Backup automático
+                </li>
+
+                <li>
+                    Acesso a recursos futuros
+                </li>
+
+            </ul>
+
+
+            {% if session["plano"]|lower == "premium" %}
+
+                <div class="plano-selecionado premium-selecionado">
+                    Seu plano Premium
+                </div>
+
+            {% else %}
+
+                <a
+                    href="#"
+                    class="btn-plano btn-premium"
+                >
+                    Quero ser Premium
+                </a>
+
+            {% endif %}
+
+        </article>
 
     </div>
 
-</div>
+</section>
 
 {% endblock %}

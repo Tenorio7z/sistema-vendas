@@ -1,126 +1,767 @@
 {% extends "layout.html" %}
 
 {% block css %}
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/funcionario_dashboard.css') }}">
-
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/funcionario_dashboard_novo.css') }}"
+>
 {% endblock %}
 
 {% block content %}
 
-<section class="dashboard-funcionario">
+<section class="painel-funcionario">
 
-    <h1>
+    <header class="painel-topo">
 
-        {{ funcionario["usuario"] }}
+        <div class="painel-identidade">
 
-    </h1>
+            <a
+                href="/perfis"
+                class="botao-voltar"
+                aria-label="Voltar para funcionários"
+            >
+                ←
+            </a>
 
-    <p>
+            <div class="avatar-funcionario">
+                {{ funcionario["usuario"][0]|upper }}
+            </div>
 
-        Comissão:
-        {{ funcionario["comissao"] }}%
+            <div>
 
-    </p>
+                <span class="painel-subtitulo">
+                    Desempenho do funcionário
+                </span>
 
-    <h2 class="secao-titulo">
-        Faturamento
-    </h2>
+                <h1>
+                    {{ funcionario["usuario"] }}
+                </h1>
 
-    <div class="cards-dashboard">
+                <div class="funcionario-detalhes">
 
-        <div class="card-info faturamento">
+                    <span
+                        class="status-funcionario
+                        {% if funcionario['status'] == 'ativo' %}
+                            status-ativo
+                        {% else %}
+                            status-bloqueado
+                        {% endif %}"
+                    >
+                        {{ funcionario["status"]|capitalize }}
+                    </span>
 
-            <h3>Hoje</h3>
+                    <span class="comissao-funcionario">
+                        Comissão:
+                        {{ "%.2f"|format(percentual_comissao) }}%
+                    </span>
 
-            <strong>
-                R$ {{ "%.2f"|format(vendas_hoje) }}
-            </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+        <a
+            href="/perfis"
+            class="link-funcionarios"
+        >
+            Gerenciar funcionários
+        </a>
+
+    </header>
+
+
+    <form
+        class="filtro-periodo"
+        method="GET"
+        action="{{ url_for('painel_funcionario', funcionario_id=funcionario['id']) }}"
+    >
+
+        <div class="filtro-cabecalho">
+
+            <div>
+
+                <span class="filtro-label">
+                    Período analisado
+                </span>
+
+                <strong>
+                    {{ periodo["titulo"] }}
+                </strong>
+
+            </div>
+
+            <button
+                type="submit"
+                class="botao-filtrar"
+            >
+                Atualizar painel
+            </button>
 
         </div>
 
-        <div class="card-info faturamento">
+        <div class="filtro-campos">
 
-            <h3>Mês</h3>
+            <label class="campo-filtro">
 
-            <strong>
-                R$ {{ "%.2f"|format(vendas_mes) }}
-            </strong>
+                <span>Período</span>
+
+                <select
+                    name="periodo"
+                    id="periodo"
+                    onchange="alternarPeriodoPersonalizado()"
+                >
+
+                    <option
+                        value="hoje"
+                        {% if periodo["periodo"] == "hoje" %}
+                            selected
+                        {% endif %}
+                    >
+                        Hoje
+                    </option>
+
+                    <option
+                        value="7_dias"
+                        {% if periodo["periodo"] == "7_dias" %}
+                            selected
+                        {% endif %}
+                    >
+                        Últimos 7 dias
+                    </option>
+
+                    <option
+                        value="30_dias"
+                        {% if periodo["periodo"] == "30_dias" %}
+                            selected
+                        {% endif %}
+                    >
+                        Últimos 30 dias
+                    </option>
+
+                    <option
+                        value="mes"
+                        {% if periodo["periodo"] == "mes" %}
+                            selected
+                        {% endif %}
+                    >
+                        Este mês
+                    </option>
+
+                    <option
+                        value="ano"
+                        {% if periodo["periodo"] == "ano" %}
+                            selected
+                        {% endif %}
+                    >
+                        Este ano
+                    </option>
+
+                    <option
+                        value="personalizado"
+                        {% if periodo["periodo"] == "personalizado" %}
+                            selected
+                        {% endif %}
+                    >
+                        Período personalizado
+                    </option>
+
+                </select>
+
+            </label>
+
+            <div
+                id="camposPersonalizados"
+                class="periodo-personalizado"
+            >
+
+                <label class="campo-filtro">
+
+                    <span>Data inicial</span>
+
+                    <input
+                        type="date"
+                        name="data_inicial"
+                        value="{{ data_inicial }}"
+                    >
+
+                </label>
+
+                <label class="campo-filtro">
+
+                    <span>Data final</span>
+
+                    <input
+                        type="date"
+                        name="data_final"
+                        value="{{ data_final }}"
+                    >
+
+                </label>
+
+            </div>
 
         </div>
 
-        <div class="card-info faturamento">
+    </form>
 
-            <h3>Ano</h3>
 
-            <strong>
-                R$ {{ "%.2f"|format(vendas_ano) }}
-            </strong>
+    <div class="indicadores-grid">
 
-        </div>
+        <article class="indicador-card indicador-faturamento">
 
-        <div class="card-info faturamento">
+            <div class="indicador-icone">
+                R$
+            </div>
 
-            <h3>Total</h3>
+            <div>
 
-            <strong>
-                R$ {{ "%.2f"|format(vendas_total) }}
-            </strong>
+                <span>Faturamento</span>
 
-        </div>
+                <strong>
+                    R$ {{ "%.2f"|format(faturamento) }}
+                </strong>
+
+                <small>
+                    No período selecionado
+                </small>
+
+            </div>
+
+        </article>
+
+
+        <article class="indicador-card indicador-comissao">
+
+            <div class="indicador-icone">
+                %
+            </div>
+
+            <div>
+
+                <span>Comissão calculada</span>
+
+                <strong>
+                    R$ {{ "%.2f"|format(valor_comissao) }}
+                </strong>
+
+                <small>
+                    {{ "%.2f"|format(percentual_comissao) }}%
+                    sobre as vendas
+                </small>
+
+            </div>
+
+        </article>
+
+
+        <article class="indicador-card indicador-vendas">
+
+            <div class="indicador-icone">
+                #
+            </div>
+
+            <div>
+
+                <span>Quantidade de vendas</span>
+
+                <strong>
+                    {{ total_vendas }}
+                </strong>
+
+                <small>
+                    Vendas não canceladas
+                </small>
+
+            </div>
+
+        </article>
+
+
+        <article class="indicador-card indicador-itens">
+
+            <div class="indicador-icone">
+                □
+            </div>
+
+            <div>
+
+                <span>Itens vendidos</span>
+
+                <strong>
+                    {{ total_itens }}
+                </strong>
+
+                <small>
+                    Unidades vendidas
+                </small>
+
+            </div>
+
+        </article>
+
+
+        <article class="indicador-card indicador-ticket">
+
+            <div class="indicador-icone">
+                ↗
+            </div>
+
+            <div>
+
+                <span>Ticket médio</span>
+
+                <strong>
+                    R$ {{ "%.2f"|format(ticket_medio) }}
+                </strong>
+
+                <small>
+                    Média por venda
+                </small>
+
+            </div>
+
+        </article>
+
+
+        <article class="indicador-card indicador-canceladas">
+
+            <div class="indicador-icone">
+                ×
+            </div>
+
+            <div>
+
+                <span>Vendas canceladas</span>
+
+                <strong>
+                    {{ cancelamentos.get("quantidade_canceladas", 0) or 0 }}
+                </strong>
+
+                <small>
+                    R$
+                    {{
+                        "%.2f"|format(
+                            cancelamentos.get("valor_cancelado", 0) or 0
+                        )
+                    }}
+                    cancelados
+                </small>
+
+            </div>
+
+        </article>
 
     </div>
 
-    <hr>
 
-    <h2 class="secao-titulo">
-        Comissão
-    </h2>
+    <div class="painel-conteudo-grid">
 
-    <div class="cards-dashboard">
+        <article class="painel-card produtos-card">
 
-        <div class="card-info comissao">
+            <div class="card-cabecalho">
 
-            <h3>Hoje</h3>
+                <div>
 
-            <strong>
-                R$ {{ "%.2f"|format(comissao_hoje) }}
-            </strong>
+                    <span class="card-subtitulo">
+                        Desempenho
+                    </span>
 
-        </div>
+                    <h2>
+                        Produtos vendidos
+                    </h2>
 
-        <div class="card-info comissao">
+                </div>
 
-            <h3>Mês</h3>
+                <span class="contador-card">
+                    {{ produtos_vendidos|length }}
+                    produtos
+                </span>
 
-            <strong>
-                R$ {{ "%.2f"|format(comissao_mes) }}
-            </strong>
+            </div>
 
-        </div>
+            {% if produtos_vendidos %}
 
-        <div class="card-info comissao">
+                <div class="produtos-lista">
 
-            <h3>Ano</h3>
+                    {% for produto in produtos_vendidos %}
 
-            <strong>
-                R$ {{ "%.2f"|format(comissao_ano) }}
-            </strong>
+                        <div class="produto-item">
 
-        </div>
+                            <div class="produto-posicao">
+                                {{ loop.index }}
+                            </div>
 
-        <div class="card-info comissao">
+                            <div class="produto-informacoes">
 
-            <h3>Total</h3>
+                                <strong>
+                                    {{ produto["nome"] }}
+                                </strong>
 
-            <strong>
-                R$ {{ "%.2f"|format(comissao_total) }}
-            </strong>
+                                <span>
+                                    {{ produto["quantidade_vendas"] }}
+                                    venda{% if produto["quantidade_vendas"] != 1 %}s{% endif %}
+                                </span>
 
-        </div>
+                            </div>
+
+                            <div class="produto-resultado">
+
+                                <strong>
+                                    {{ produto["quantidade"] }}
+                                    un.
+                                </strong>
+
+                                <span>
+                                    R$
+                                    {{
+                                        "%.2f"|format(
+                                            produto["total_vendido"]
+                                        )
+                                    }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="estado-vazio">
+
+                    <div class="estado-vazio-icone">
+                        □
+                    </div>
+
+                    <h3>
+                        Nenhum produto vendido
+                    </h3>
+
+                    <p>
+                        Não existem produtos vendidos no período selecionado.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </article>
+
+
+        <article class="painel-card pagamentos-card">
+
+            <div class="card-cabecalho">
+
+                <div>
+
+                    <span class="card-subtitulo">
+                        Recebimentos
+                    </span>
+
+                    <h2>
+                        Formas de pagamento
+                    </h2>
+
+                </div>
+
+            </div>
+
+            {% if formas_pagamento %}
+
+                <div class="pagamentos-lista">
+
+                    {% for pagamento in formas_pagamento %}
+
+                        {% set percentual =
+                            (
+                                pagamento["total"]|float
+                                / faturamento
+                                * 100
+                            )
+                            if faturamento > 0
+                            else 0
+                        %}
+
+                        <div class="pagamento-item">
+
+                            <div class="pagamento-topo">
+
+                                <div>
+
+                                    <strong>
+                                        {{ pagamento["pagamento"] }}
+                                    </strong>
+
+                                    <span>
+                                        {{ pagamento["quantidade"] }}
+                                        venda{% if pagamento["quantidade"] != 1 %}s{% endif %}
+                                    </span>
+
+                                </div>
+
+                                <strong>
+                                    R$
+                                    {{
+                                        "%.2f"|format(
+                                            pagamento["total"]
+                                        )
+                                    }}
+                                </strong>
+
+                            </div>
+
+                            <div class="barra-pagamento">
+
+                                <span
+                                    style="width: {{ percentual }}%;"
+                                ></span>
+
+                            </div>
+
+                            <small>
+                                {{ "%.1f"|format(percentual) }}%
+                                do faturamento
+                            </small>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="estado-vazio">
+
+                    <div class="estado-vazio-icone">
+                        R$
+                    </div>
+
+                    <h3>
+                        Nenhum pagamento
+                    </h3>
+
+                    <p>
+                        Não existem recebimentos no período selecionado.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </article>
 
     </div>
+
+
+    <article class="painel-card historico-card">
+
+        <div class="card-cabecalho">
+
+            <div>
+
+                <span class="card-subtitulo">
+                    Movimentações
+                </span>
+
+                <h2>
+                    Histórico de vendas
+                </h2>
+
+            </div>
+
+            {% if ultima_venda %}
+
+                <span class="ultima-venda">
+                    Última venda:
+                    {{ ultima_venda.strftime("%d/%m/%Y %H:%M") }}
+                </span>
+
+            {% endif %}
+
+        </div>
+
+        {% if historico %}
+
+            <div class="tabela-container">
+
+                <table class="historico-tabela">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Data</th>
+
+                            <th>Produto</th>
+
+                            <th>Quantidade</th>
+
+                            <th>Pagamento</th>
+
+                            <th>Valor</th>
+
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for venda in historico %}
+
+                            <tr
+                                {% if venda["cancelada"] %}
+                                    class="venda-cancelada"
+                                {% endif %}
+                            >
+
+                                <td data-label="Data">
+
+                                    {% if venda["data_venda"] %}
+
+                                        {{
+                                            venda["data_venda"].strftime(
+                                                "%d/%m/%Y %H:%M"
+                                            )
+                                        }}
+
+                                    {% else %}
+
+                                        Não informada
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td data-label="Produto">
+
+                                    <strong>
+                                        {{
+                                            venda["produto_nome"]
+                                            or "Produto não encontrado"
+                                        }}
+                                    </strong>
+
+                                </td>
+
+                                <td data-label="Quantidade">
+                                    {{ venda["quantidade"] }}
+                                </td>
+
+                                <td data-label="Pagamento">
+
+                                    <span class="forma-pagamento-tag">
+                                        {{
+                                            venda["pagamento"]
+                                            or "Não informado"
+                                        }}
+                                    </span>
+
+                                </td>
+
+                                <td data-label="Valor">
+
+                                    <strong>
+                                        R$
+                                        {{
+                                            "%.2f"|format(
+                                                venda["valor"]
+                                            )
+                                        }}
+                                    </strong>
+
+                                </td>
+
+                                <td data-label="Status">
+
+                                    {% if venda["cancelada"] %}
+
+                                        <span class="status-venda cancelada">
+                                            Cancelada
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status-venda concluida">
+                                            Concluída
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="estado-vazio">
+
+                <div class="estado-vazio-icone">
+                    ↗
+                </div>
+
+                <h3>
+                    Nenhuma venda encontrada
+                </h3>
+
+                <p>
+                    Altere o período para consultar outras vendas.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </article>
 
 </section>
+
+
+<script>
+
+    function alternarPeriodoPersonalizado() {
+
+        const periodo =
+            document.getElementById("periodo")
+
+        const campos =
+            document.getElementById(
+                "camposPersonalizados"
+            )
+
+        if (
+            periodo.value === "personalizado"
+        ) {
+
+            campos.classList.add("visivel")
+
+        } else {
+
+            campos.classList.remove("visivel")
+
+        }
+
+    }
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        alternarPeriodoPersonalizado
+    )
+
+</script>
 
 {% endblock %}

@@ -87,7 +87,7 @@
 
             <div class="funcionario-topo">
 
-                <div>
+                <div data-inicial="{{ funcionario['usuario'][0]|upper }}">
 
                     <h3>
                         {{ funcionario["usuario"] }}
@@ -297,7 +297,7 @@
 
             <a
                 class="btn-dashboard"
-                href="/funcionario/${id}">
+                href="/dashboard_funcionario/${id}">
                 Dashboard
             </a>
 

@@ -1,419 +1,1098 @@
-/* ==========================================
-CAIXA
-========================================== */
+/* =========================================
+   CAIXA — NEXUS
+========================================= */
 
+.caixa-header,
+.caixa-header *,
+.caixa-login-box,
+.caixa-login-box *,
+.caixa-cards,
+.caixa-cards *,
+.caixa-historicos,
+.caixa-historicos *,
+.caixa-modal,
+.caixa-modal * {
+    box-sizing: border-box;
+}
+
+.caixa-header,
+.caixa-login-box,
+.caixa-cards,
+.caixa-historicos,
+.caixa-modal {
+    --caixa-azul: #318bff;
+    --caixa-azul-claro: #65bdff;
+    --caixa-roxo: #7768ff;
+    --caixa-verde: #2bd298;
+    --caixa-laranja: #ffad4d;
+    --caixa-vermelho: #ff687a;
+
+    --caixa-texto:
+        var(--text, #f7faff);
+
+    --caixa-texto-secundario:
+        var(--text-secondary, #94a3b8);
+
+    --caixa-card:
+        rgba(24, 39, 64, 0.72);
+
+    --caixa-card-claro:
+        rgba(255, 255, 255, 0.055);
+
+    --caixa-borda:
+        rgba(255, 255, 255, 0.1);
+
+    --caixa-sombra:
+        0 22px 55px rgba(0, 0, 0, 0.22);
+}
+
+
+/* =========================================
+   CABEÇALHO
+========================================= */
 
 .caixa-header {
+    position: relative;
+
+    width: 100%;
+    min-height: 140px;
+
+    margin-bottom: 20px;
+    padding: 27px 29px;
+
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    justify-content: space-between;
+    gap: 20px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--caixa-borda);
+    border-radius: 24px;
+
+    color: var(--caixa-texto);
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(49, 139, 255, 0.17),
+            rgba(119, 104, 255, 0.08) 55%,
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--caixa-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.09),
+        var(--caixa-sombra);
+
+    backdrop-filter: blur(26px) saturate(140%);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+}
+
+.caixa-header::before {
+    content: "";
+
+    position: absolute;
+
+    top: -110px;
+    right: -70px;
+
+    width: 285px;
+    height: 285px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(74, 158, 255, 0.4),
+            rgba(74, 158, 255, 0.04) 65%,
+            transparent 72%
+        );
+
+    pointer-events: none;
+}
+
+.caixa-header::after {
+    content: "R$";
+
+    position: absolute;
+
+    right: 42px;
+    bottom: -30px;
+
+    color: rgba(255, 255, 255, 0.027);
+
+    font-size: clamp(6rem, 13vw, 10rem);
+    font-weight: 900;
+    line-height: 1;
+
+    pointer-events: none;
+}
+
+.caixa-header-info,
+.caixa-header-acoes {
+    position: relative;
+    z-index: 1;
 }
 
 .caixa-titulo {
-    font-size: 34px;
-    color: var(--text);
-    margin-bottom: 5px;
+    margin: 0;
+
+    color: var(--caixa-texto);
+
+    font-size: clamp(1.7rem, 4vw, 2.55rem);
+    font-weight: 800;
+    line-height: 1.15;
+
+    letter-spacing: -0.045em;
 }
 
 .caixa-subtitulo {
-    color: #64748b;
+    margin: 8px 0 0;
+
+    color: var(--caixa-texto-secundario);
+
+    font-size: 0.88rem;
 }
 
-/* ==========================================
-AÇÕES TOPO
-========================================== */
+
+/* =========================================
+   AÇÕES DO CABEÇALHO
+========================================= */
 
 .caixa-header-acoes {
     display: flex;
-    gap: 12px;
     align-items: center;
+    gap: 10px;
 }
 
 .caixa-btn-icon {
-    width: 52px;
-    height: 52px;
+    width: 45px;
+    height: 45px;
 
-    border-radius: 12px;
-    border: none;
+    padding: 0;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    padding: 0;
     overflow: hidden;
+
+    border: 1px solid var(--caixa-borda);
+    border-radius: 14px;
+
+    color: var(--caixa-texto);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.09),
+            rgba(255, 255, 255, 0.035)
+        );
+
+    box-shadow:
+        0 10px 23px rgba(0, 0, 0, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.09);
 
     cursor: pointer;
 
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px);
-
-    transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.caixa-btn-icon img,
-.icon-acao {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    display: block;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
 }
 
 .caixa-btn-icon:hover {
-    transform: scale(1.08);
+    transform: translateY(-3px);
+
+    border-color: rgba(101, 189, 255, 0.34);
+    background: rgba(49, 139, 255, 0.13);
 }
 
 .caixa-btn-icon:active {
-    transform: scale(0.95);
+    transform: translateY(0) scale(0.96);
 }
 
-
-.caixa-status {
-    background: #dcfce7;
-    color: #166534;
-
-    padding: 10px 18px;
-
-    border-radius: 999px;
-
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.icon-acao {
-    width: 26px;
-    height: 26px;
-    object-fit: contain;
-    cursor: pointer;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+.caixa-btn-icon img,
+.caixa-btn-icon .icon-acao {
     display: block;
+
+    width: 21px;
+    height: 21px;
+
+    object-fit: contain;
 }
 
-.icon-acao:hover {
-    transform: scale(1.12);
-    opacity: 0.85;
+.caixa-btn-danger {
+    border-color: rgba(255, 104, 122, 0.23);
+    background: rgba(255, 104, 122, 0.08);
 }
 
-/* ==========================================
-ABRIR CAIXA
-========================================== */
+.caixa-btn-danger:hover {
+    border-color: rgba(255, 104, 122, 0.4);
+    background: rgba(255, 104, 122, 0.16);
+}
+
+
+/* =========================================
+   ABRIR CAIXA
+========================================= */
 
 .caixa-login-box {
-    max-width: 500px;
+    position: relative;
 
-    background: var(--card);
+    width: min(100%, 520px);
 
-    border: 1px solid var(--border);
-
-    border-radius: 20px;
-
+    margin: 45px auto;
     padding: 30px;
 
+    overflow: hidden;
+
+    border: 1px solid var(--caixa-borda);
+    border-radius: 23px;
+
+    color: var(--caixa-texto);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.075),
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--caixa-card);
+
     box-shadow:
-        0 2px 10px rgba(0, 0, 0, .05);
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        var(--caixa-sombra);
+
+    backdrop-filter: blur(26px) saturate(140%);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+}
+
+.caixa-login-box::before {
+    content: "";
+
+    position: absolute;
+
+    top: -100px;
+    right: -75px;
+
+    width: 230px;
+    height: 230px;
+
+    border-radius: 50%;
+
+    opacity: 0.13;
+    filter: blur(17px);
+
+    background: var(--caixa-azul);
+
+    pointer-events: none;
 }
 
 .caixa-login-titulo {
-    color: var(--text);
-    margin-bottom: 10px;
+    position: relative;
+
+    margin: 0 0 9px;
+
+    color: var(--caixa-texto);
+
+    font-size: 1.4rem;
+    font-weight: 780;
 }
 
 .caixa-login-usuario {
-    color: var(--text-secondary);
-    margin-bottom: 25px;
+    position: relative;
+
+    margin: 0 0 23px;
+
+    color: var(--caixa-texto-secundario);
+
+    font-size: 0.8rem;
 }
 
-/* ==========================================
-FORMULÁRIOS
-========================================== */
+.caixa-login-usuario strong {
+    color: var(--caixa-azul-claro);
+}
+
+
+/* =========================================
+   FORMULÁRIOS
+========================================= */
 
 .caixa-form {
+    position: relative;
+
+    width: 100%;
+
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
 }
 
 .caixa-input {
     width: 100%;
+    height: 47px;
 
-    padding: 14px;
+    padding: 0 14px;
 
-    border: 1px solid var(--border);
+    border: 1px solid var(--caixa-borda);
+    border-radius: 13px;
+    outline: 0;
 
-    border-radius: 12px;
+    color: var(--caixa-texto);
+    background: rgba(7, 18, 34, 0.5);
 
-    outline: none;
+    font: inherit;
+    font-size: 0.84rem;
 
-    font-size: 15px;
+    color-scheme: dark;
 
-    background: var(--card);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
 
-    color: var(--text);
+.caixa-input::placeholder {
+    color: rgba(210, 225, 244, 0.44);
 }
 
 .caixa-input:focus {
-    border-color: #2563eb;
+    border-color: rgba(101, 189, 255, 0.55);
+
+    box-shadow:
+        0 0 0 3px rgba(49, 139, 255, 0.11);
 }
 
 .caixa-btn {
-    background: #2563eb;
-    color: white;
+    width: 100%;
+    min-height: 47px;
 
-    border: none;
+    padding: 0 17px;
 
-    padding: 14px;
+    border: 1px solid rgba(140, 208, 255, 0.27);
+    border-radius: 13px;
 
-    border-radius: 12px;
+    color: #ffffff;
 
-    font-weight: 700;
+    background:
+        linear-gradient(
+            135deg,
+            var(--caixa-azul-claro),
+            var(--caixa-azul) 52%,
+            #4d68ed
+        );
+
+    box-shadow:
+        0 12px 27px rgba(49, 139, 255, 0.23),
+        inset 0 1px 0 rgba(255, 255, 255, 0.23);
+
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 750;
 
     cursor: pointer;
 
-    transition: .3s;
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
 }
 
 .caixa-btn:hover {
-    background: #1d4ed8;
+    transform: translateY(-2px);
+    filter: brightness(1.07);
 }
 
-/* ==========================================
-CARDS
-========================================== */
+
+/* =========================================
+   CARDS DE RESUMO
+========================================= */
 
 .caixa-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    position: relative;
 
-    margin-bottom: 30px;
+    width: 100%;
+
+    margin-bottom: 18px;
+
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 14px;
+
+    isolation: isolate;
+}
+
+.caixa-cards::before,
+.caixa-cards::after {
+    content: "";
+
+    position: fixed;
+    z-index: -1;
+
+    width: 320px;
+    height: 320px;
+
+    border-radius: 50%;
+
+    opacity: 0.1;
+    filter: blur(110px);
+
+    pointer-events: none;
+}
+
+.caixa-cards::before {
+    top: 100px;
+    left: 250px;
+
+    background: var(--caixa-azul);
+}
+
+.caixa-cards::after {
+    right: -100px;
+    bottom: -100px;
+
+    background: var(--caixa-roxo);
 }
 
 .caixa-card {
-    background: var(--card);
+    position: relative;
 
-    border: 1px solid var(--border);
+    min-width: 0;
+    min-height: 135px;
 
+    padding: 19px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    overflow: hidden;
+
+    border: 1px solid var(--caixa-borda);
     border-radius: 20px;
 
-    padding: 25px;
+    color: var(--caixa-azul-claro);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.075),
+            rgba(255, 255, 255, 0.025)
+        ),
+        var(--caixa-card);
 
     box-shadow:
-        0 2px 10px rgba(0, 0, 0, .05);
+        inset 0 1px 0 rgba(255, 255, 255, 0.075),
+        var(--caixa-sombra);
 
-    transition: .3s;
+    backdrop-filter: blur(24px) saturate(135%);
+    -webkit-backdrop-filter: blur(24px) saturate(135%);
+
+    transition:
+        transform 0.24s ease,
+        border-color 0.24s ease,
+        box-shadow 0.24s ease;
+}
+
+.caixa-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 12px;
+    right: 12px;
+
+    height: 3px;
+
+    border-radius: 0 0 999px 999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            currentColor,
+            transparent 90%
+        );
+}
+
+.caixa-card::after {
+    position: absolute;
+
+    right: 15px;
+    bottom: 3px;
+
+    color: currentColor;
+
+    font-size: 4.2rem;
+    font-weight: 900;
+    line-height: 1;
+
+    opacity: 0.045;
+
+    pointer-events: none;
+}
+
+.caixa-card:nth-child(1) {
+    color: var(--caixa-azul-claro);
+}
+
+.caixa-card:nth-child(1)::after {
+    content: "R$";
+}
+
+.caixa-card:nth-child(2) {
+    color: var(--caixa-verde);
+}
+
+.caixa-card:nth-child(2)::after {
+    content: "R$";
+}
+
+.caixa-card:nth-child(3) {
+    color: #ada4ff;
+}
+
+.caixa-card:nth-child(3)::after {
+    content: "●";
 }
 
 .caixa-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
+
+    border-color: rgba(101, 189, 255, 0.3);
+
+    box-shadow:
+        0 27px 58px rgba(0, 0, 0, 0.27),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .caixa-card span {
-    color: var(--text-secondary);
+    position: relative;
+    z-index: 1;
+
+    color: var(--caixa-texto-secundario);
+
+    font-size: 0.75rem;
+    font-weight: 650;
 }
 
 .caixa-card h2 {
-    margin-top: 10px;
-    color: var(--primary);
+    position: relative;
+    z-index: 1;
+
+    margin: 20px 0 0;
+
+    color: var(--caixa-texto);
+
+    font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+    font-weight: 820;
+    line-height: 1.1;
+
+    letter-spacing: -0.035em;
+
+    overflow-wrap: anywhere;
 }
 
-/* ==========================================
-HISTÓRICOS
-========================================== */
+
+/* =========================================
+   HISTÓRICOS
+========================================= */
 
 .caixa-historicos {
+    width: 100%;
+
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 18px;
 }
 
 .caixa-historico-box {
-    background: var(--card);
-
-    border: 1px solid var(--border);
-
-    border-radius: 20px;
-
-    padding: 25px;
-
-    box-shadow:
-        0 2px 10px rgba(0, 0, 0, .05);
-}
-
-.caixa-historico-titulo {
-    color: var(--text);
-    margin-bottom: 20px;
-}
-
-/* ==========================================
-ITEMS
-========================================== */
-
-.caixa-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    padding: 15px 0;
-
-    border-bottom: 1px solid var(--border);
-}
-
-.caixa-item:last-child {
-    border-bottom: none;
-}
-
-.caixa-item strong {
-    color: var(--text);
-}
-
-.caixa-item small {
-    color: var(--text-secondary);
-}
-
-/* ==========================================
-MODAL
-========================================== */
-
-.caixa-modal {
-    position: fixed !important;
-    inset: 0 !important;
-
-    display: none;
-
-    justify-content: center !important;
-    align-items: center !important;
-
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(6px);
-
-    z-index: 99999 !important;
-}
-
-.caixa-modal-box {
-    width: 380px;
-    max-width: 90%;
-
-    background: #fff;
-    border-radius: 16px;
+    min-width: 0;
+    height: 440px;
 
     padding: 20px;
 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    overflow-x: hidden;
+    overflow-y: auto;
 
-    animation: modalShow 0.2s ease;
+    border: 1px solid var(--caixa-borda);
+    border-radius: 22px;
+
+    color: var(--caixa-texto);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.07),
+            rgba(255, 255, 255, 0.022)
+        ),
+        var(--caixa-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.075),
+        var(--caixa-sombra);
+
+    backdrop-filter: blur(24px) saturate(135%);
+    -webkit-backdrop-filter: blur(24px) saturate(135%);
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(101, 189, 255, 0.38)
+        transparent;
+}
+
+.caixa-historico-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.caixa-historico-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.caixa-historico-box::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(101, 189, 255, 0.38);
+}
+
+.caixa-historico-titulo {
+    position: sticky;
+    z-index: 2;
+
+    top: -20px;
+
+    margin: 0 0 10px;
+    padding: 18px 0 13px;
+
+    color: var(--caixa-texto);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(24, 39, 64, 0.98) 75%,
+            transparent
+        );
+
+    font-size: 1.05rem;
+    font-weight: 760;
+
+    letter-spacing: -0.02em;
+}
+
+.caixa-historico-titulo::after {
+    content: "";
+
+    display: block;
+
+    width: 34px;
+    height: 3px;
+
+    margin-top: 9px;
+
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--caixa-azul),
+            var(--caixa-roxo)
+        );
+}
+
+
+/* =========================================
+   ITENS DO HISTÓRICO
+========================================= */
+
+.caixa-item {
+    min-width: 0;
+    min-height: 70px;
+
+    padding: 13px 2px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    border-bottom: 1px solid var(--caixa-borda);
+}
+
+.caixa-item:last-child {
+    border-bottom: 0;
+}
+
+.caixa-item > div {
+    min-width: 0;
+}
+
+.caixa-item > div:last-child {
+    flex: 0 0 auto;
+
+    color: var(--caixa-verde);
+
+    font-size: 0.75rem;
+    font-weight: 750;
+    line-height: 1.55;
+    text-align: right;
+}
+
+.caixa-item strong {
+    display: block;
+
+    max-width: 100%;
+
+    color: var(--caixa-texto);
+
+    font-size: 0.8rem;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+}
+
+.caixa-item small {
+    display: inline-block;
+
+    margin-top: 4px;
+
+    color: var(--caixa-texto-secundario);
+
+    font-size: 0.67rem;
+}
+
+.caixa-item a {
+    display: inline-flex;
+
+    margin-top: 4px;
+    padding: 4px 7px;
+
+    border: 1px solid rgba(255, 104, 122, 0.22);
+    border-radius: 8px;
+
+    color: #ff8f9c !important;
+    background: rgba(255, 104, 122, 0.08);
+
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-decoration: none !important;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.caixa-item a:hover {
+    transform: translateY(-1px);
+
+    background: rgba(255, 104, 122, 0.16);
+}
+
+
+/* =========================================
+   MODAL
+========================================= */
+
+.caixa-modal {
+    position: fixed !important;
+    z-index: 99999 !important;
+
+    inset: 0 !important;
+
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 20px;
+
+    overflow-y: auto;
+
+    background: rgba(4, 10, 21, 0.74);
+
+    backdrop-filter: blur(13px);
+    -webkit-backdrop-filter: blur(13px);
+}
+
+.caixa-modal-box {
+    position: relative;
+
+    width: min(100%, 430px);
+    max-height: calc(100dvh - 40px);
+
+    padding: 25px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    border: 1px solid var(--caixa-borda);
+    border-radius: 22px;
+
+    color: var(--caixa-texto);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.09),
+            rgba(255, 255, 255, 0.03)
+        ),
+        rgba(18, 31, 53, 0.96);
+
+    box-shadow:
+        0 35px 90px rgba(0, 0, 0, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.11);
+
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+
+    animation: caixa-modal-aparecendo 0.25s ease both;
+}
+
+.caixa-modal-box::before {
+    content: "";
+
+    position: absolute;
+
+    top: -90px;
+    right: -70px;
+
+    width: 200px;
+    height: 200px;
+
+    border-radius: 50%;
+
+    opacity: 0.13;
+    filter: blur(17px);
+
+    background: var(--caixa-azul);
+
+    pointer-events: none;
 }
 
 .caixa-modal-box h2 {
-    color: var(--text);
-    margin-bottom: 20px;
+    position: relative;
+
+    margin: 0 0 20px;
+
+    color: var(--caixa-texto);
+
+    font-size: 1.3rem;
+    font-weight: 780;
+
+    letter-spacing: -0.025em;
 }
 
-@keyframes modalShow {
+@keyframes caixa-modal-aparecendo {
     from {
-        transform: scale(0.9);
         opacity: 0;
+        transform: translateY(18px) scale(0.98);
     }
+
     to {
-        transform: scale(1);
         opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 
-body.dark .caixa-modal-box {
-    background: #1e1e1e;
-    color: #fff;
+
+/* =========================================
+   TEMA CLARO
+========================================= */
+
+body:not(.dark) .caixa-header,
+body:not(.dark) .caixa-login-box,
+body:not(.dark) .caixa-cards,
+body:not(.dark) .caixa-historicos,
+body:not(.dark) .caixa-modal {
+    --caixa-card:
+        rgba(255, 255, 255, 0.76);
+
+    --caixa-card-claro:
+        rgba(15, 23, 42, 0.035);
+
+    --caixa-borda:
+        rgba(44, 77, 120, 0.13);
+
+    --caixa-sombra:
+        0 20px 48px rgba(31, 65, 110, 0.1);
 }
 
-/* ==========================================
-RESPONSIVO
-========================================== */
+body:not(.dark) .caixa-header {
+    background:
+        linear-gradient(
+            120deg,
+            rgba(49, 139, 255, 0.13),
+            rgba(119, 104, 255, 0.055) 55%,
+            rgba(255, 255, 255, 0.5)
+        ),
+        rgba(255, 255, 255, 0.74);
+}
+
+body:not(.dark) .caixa-historico-titulo {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.98) 75%,
+            transparent
+        );
+}
+
+body:not(.dark) .caixa-modal {
+    background: rgba(19, 36, 59, 0.42);
+}
+
+body:not(.dark) .caixa-modal-box {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.94),
+            rgba(240, 246, 255, 0.9)
+        );
+}
+
+body:not(.dark) .caixa-input {
+    color-scheme: light;
+
+    background: rgba(236, 243, 252, 0.8);
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
 
 @media (max-width: 900px) {
-
-    /* =========================
-       HEADER DO CAIXA
-    ========================= */
     .caixa-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+        min-height: 125px;
+
+        padding: 23px;
+
+        border-radius: 21px;
     }
 
-    .caixa-titulo {
-        font-size: 26px;
-    }
-
-    .caixa-subtitulo {
-        font-size: 14px;
-    }
-
-    /* =========================
-       AÇÕES TOPO
-    ========================= */
-    .caixa-header-acoes {
-        width: 100%;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .caixa-btn-icon {
-        width: 48px;
-        height: 48px;
-    }
-
-    .caixa-status {
-        width: 100%;
-        text-align: center;
-        font-size: 12px;
-    }
-
-    /* =========================
-       LOGIN BOX
-    ========================= */
-    .caixa-login-box {
-        width: 100%;
-        padding: 20px;
-    }
-
-    /* =========================
-       CARDS
-    ========================= */
     .caixa-cards {
         grid-template-columns: 1fr;
-        gap: 15px;
     }
 
-    .caixa-card {
-        padding: 18px;
-    }
-
-    /* =========================
-       HISTÓRICO
-    ========================= */
     .caixa-historicos {
         grid-template-columns: 1fr;
-        gap: 15px;
     }
 
     .caixa-historico-box {
-        padding: 18px;
+        height: 390px;
     }
+}
 
-    /* =========================
-       ITEMS
-    ========================= */
-    .caixa-item {
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media (max-width: 600px) {
+    .caixa-header {
+        min-height: 0;
+
+        margin-bottom: 14px;
+        padding: 20px;
+
+        align-items: stretch;
         flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
+
+        border-radius: 18px;
     }
 
-    /* =========================
-       MODAL
-    ========================= */
+    .caixa-header::after {
+        display: none;
+    }
+
+    .caixa-titulo {
+        font-size: 1.55rem;
+    }
+
+    .caixa-header-acoes {
+        width: 100%;
+    }
+
+    .caixa-btn-icon {
+        flex: 1 1 0;
+
+        width: auto;
+        height: 43px;
+    }
+
+    .caixa-login-box {
+        margin: 25px auto;
+        padding: 21px 17px;
+
+        border-radius: 18px;
+    }
+
+    .caixa-card {
+        min-height: 115px;
+
+        padding: 16px;
+
+        border-radius: 17px;
+    }
+
+    .caixa-card h2 {
+        margin-top: 15px;
+
+        font-size: 1.4rem;
+    }
+
+    .caixa-historicos {
+        gap: 13px;
+    }
+
+    .caixa-historico-box {
+        height: 350px;
+
+        padding: 16px;
+
+        border-radius: 18px;
+    }
+
+    .caixa-historico-titulo {
+        top: -16px;
+
+        padding-top: 15px;
+
+        font-size: 0.95rem;
+    }
+
+    .caixa-item {
+        align-items: flex-start;
+    }
+
+    .caixa-modal {
+        padding: 10px;
+    }
+
     .caixa-modal-box {
-        width: 92%;
-        padding: 18px;
+        width: 100%;
+        max-height: calc(100dvh - 20px);
+
+        padding: 20px 16px;
+
+        border-radius: 18px;
+    }
+}
+
+
+/* =========================================
+   ACESSIBILIDADE
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .caixa-btn-icon,
+    .caixa-btn,
+    .caixa-card,
+    .caixa-item a {
+        transition: none;
+    }
+
+    .caixa-modal-box {
+        animation: none;
     }
 }

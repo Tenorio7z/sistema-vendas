@@ -2,15 +2,21 @@
 
 {% block css %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
 
 {% endblock %}
+
 
 {% block content %}
 
 <section class="admin">
 
-    <!-- TOPO -->
+    <!-- =====================================
+         CABEÇALHO
+    ====================================== -->
 
     <header class="admin-header">
 
@@ -36,7 +42,10 @@
 
     </header>
 
-    <!-- FORMULÁRIO -->
+
+    <!-- =====================================
+         CADASTRAR EMPRESA
+    ====================================== -->
 
     <section class="card admin-form-card">
 
@@ -52,45 +61,72 @@
 
         </div>
 
-        <form method="POST" class="admin-form-grid">
+        <form
+            method="POST"
+            class="admin-form-grid"
+        >
 
             <div class="form-group">
 
-                <label>
-                    Nome da Empresa
+                <label for="empresa">
+                    Nome da empresa
                 </label>
 
-                <input type="text" name="empresa" placeholder="Ex: Tenório Store" required>
+                <input
+                    type="text"
+                    id="empresa"
+                    name="empresa"
+                    placeholder="Ex: Tenório Store"
+                    required
+                >
 
             </div>
 
             <div class="form-group">
 
-                <label>
+                <label for="usuario">
                     Usuário
                 </label>
 
-                <input type="text" name="usuario" placeholder="Usuário de acesso" required>
+                <input
+                    type="text"
+                    id="usuario"
+                    name="usuario"
+                    placeholder="Usuário de acesso"
+                    autocomplete="username"
+                    required
+                >
 
             </div>
 
             <div class="form-group">
 
-                <label>
+                <label for="senha">
                     Senha
                 </label>
 
-                <input type="password" name="senha" placeholder="Senha segura" required>
+                <input
+                    type="password"
+                    id="senha"
+                    name="senha"
+                    placeholder="Senha segura"
+                    autocomplete="new-password"
+                    required
+                >
 
             </div>
 
             <div class="form-group">
 
-                <label>
+                <label for="plano">
                     Plano
                 </label>
 
-                <select name="plano">
+                <select
+                    id="plano"
+                    name="plano"
+                    required
+                >
 
                     <option value="comum">
                         Comum
@@ -104,143 +140,274 @@
 
             </div>
 
-            <button type="submit" class="btn-primary btn-full">
-
+            <button
+                type="submit"
+                class="btn-primary btn-full"
+            >
                 Cadastrar Empresa
-
             </button>
 
         </form>
 
     </section>
 
-    <!-- RESUMO -->
+
+    <!-- =====================================
+         RESUMO
+    ====================================== -->
 
     <section class="admin-stats">
 
         <div class="stat-card">
 
-            <h3>{{ total_empresas }}</h3>
+            <h3>
+                {{ total_empresas }}
+            </h3>
 
-            <p>Empresas</p>
+            <p>
+                Empresas
+            </p>
 
         </div>
 
         <div class="stat-card">
 
-            <h3>{{ total_usuarios }}</h3>
+            <h3>
+                {{ total_usuarios }}
+            </h3>
 
-            <p>Usuários</p>
+            <p>
+                Usuários
+            </p>
 
         </div>
 
     </section>
 
-    <!-- BUSCA -->
+
+    <!-- =====================================
+         BUSCA
+    ====================================== -->
 
     <div class="busca-box">
 
-        <input type="text" id="buscaEmpresa" placeholder="Buscar empresa...">
+        <input
+            type="search"
+            id="buscaEmpresa"
+            placeholder="Buscar empresa..."
+            autocomplete="off"
+        >
 
     </div>
 
-    <!-- EMPRESAS -->
+
+    <!-- =====================================
+         EMPRESAS
+    ====================================== -->
 
     <section class="companies-grid">
 
         {% for empresa in empresas %}
 
-        <article class="company-card">
+            <article
+                class="company-card"
+                data-empresa="{{ empresa['nome']|lower }}"
+                data-usuario="{{ empresa['usuario']|lower }}"
+            >
 
-            <div class="company-header">
+                <div class="company-header">
 
-                <div class="company-icon">
-                    <img src="/static/img/empresa.png" alt="">
-                </div>
+                    <div class="company-icon">
 
-                <div>
+                        <img
+                            src="/static/img/empresa.png"
+                            alt=""
+                        >
 
-                    <h2>
-                        {{ empresa["nome"] }}
-                    </h2>
+                    </div>
 
-                    <p>
-                        {{ empresa["usuario"] }}
-                    </p>
+                    <div class="company-info">
 
-                </div>
+                        <h2>
+                            {{ empresa["nome"] }}
+                        </h2>
 
-                <div class="badge-plano {{ empresa['plano'] }}">
+                        <p>
+                            {{ empresa["usuario"] }}
+                        </p>
 
-                    {{ empresa["plano"]|upper }}
+                    </div>
 
-                </div>
-
-            </div>
-
-            <div class="company-status">
-
-                {% if empresa["status"] == "ativo" %}
-
-                <span class="badge badge-success">
-                    Ativo
-                </span>
-
-                {% else %}
-
-                <span class="badge badge-danger">
-                    Bloqueado
-                </span>
-
-                {% endif %}
-
-            </div>
-
-            <div class="company-footer">
-
-                <div class="empresa-stats">
-
-                    <span>
-                        {{ empresa["total_produtos"] }} produtos
-                    </span>
-
-                    <span>
-                        {{ empresa["total_vendas"] }} vendas
-                    </span>
-
-                    <span>
-                        {{ empresa["total_usuarios"] }} usuários
-                    </span>
+                    <div
+                        class="badge-plano {{ empresa['plano'] }}"
+                    >
+                        {{ empresa["plano"]|upper }}
+                    </div>
 
                 </div>
 
-                <div class="dropdown">
 
-                    <button class="menu-btn">
-                        ⋮
-                    </button>
+                <div class="company-status">
 
-                    <div class="dropdown-content">
+                    {% if empresa["status"] == "ativo" %}
 
-                        <a href="/bloquear_usuario/{{ empresa['id'] }}">
-                            Bloquear
-                        </a>
+                        <span class="badge badge-success">
+                            Ativo
+                        </span>
 
-                        <a href="/liberar_usuario/{{ empresa['id'] }}">
-                            Liberar
-                        </a>
+                    {% else %}
 
-                        <a href="/excluir_empresa/{{ empresa['id'] }}">
-                            Excluir
-                        </a>
+                        <span class="badge badge-danger">
+                            Bloqueado
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="company-footer">
+
+                    <div class="empresa-stats">
+
+                        <span>
+                            {{ empresa["total_produtos"] }}
+                            produtos
+                        </span>
+
+                        <span>
+                            {{ empresa["total_vendas"] }}
+                            vendas
+                        </span>
+
+                        <span>
+                            {{ empresa["total_usuarios"] }}
+                            usuários
+                        </span>
+
+                    </div>
+
+
+                    <div class="dropdown">
+
+                        <button
+                            type="button"
+                            class="menu-btn"
+                            aria-label="Abrir opções da empresa"
+                            aria-expanded="false"
+                        >
+                            ⋮
+                        </button>
+
+
+                        <div class="dropdown-content">
+
+                            <!-- ALTERAR PLANO -->
+
+                            <form
+                                method="POST"
+                                action="/alterar_plano_empresa/{{ empresa['empresa_id'] }}"
+                                class="form-alterar-plano"
+                            >
+
+                                <label
+                                    for="planoEmpresa{{ empresa['empresa_id'] }}"
+                                >
+                                    Alterar plano
+                                </label>
+
+                                <select
+                                    id="planoEmpresa{{ empresa['empresa_id'] }}"
+                                    name="plano"
+                                    aria-label="Alterar plano da empresa {{ empresa['nome'] }}"
+                                >
+
+                                    <option
+                                        value="comum"
+                                        {% if empresa["plano"] == "comum" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Comum
+                                    </option>
+
+                                    <option
+                                        value="premium"
+                                        {% if empresa["plano"] == "premium" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Premium
+                                    </option>
+
+                                </select>
+
+                                <button
+                                    type="submit"
+                                    class="btn-salvar-plano"
+                                >
+                                    Salvar plano
+                                </button>
+
+                            </form>
+
+
+                            <!-- AÇÕES -->
+
+                            {% if empresa["status"] == "ativo" %}
+
+                                <a
+                                    href="/bloquear_usuario/{{ empresa['id'] }}"
+                                    class="acao-bloquear"
+                                >
+                                    Bloquear acesso
+                                </a>
+
+                            {% else %}
+
+                                <a
+                                    href="/liberar_usuario/{{ empresa['id'] }}"
+                                    class="acao-liberar"
+                                >
+                                    Liberar acesso
+                                </a>
+
+                            {% endif %}
+
+                            <a
+                                href="/excluir_empresa/{{ empresa['id'] }}"
+                                class="acao-excluir"
+                                onclick="
+                                    return confirm(
+                                        'Deseja realmente excluir esta empresa?'
+                                    )
+                                "
+                            >
+                                Excluir empresa
+                            </a>
+
+                        </div>
 
                     </div>
 
                 </div>
 
-            </div>
+            </article>
 
-        </article>
+        {% else %}
+
+            <div class="sem-empresas">
+
+                <h2>
+                    Nenhuma empresa cadastrada
+                </h2>
+
+                <p>
+                    Utilize o formulário acima para cadastrar
+                    a primeira empresa.
+                </p>
+
+            </div>
 
         {% endfor %}
 
@@ -248,48 +415,175 @@
 
 </section>
 
+
 <script>
 
-    document.querySelectorAll(".menu-btn").forEach(btn => {
+    const botoesMenu =
+        document.querySelectorAll(
+            ".menu-btn"
+        )
 
-        btn.addEventListener("click", function (e) {
+    const menus =
+        document.querySelectorAll(
+            ".dropdown-content"
+        )
 
-            e.stopPropagation();
 
-            document
-                .querySelectorAll(".dropdown-content")
-                .forEach(menu => {
+    function fecharTodosMenus(
+        menuIgnorado = null
+    ) {
 
-                    if (menu !== this.nextElementSibling) {
+        menus.forEach(menu => {
 
-                        menu.style.display = "none";
+            if (menu !== menuIgnorado) {
 
-                    }
+                menu.style.display = "none"
 
-                });
+                const botao =
+                    menu
+                        .closest(".dropdown")
+                        .querySelector(".menu-btn")
 
-            const menu = this.nextElementSibling;
+                if (botao) {
 
-            menu.style.display =
-                menu.style.display === "block"
-                    ? "none"
-                    : "block";
+                    botao.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    )
 
-        });
+                }
 
-    });
+            }
 
-    document.addEventListener("click", () => {
+        })
 
-        document
-            .querySelectorAll(".dropdown-content")
-            .forEach(menu => {
+    }
 
-                menu.style.display = "none";
 
-            });
+    botoesMenu.forEach(botao => {
 
-    });
+        botao.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation()
+
+                const dropdown =
+                    this.closest(
+                        ".dropdown"
+                    )
+
+                const menu =
+                    dropdown.querySelector(
+                        ".dropdown-content"
+                    )
+
+                const estaAberto =
+                    menu.style.display === "block"
+
+                fecharTodosMenus(menu)
+
+                menu.style.display =
+                    estaAberto
+                        ? "none"
+                        : "block"
+
+                this.setAttribute(
+                    "aria-expanded",
+                    estaAberto
+                        ? "false"
+                        : "true"
+                )
+
+            }
+        )
+
+    })
+
+
+    menus.forEach(menu => {
+
+        menu.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation()
+
+            }
+        )
+
+    })
+
+
+    document.addEventListener(
+        "click",
+        function () {
+
+            fecharTodosMenus()
+
+        }
+    )
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Escape") {
+
+                fecharTodosMenus()
+
+            }
+
+        }
+    )
+
+
+    /* =====================================
+       BUSCA DE EMPRESAS
+    ====================================== */
+
+    const buscaEmpresa =
+        document.getElementById(
+            "buscaEmpresa"
+        )
+
+    const cardsEmpresa =
+        document.querySelectorAll(
+            ".company-card"
+        )
+
+
+    buscaEmpresa.addEventListener(
+        "input",
+        function () {
+
+            const termo =
+                this.value
+                    .toLowerCase()
+                    .trim()
+
+            cardsEmpresa.forEach(card => {
+
+                const nome =
+                    card.dataset.empresa || ""
+
+                const usuario =
+                    card.dataset.usuario || ""
+
+                const encontrado =
+                    nome.includes(termo)
+                    || usuario.includes(termo)
+
+                card.style.display =
+                    encontrado
+                        ? ""
+                        : "none"
+
+            })
+
+        }
+    )
 
 </script>
 
