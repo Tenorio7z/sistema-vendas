@@ -34,6 +34,10 @@ from routes.dashboard import (
     registrar_rotas as dashboard
 )
 
+from routes.emprestimos import (
+    emprestimos_bp
+)
+
 from routes.produtos import (
     registrar_rotas as produtos
 )
@@ -114,6 +118,10 @@ api_mobile_login(
     socketio
 )
 
+
+app.register_blueprint(
+    emprestimos_bp
+)
 
 # ==========================================
 # INICIAR SISTEMA

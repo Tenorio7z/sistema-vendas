@@ -1,0 +1,915 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/emprestimos.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+{% set parcelas = emprestimo.parcelas or [] %}
+{% set pagamentos = emprestimo.pagamentos or [] %}
+{% set valor_total = emprestimo.valor_total or 0 %}
+{% set saldo_devedor = emprestimo.saldo_devedor or 0 %}
+{% set valor_recebido = valor_total - saldo_devedor %}
+
+{% if valor_total > 0 %}
+    {% set progresso = valor_recebido / valor_total * 100 %}
+{% else %}
+    {% set progresso = 0 %}
+{% endif %}
+
+<div
+    id="dadosContrato"
+    hidden
+    data-cliente-nome="{{ (emprestimo.cliente_nome or '')|e }}"
+    data-cliente-telefone="{{ (emprestimo.cliente_telefone or '')|e }}"
+    data-contrato-id="{{ emprestimo.id }}"
+    data-saldo-devedor="{{ saldo_devedor }}"
+></div>
+
+<div class="emprestimos-container contrato-detalhe-page">
+
+    <section class="emprestimos-header contrato-detalhe-header">
+        <div>
+            <span class="pagina-etiqueta">
+                CONTRATO #{{ emprestimo.id }}
+            </span>
+
+            <h1>Detalhes do empréstimo</h1>
+
+            <p>
+                Acompanhe parcelas, pagamentos, vencimentos e o saldo
+                deste contrato.
+            </p>
+        </div>
+
+        <div class="header-acoes">
+            <a
+                href="{{ url_for(
+                    'emprestimos.cliente_detalhe',
+                    cliente_id=emprestimo.cliente_id
+                ) }}"
+                class="botao botao-secundario"
+            >
+                ← Cliente
+            </a>
+
+            {% if emprestimo.cliente_telefone %}
+            <button
+                type="button"
+                class="botao botao-whatsapp"
+                onclick="abrirCobrancaWhatsApp()"
+            >
+                Cobrar pelo WhatsApp
+            </button>
+            {% endif %}
+
+            {% if emprestimo.status not in ["quitado", "cancelado"] %}
+            <button
+                type="button"
+                class="botao botao-principal"
+                onclick="abrirModalPagamentoGeral()"
+            >
+                + Registrar pagamento
+            </button>
+            {% endif %}
+        </div>
+    </section>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% if mensagens %}
+        <div class="mensagens-sistema">
+            {% for categoria, mensagem in mensagens %}
+            <div class="alerta alerta-{{ categoria }}">
+                {{ mensagem }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="contrato-resumo-grid">
+
+        <article class="contrato-cliente-card">
+            <div class="contrato-cliente-topo">
+                <div class="cliente-avatar-grande">
+                    {{ emprestimo.cliente_nome[0]|upper if emprestimo.cliente_nome else "C" }}
+                </div>
+
+                <div>
+                    <span>Cliente</span>
+                    <h2>{{ emprestimo.cliente_nome or "Cliente não informado" }}</h2>
+
+                    <span class="status-emprestimo status-{{ emprestimo.status }}">
+                        {{
+                            emprestimo.status
+                            |replace("_", " ")
+                            |capitalize
+                        }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="contrato-cliente-dados">
+                <div>
+                    <span>Telefone</span>
+                    <strong>
+                        {{ emprestimo.cliente_telefone or "Não informado" }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>CPF/CNPJ</span>
+                    <strong>
+                        {{ emprestimo.cliente_documento or "Não informado" }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Data do contrato</span>
+                    <strong>
+                        {% if emprestimo.data_emprestimo %}
+                            {{
+                                emprestimo.data_emprestimo.strftime(
+                                    "%d/%m/%Y"
+                                )
+                            }}
+                        {% else %}
+                            Não informada
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Primeiro vencimento</span>
+                    <strong>
+                        {% if emprestimo.primeira_parcela %}
+                            {{
+                                emprestimo.primeira_parcela.strftime(
+                                    "%d/%m/%Y"
+                                )
+                            }}
+                        {% else %}
+                            Não informado
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Frequência</span>
+                    <strong>
+                        {{
+                            (emprestimo.frequencia or "mensal")
+                            |capitalize
+                        }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Tipo de juros</span>
+                    <strong>
+                        {{
+                            (emprestimo.tipo_juros or "simples")
+                            |capitalize
+                        }}
+                    </strong>
+                </div>
+            </div>
+
+            {% if emprestimo.observacoes %}
+            <div class="cliente-observacoes">
+                <span>Observações do contrato</span>
+                <p>{{ emprestimo.observacoes }}</p>
+            </div>
+            {% endif %}
+        </article>
+
+        <div class="contrato-indicadores">
+
+            <article class="indicador-card destaque-azul">
+                <span>Valor emprestado</span>
+
+                <strong>
+                    R$ {{
+                        "%.2f"|format(
+                            emprestimo.valor_emprestado or 0
+                        )
+                    }}
+                </strong>
+
+                <small>Capital entregue ao cliente</small>
+            </article>
+
+            <article class="indicador-card destaque-roxo">
+                <span>Valor dos juros</span>
+
+                <strong>
+                    R$ {{
+                        "%.2f"|format(
+                            emprestimo.valor_juros or 0
+                        )
+                    }}
+                </strong>
+
+                <small>
+                    Taxa de {{ emprestimo.taxa_juros or 0 }}%
+                </small>
+            </article>
+
+            <article class="indicador-card destaque-ciano">
+                <span>Valor total</span>
+
+                <strong>
+                    R$ {{ "%.2f"|format(valor_total) }}
+                </strong>
+
+                <small>Valor completo do contrato</small>
+            </article>
+
+            <article class="indicador-card destaque-verde">
+                <span>Total recebido</span>
+
+                <strong>
+                    R$ {{ "%.2f"|format(valor_recebido) }}
+                </strong>
+
+                <small>Pagamentos confirmados</small>
+            </article>
+
+            <article class="indicador-card destaque-laranja">
+                <span>Saldo devedor</span>
+
+                <strong>
+                    R$ {{ "%.2f"|format(saldo_devedor) }}
+                </strong>
+
+                <small>Valor restante para quitação</small>
+            </article>
+
+            <article class="indicador-card destaque-vermelho">
+                <span>Parcelas atrasadas</span>
+
+                <strong>
+                    {{ parcelas|selectattr("status", "equalto", "atrasada")|list|length }}
+                </strong>
+
+                <small>Parcelas vencidas e não pagas</small>
+            </article>
+
+        </div>
+    </section>
+
+    <section class="contrato-progresso-geral">
+        <div class="progresso-geral-cabecalho">
+            <div>
+                <span class="pagina-etiqueta">
+                    PROGRESSO DO CONTRATO
+                </span>
+
+                <h2>{{ "%.0f"|format(progresso) }}% recebido</h2>
+            </div>
+
+            <div class="progresso-valores">
+                <span>
+                    Recebido:
+                    <strong>
+                        R$ {{ "%.2f"|format(valor_recebido) }}
+                    </strong>
+                </span>
+
+                <span>
+                    Total:
+                    <strong>
+                        R$ {{ "%.2f"|format(valor_total) }}
+                    </strong>
+                </span>
+            </div>
+        </div>
+
+        <div class="progresso-trilho progresso-trilho-grande">
+            <div
+                class="progresso-preenchimento"
+                data-progresso="{{ progresso }}"
+            ></div>
+        </div>
+    </section>
+
+    <section class="parcelas-secao">
+
+        <div class="secao-titulo">
+            <div>
+                <span class="pagina-etiqueta">CRONOGRAMA</span>
+                <h2>Parcelas do empréstimo</h2>
+
+                <p>
+                    Consulte vencimentos e registre os pagamentos recebidos.
+                </p>
+            </div>
+
+            <span class="quantidade-registros">
+                {{ parcelas|length }} parcela(s)
+            </span>
+        </div>
+
+        {% if parcelas %}
+
+        <div class="parcelas-tabela-container">
+            <table class="parcelas-tabela">
+                <thead>
+                    <tr>
+                        <th>Parcela</th>
+                        <th>Vencimento</th>
+                        <th>Valor</th>
+                        <th>Valor pago</th>
+                        <th>Saldo</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for parcela in parcelas %}
+
+                    {% set valor_parcela = (parcela.valor_parcela or 0) + (parcela.valor_multa or 0) %}
+                    {% set valor_pago_parcela = parcela.valor_pago or 0 %}
+                    {% set saldo_parcela = valor_parcela - valor_pago_parcela %}
+
+                    <tr class="linha-parcela linha-{{ parcela.status }}">
+                        <td>
+                            <span class="numero-parcela">
+                                {{ parcela.numero }}/{{ parcelas|length }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <strong>
+                                {% if parcela.data_vencimento %}
+                                    {{
+                                        parcela.data_vencimento.strftime(
+                                            "%d/%m/%Y"
+                                        )
+                                    }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </strong>
+
+                            {% if parcela.dias_atraso %}
+                                {% if parcela.dias_atraso > 0 %}
+                                <small class="dias-atraso">
+                                    {{ parcela.dias_atraso }}
+                                    dia(s) em atraso
+                                </small>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            R$ {{ "%.2f"|format(valor_parcela) }}
+                        </td>
+
+                        <td class="texto-sucesso">
+                            R$ {{ "%.2f"|format(valor_pago_parcela) }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                R$ {{
+                                    "%.2f"|format(
+                                        [saldo_parcela, 0]|max
+                                    )
+                                }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            <span
+                                class="status-parcela
+                                       status-{{ parcela.status }}"
+                            >
+                                {{
+                                    parcela.status
+                                    |replace("_", " ")
+                                    |capitalize
+                                }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if parcela.status != "paga" %}
+                            <button
+                                type="button"
+                                class="botao botao-tabela"
+                                data-parcela-id="{{ parcela.id }}"
+                                data-parcela-numero="{{ parcela.numero }}"
+                                data-parcela-saldo="{{ [saldo_parcela, 0]|max }}"
+                                onclick="abrirPagamentoParcela(this)"
+                            >
+                                Receber
+                            </button>
+                            {% else %}
+                            <span class="parcela-confirmada">
+                                ✓ Recebida
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+
+        <div class="estado-vazio">
+            <div class="estado-vazio-icone">◎</div>
+            <h3>Nenhuma parcela encontrada</h3>
+
+            <p>
+                O cronograma deste empréstimo ainda não foi gerado.
+            </p>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    <section class="pagamentos-secao">
+
+        <div class="secao-titulo">
+            <div>
+                <span class="pagina-etiqueta">MOVIMENTAÇÕES</span>
+                <h2>Histórico de pagamentos</h2>
+                <p>Todos os recebimentos registrados neste contrato.</p>
+            </div>
+
+            <span class="quantidade-registros">
+                {{ pagamentos|length }} pagamento(s)
+            </span>
+        </div>
+
+        {% if pagamentos %}
+
+        <div class="pagamentos-lista">
+
+            {% for pagamento in pagamentos %}
+            <article class="pagamento-card">
+                <div class="pagamento-icone">✓</div>
+
+                <div class="pagamento-conteudo">
+                    <div class="pagamento-topo">
+                        <div>
+                            <span>Pagamento recebido</span>
+
+                            <h3>
+                                R$ {{
+                                    "%.2f"|format(
+                                        pagamento.valor or 0
+                                    )
+                                }}
+                            </h3>
+                        </div>
+
+                        <strong>
+                            {% if pagamento.data_pagamento %}
+                                {{
+                                    pagamento.data_pagamento.strftime(
+                                        "%d/%m/%Y"
+                                    )
+                                }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div class="pagamento-informacoes">
+                        <span>
+                            Parcela:
+                            <strong>
+                                {{ pagamento.numero_parcela or "Geral" }}
+                            </strong>
+                        </span>
+
+                        <span>
+                            Forma:
+                            <strong>
+                                {{
+                                    (
+                                        pagamento.forma_pagamento
+                                        or "Não informada"
+                                    )
+                                    |replace("_", " ")
+                                    |capitalize
+                                }}
+                            </strong>
+                        </span>
+                    </div>
+
+                    {% if pagamento.observacoes %}
+                    <p>{{ pagamento.observacoes }}</p>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="estado-vazio estado-vazio-compacto">
+            <div class="estado-vazio-icone">R$</div>
+            <h3>Nenhum pagamento registrado</h3>
+
+            <p>
+                Os pagamentos confirmados aparecerão neste histórico.
+            </p>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+
+<!-- MODAL PARA REGISTRAR PAGAMENTO -->
+<div id="modalRegistrarPagamento" class="modal-emprestimos">
+    <div
+        class="modal-conteudo modal-conteudo-medio"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tituloRegistrarPagamento"
+    >
+        <div class="modal-cabecalho">
+            <div>
+                <span class="pagina-etiqueta">RECEBIMENTO</span>
+                <h2 id="tituloRegistrarPagamento">
+                    Registrar pagamento
+                </h2>
+
+                <p id="descricaoPagamento">
+                    Informe os dados do valor recebido.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-fechar"
+                onclick="fecharModal('modalRegistrarPagamento')"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+        </div>
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'emprestimos.registrar_pagamento',
+                emprestimo_id=emprestimo.id
+            ) }}"
+            class="formulario-emprestimos"
+            id="formRegistrarPagamento"
+        >
+            <input
+                type="hidden"
+                id="pagamentoParcelaId"
+                name="parcela_id"
+                value=""
+            >
+
+            <div class="formulario-grid">
+
+                <div class="campo">
+                    <label for="pagamentoValor">
+                        Valor recebido *
+                    </label>
+
+                    <input
+                        id="pagamentoValor"
+                        name="valor"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="pagamentoData">
+                        Data do pagamento *
+                    </label>
+
+                    <input
+                        id="pagamentoData"
+                        name="data_pagamento"
+                        type="date"
+                        required
+                    >
+                </div>
+
+                <div class="campo campo-duplo">
+                    <label for="pagamentoForma">
+                        Forma de pagamento *
+                    </label>
+
+                    <select
+                        id="pagamentoForma"
+                        name="forma_pagamento"
+                        required
+                    >
+                        <option value="pix">PIX</option>
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="transferencia">
+                            Transferência
+                        </option>
+                        <option value="cartao">Cartão</option>
+                        <option value="boleto">Boleto</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+
+                <div class="campo campo-duplo">
+                    <label for="pagamentoObservacoes">
+                        Observações
+                    </label>
+
+                    <textarea
+                        id="pagamentoObservacoes"
+                        name="observacoes"
+                        rows="4"
+                        maxlength="1000"
+                        placeholder="Informações adicionais..."
+                    ></textarea>
+                </div>
+
+            </div>
+
+            <div class="pagamento-resumo-modal">
+                <span>Valor informado</span>
+                <strong id="pagamentoValorResumo">R$ 0,00</strong>
+            </div>
+
+            <div class="modal-acoes">
+                <button
+                    type="button"
+                    class="botao botao-secundario"
+                    onclick="fecharModal('modalRegistrarPagamento')"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="botao botao-principal"
+                >
+                    Confirmar pagamento
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    const dadosContrato = document.getElementById("dadosContrato");
+
+    const modalPagamento = document.getElementById(
+        "modalRegistrarPagamento"
+    );
+
+    const campoParcelaId = document.getElementById(
+        "pagamentoParcelaId"
+    );
+
+    const campoPagamentoValor = document.getElementById(
+        "pagamentoValor"
+    );
+
+    const campoPagamentoData = document.getElementById(
+        "pagamentoData"
+    );
+
+    const descricaoPagamento = document.getElementById(
+        "descricaoPagamento"
+    );
+
+    const pagamentoValorResumo = document.getElementById(
+        "pagamentoValorResumo"
+    );
+
+    function abrirModal(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add("ativo");
+        document.body.classList.add("modal-aberto");
+    }
+
+    function fecharModal(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("ativo");
+        document.body.classList.remove("modal-aberto");
+    }
+
+    function moedaBR(valor) {
+        const numero = Number(valor || 0);
+
+        return numero.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
+
+    function definirDataPagamentoHoje() {
+        if (!campoPagamentoData) {
+            return;
+        }
+
+        const agora = new Date();
+        const ano = agora.getFullYear();
+
+        const mes = String(
+            agora.getMonth() + 1
+        ).padStart(2, "0");
+
+        const dia = String(
+            agora.getDate()
+        ).padStart(2, "0");
+
+        campoPagamentoData.value =
+            ano + "-" + mes + "-" + dia;
+    }
+
+    function abrirModalPagamentoGeral() {
+        campoParcelaId.value = "";
+
+        const saldoContrato = Number(
+            dadosContrato.dataset.saldoDevedor || 0
+        );
+
+        campoPagamentoValor.value =
+            saldoContrato > 0
+                ? saldoContrato.toFixed(2)
+                : "";
+
+        descricaoPagamento.textContent =
+            "Pagamento geral do contrato #" +
+            dadosContrato.dataset.contratoId + ".";
+
+        pagamentoValorResumo.textContent = moedaBR(
+            campoPagamentoValor.value
+        );
+
+        definirDataPagamentoHoje();
+        abrirModal("modalRegistrarPagamento");
+        campoPagamentoValor.focus();
+        campoPagamentoValor.select();
+    }
+
+    function abrirPagamentoParcela(botao) {
+        const parcelaId = botao.dataset.parcelaId || "";
+        const parcelaNumero = botao.dataset.parcelaNumero || "";
+        const saldoParcela = Number(
+            botao.dataset.parcelaSaldo || 0
+        );
+
+        campoParcelaId.value = parcelaId;
+        campoPagamentoValor.value = saldoParcela.toFixed(2);
+
+        descricaoPagamento.textContent =
+            "Pagamento da parcela " +
+            parcelaNumero +
+            " do contrato #" +
+            dadosContrato.dataset.contratoId + ".";
+
+        pagamentoValorResumo.textContent = moedaBR(
+            saldoParcela
+        );
+
+        definirDataPagamentoHoje();
+        abrirModal("modalRegistrarPagamento");
+        campoPagamentoValor.focus();
+        campoPagamentoValor.select();
+    }
+
+    function somenteNumeros(valor) {
+        return String(valor || "").replace(/\D/g, "");
+    }
+
+    function abrirCobrancaWhatsApp() {
+        if (!dadosContrato) {
+            return;
+        }
+
+        let telefone = somenteNumeros(
+            dadosContrato.dataset.clienteTelefone
+        );
+
+        const clienteNome =
+            dadosContrato.dataset.clienteNome || "cliente";
+
+        const contratoId =
+            dadosContrato.dataset.contratoId || "";
+
+        const saldo = Number(
+            dadosContrato.dataset.saldoDevedor || 0
+        );
+
+        if (!telefone) {
+            window.alert(
+                "Este cliente não possui telefone cadastrado."
+            );
+
+            return;
+        }
+
+        if (telefone.length === 10 || telefone.length === 11) {
+            telefone = "55" + telefone;
+        }
+
+        const mensagem =
+            "Olá, " +
+            clienteNome +
+            "! Tudo bem? Entramos em contato sobre o contrato #" +
+            contratoId +
+            ". O saldo atual é de " +
+            moedaBR(saldo) +
+            ". Caso já tenha realizado o pagamento, desconsidere esta mensagem.";
+
+        const endereco =
+            "https://wa.me/" +
+            telefone +
+            "?text=" +
+            encodeURIComponent(mensagem);
+
+        window.open(
+            endereco,
+            "_blank",
+            "noopener,noreferrer"
+        );
+    }
+
+    document
+        .querySelectorAll(".progresso-preenchimento")
+        .forEach(function (barra) {
+            const progressoInformado = Number(
+                barra.dataset.progresso || 0
+            );
+
+            const progressoSeguro = Math.max(
+                0,
+                Math.min(progressoInformado, 100)
+            );
+
+            barra.style.width = progressoSeguro + "%";
+        });
+
+    if (campoPagamentoValor) {
+        campoPagamentoValor.addEventListener(
+            "input",
+            function () {
+                pagamentoValorResumo.textContent = moedaBR(
+                    campoPagamentoValor.value
+                );
+            }
+        );
+    }
+
+    document
+        .querySelectorAll(".modal-emprestimos")
+        .forEach(function (modal) {
+            modal.addEventListener("click", function (evento) {
+                if (evento.target === modal) {
+                    fecharModal(modal.id);
+                }
+            });
+        });
+
+    document.addEventListener("keydown", function (evento) {
+        if (evento.key !== "Escape") {
+            return;
+        }
+
+        document
+            .querySelectorAll(".modal-emprestimos.ativo")
+            .forEach(function (modal) {
+                fecharModal(modal.id);
+            });
+    });
+</script>
+
+{% endblock %}

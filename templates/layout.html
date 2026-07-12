@@ -2,177 +2,294 @@
 <html lang="pt-br">
 
 <head>
-
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <title>
-        Sistema Nexus
-    </title>
+    <title>Sistema Nexus</title>
 
-    <!-- CSS GLOBAL -->
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/base.css') }}"
+    >
 
     {% block css %}
     {% endblock %}
-
-
 </head>
 
 <body>
 
-    <!-- ===================================== -->
     <!-- SIDEBAR -->
-    <!-- ===================================== -->
-
     <aside class="sidebar">
 
         <div class="sidebar-top">
 
-            <div class="sidebar-top">
+            <div class="sidebar-header">
 
-                <div class="sidebar-header">
+                <div class="sidebar-actions">
 
-                    <div class="sidebar-actions">
+                    <button
+                        id="toggleMenu"
+                        class="menu-toggle"
+                        type="button"
+                        aria-label="Alternar menu"
+                    >
+                        <img
+                            id="menuIcon"
+                            src="{{ url_for(
+                                'static',
+                                filename='img/menu-aberto.png'
+                            ) }}"
+                            alt="Menu"
+                        >
+                    </button>
 
-                        <button id="toggleMenu" class="menu-toggle">
-                            <img id="menuIcon" src="/static/img/menu-aberto.png" alt="Menu">
+                    <div class="theme-wrapper">
+
+                        <img
+                            src="{{ url_for(
+                                'static',
+                                filename='icons/light.png'
+                            ) }}"
+                            alt="Modo escuro"
+                            class="theme-side-icon"
+                        >
+
+                        <button
+                            type="button"
+                            class="theme-switch"
+                            onclick="alternarTema()"
+                            aria-label="Alternar tema"
+                        >
+                            <span class="switch-ball"></span>
                         </button>
 
-                        <div class="theme-wrapper">
+                        <img
+                            src="{{ url_for(
+                                'static',
+                                filename='icons/dark.png'
+                            ) }}"
+                            alt="Modo claro"
+                            class="theme-side-icon"
+                        >
 
-                            <!-- Ícone LUA -->
-                            <img src="/static/icons/light.png" alt="Modo escuro" class="theme-side-icon">
-
-                            <!-- SWITCH -->
-                            <div class="theme-switch" onclick="alternarTema()">
-                                <div class="switch-ball"></div>
-                            </div>
-
-                            <!-- Ícone SOL -->
-                            <img src="/static/icons/dark.png" alt="Modo claro" class="theme-side-icon">
-
-                        </div>
-
-                    </div>
-
-                    <div class="sidebar-logo">
-                        <h2>Nexus PDV</h2>
-                        <span>Sistema operacional</span>
                     </div>
 
                 </div>
 
-                <div class="sidebar-divider"></div>
+                <div class="sidebar-logo">
+                    <h2>Nexus PDV</h2>
+                    <span>Sistema operacional</span>
+                </div>
 
             </div>
 
+            <div class="sidebar-divider"></div>
 
-            <nav>
+        </div>
 
-                <a href="/dashboard">
-                    <img src="/static/icons/dashboard.png" class="nav-icon" alt="">
-                    <span class="link-text">Dashboard</span>
-                </a>
+        <nav>
 
-                {% if session["nivel"] == "gerente" %}
+            <a
+                href="/dashboard"
+                class="{% if request.path == '/dashboard' %}active{% endif %}"
+            >
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/dashboard.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
 
-                <a href="/perfis">
-                    <img src="/static/icons/perfis.png" class="nav-icon" alt="">
-                    <span class="link-text">Gerenciar Perfis</span>
-                </a>
+                <span class="link-text">Dashboard</span>
+            </a>
 
-                {% endif %}
+            {% if session.get("nivel") == "gerente" %}
+            <a
+                href="/perfis"
+                class="{% if request.path.startswith('/perfis') %}active{% endif %}"
+            >
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/perfis.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
 
-                {% if session["nivel"] == "master" %}
+                <span class="link-text">Gerenciar Perfis</span>
+            </a>
+            {% endif %}
 
-                <a href="/admin">
-                    <img src="/static/icons/master.png" class="nav-icon" alt="">
-                    <span class="link-text">Painel Master</span>
-                </a>
+            {% if session.get("nivel") == "master" %}
+            <a
+                href="/admin"
+                class="{% if request.path.startswith('/admin') %}active{% endif %}"
+            >
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/master.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
 
-                {% endif %}
+                <span class="link-text">Painel Master</span>
+            </a>
+            {% endif %}
 
-                {% if session["nivel"] != "funcionario" %}
+            {% if session.get("nivel") != "funcionario" %}
+            <a
+                href="/produtos"
+                class="{% if request.path.startswith('/produtos') %}active{% endif %}"
+            >
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/produtos.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
 
-                <a href="/produtos">
-                    <img src="/static/icons/produtos.png" class="nav-icon" alt="">
-                    <span class="link-text">Produtos</span>
-                </a>
+                <span class="link-text">Produtos</span>
+            </a>
+            {% endif %}
 
-                {% endif %}
+            <a
+                href="/vendas"
+                class="{% if request.path.startswith('/vendas') %}active{% endif %}"
+            >
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/vendas.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
 
-                <a href="/vendas">
-                    <img src="/static/icons/vendas.png" class="nav-icon" alt="">
-                    <span class="link-text">Vendas</span>
-                </a>
+                <span class="link-text">Vendas</span>
+            </a>
 
-                <a href="/caixa">
-                    <img src="/static/icons/caixa.png" class="nav-icon" alt="">
-                    <span class="link-text">Caixa</span>
-                </a>
+            <a
+                href="/caixa"
+                class="{% if request.path.startswith('/caixa') %}active{% endif %}"
+            >
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/caixa.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
 
-                {% if session["nivel"] == "gerente" %}
+                <span class="link-text">Caixa</span>
+            </a>
 
-                <a href="/estatisticas">
-                    <img src="/static/icons/estatisticas.png" class="nav-icon" alt="">
-                    <span class="link-text">Estatísticas</span>
-                </a>
+            {% if session.get("nivel") == "gerente" %}
+            <a
+                href="/estatisticas"
+                class="{% if request.path.startswith('/estatisticas') %}active{% endif %}"
+            >
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/estatisticas.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
 
-                {% endif %}
+                <span class="link-text">Estatísticas</span>
+            </a>
 
-                <a href="/planos">
-                    <img src="/static/icons/planos.png" class="nav-icon" alt="">
-                    <span class="link-text">Planos</span>
-                </a>
-                
-                {% if session["nivel"] == "gerente" %}
+            <!-- NOVO ITEM: EMPRÉSTIMOS -->
+            <a
+                href="/emprestimos"
+                class="{% if request.path.startswith('/emprestimos') %}active{% endif %}"
+            >
+                <span
+                    class="nav-icon nav-icon-emprestimos"
+                    aria-hidden="true"
+                >
+                    $
+                </span>
 
-                <a href="/ia">
-                    <img src="/static/icons/ia.png" class="nav-icon" alt="">
-                    <span class="link-text">Assistente IA</span>
-                </a>
-                
-                {% endif %}
-                <a href="/logout">
-                    <img src="/static/icons/sair.png" class="nav-icon" alt="">
-                    <span class="link-text">Sair</span>
-                </a>
+                <span class="link-text">Empréstimos</span>
+            </a>
+            {% endif %}
 
-            </nav>
+            <a
+                href="/planos"
+                class="{% if request.path.startswith('/planos') %}active{% endif %}"
+            >
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/planos.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
+
+                <span class="link-text">Planos</span>
+            </a>
+
+            <a
+                href="/ia"
+                class="{% if request.path.startswith('/ia') %}active{% endif %}"
+            >
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/ia.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
+
+                <span class="link-text">Assistente IA</span>
+            </a>
+
+            <a href="/logout">
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='icons/sair.png'
+                    ) }}"
+                    class="nav-icon"
+                    alt=""
+                >
+
+                <span class="link-text">Sair</span>
+            </a>
+
+        </nav>
 
     </aside>
 
 
-    <!-- ===================================== -->
-    <!-- CONTEÚDO -->
-    <!-- ===================================== -->
-
+    <!-- CONTEÚDO PRINCIPAL -->
     <main class="main">
 
-        <!-- ALERTAS -->
-
         {% with mensagens = get_flashed_messages(with_categories=true) %}
-
-        {% if mensagens %}
-
-        {% for categoria, msg in mensagens %}
-
-        <div class="alert {{ categoria }}">
-
-            {{ msg }}
-
-        </div>
-
-        {% endfor %}
-
-        {% endif %}
-
+            {% if mensagens %}
+                {% for categoria, mensagem in mensagens %}
+                <div class="alert {{ categoria }}">
+                    {{ mensagem }}
+                </div>
+                {% endfor %}
+            {% endif %}
         {% endwith %}
-
-        <!-- CONTEÚDO DA PÁGINA -->
 
         {% block content %}
         {% endblock %}
@@ -181,206 +298,237 @@
 
     <div id="toast-notificacao"></div>
 
-    <!-- ===================================== -->
-    <!-- SCRIPT MENU -->
-    <!-- ===================================== -->
 
+    <!-- MENU E TEMA -->
     <script>
-        const toggle = document.getElementById("toggleMenu")
-        const sidebar = document.querySelector(".sidebar")
-        const menuIcon = document.getElementById("menuIcon")
-        const switchBall = document.querySelector(".switch-ball")
+        const toggle = document.getElementById("toggleMenu");
+        const sidebar = document.querySelector(".sidebar");
+        const menuIcon = document.getElementById("menuIcon");
+        const switchBall = document.querySelector(".switch-ball");
 
-        // aplica tema salvo ao carregar
-        const temaSalvo = localStorage.getItem("tema")
+        const urlMenuAberto =
+            "{{ url_for('static', filename='img/menu-aberto.png') }}";
+
+        const urlMenuFechado =
+            "{{ url_for('static', filename='img/menu-fechado.png') }}";
+
+        const temaSalvo = localStorage.getItem("tema");
 
         if (temaSalvo === "dark") {
-            document.body.classList.add("dark")
+            document.body.classList.add("dark");
         }
 
-        // posiciona a bolinha corretamente ao carregar
-        atualizarSwitch()
+        atualizarSwitch();
+        atualizarIcones(document.body.classList.contains("dark"));
 
-        // atualiza ícones do sistema
-        atualizarIcones(document.body.classList.contains("dark"))
+        if (toggle && sidebar && menuIcon) {
+            toggle.addEventListener("click", function () {
+                if (window.innerWidth <= 900) {
+                    sidebar.classList.toggle("aberta");
+                } else {
+                    sidebar.classList.toggle("fechada");
+                }
 
-        // sidebar toggle
-        toggle.addEventListener("click", () => {
+                const menuAlterado =
+                    sidebar.classList.contains("fechada") ||
+                    sidebar.classList.contains("aberta");
 
-            if (window.innerWidth <= 900) {
-                sidebar.classList.toggle("aberta")
-            } else {
-                sidebar.classList.toggle("fechada")
-            }
+                menuIcon.src = menuAlterado
+                    ? urlMenuFechado
+                    : urlMenuAberto;
+            });
+        }
 
-            if (
-                sidebar.classList.contains("fechada") ||
-                sidebar.classList.contains("aberta")
-            ) {
-                menuIcon.src = "/static/img/menu-fechado.png"
-            } else {
-                menuIcon.src = "/static/img/menu-aberto.png"
-            }
-
-        })
-
-        // alterna tema
         function alternarTema() {
+            document.body.classList.toggle("dark");
 
-            document.body.classList.toggle("dark")
-
-            const isDark = document.body.classList.contains("dark")
+            const isDark = document.body.classList.contains("dark");
 
             localStorage.setItem(
                 "tema",
                 isDark ? "dark" : "light"
-            )
+            );
 
-            atualizarSwitch()
-            atualizarIcones(isDark)
+            atualizarSwitch();
+            atualizarIcones(isDark);
         }
 
-        // move a bolinha do switch
         function atualizarSwitch() {
-
-            const isDark =
-                document.body.classList.contains("dark")
-
-            if (isDark) {
-                switchBall.style.transform =
-                    "translateX(30px)"
-            } else {
-                switchBall.style.transform =
-                    "translateX(0)"
+            if (!switchBall) {
+                return;
             }
 
+            const isDark =
+                document.body.classList.contains("dark");
+
+            switchBall.style.transform = isDark
+                ? "translateX(30px)"
+                : "translateX(0)";
         }
 
-        // troca ícones do sistema
         function atualizarIcones(isDark) {
+            document
+                .querySelectorAll(".icon-acao")
+                .forEach(function (imagem) {
+                    const novaImagem = isDark
+                        ? imagem.dataset.dark
+                        : imagem.dataset.light;
 
-            document.querySelectorAll(".icon-acao").forEach(img => {
-                img.src =
-                    isDark
-                        ? img.dataset.dark
-                        : img.dataset.light
+                    if (novaImagem) {
+                        imagem.src = novaImagem;
+                    }
+                });
+        }
+    </script>
+
+
+    <!-- NOTIFICAÇÕES DE VENDAS -->
+<script>
+    let ultimoHorarioToast = "";
+
+    function criarElemento(tag, classe, texto) {
+        const elemento = document.createElement(tag);
+
+        if (classe) {
+            elemento.className = classe;
+        }
+
+        if (texto !== undefined && texto !== null) {
+            elemento.textContent = texto;
+        }
+
+        return elemento;
+    }
+
+    function mostrarToast(notificacao) {
+        const container = document.getElementById(
+            "toast-notificacao"
+        );
+
+        if (!container) {
+            return;
+        }
+
+        const toast = criarElemento("div", "toast");
+
+        const titulo = criarElemento(
+            "strong",
+            "",
+            "Nova venda"
+        );
+
+        const valorNumerico = Number(
+            notificacao.valor || 0
+        );
+
+        const valorFormatado = valorNumerico.toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+        const funcionario = String(
+            notificacao.funcionario || "Funcionário"
+        );
+
+        const produto = String(
+            notificacao.produto || "um produto"
+        );
+
+        const descricao = criarElemento(
+            "p",
+            "",
+            funcionario +
+            " vendeu " +
+            produto +
+            " por " +
+            valorFormatado
+        );
+
+        const horario = criarElemento(
+            "small",
+            "",
+            String(notificacao.hora || "")
+        );
+
+        toast.appendChild(titulo);
+        toast.appendChild(descricao);
+        toast.appendChild(horario);
+
+        container.appendChild(toast);
+
+        window.setTimeout(function () {
+            toast.remove();
+        }, 5000);
+    }
+
+    function tocarSomNotificacao() {
+        const som = new Audio(
+            "/static/audio/venda.mp3"
+        );
+
+        som.play().catch(function () {
+            return null;
+        });
+    }
+
+    function verificarNovasNotificacoes() {
+        const url =
+            "/api/notificacoes?t=" +
+            Date.now();
+
+        fetch(url)
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error(
+                        "Erro ao consultar notificações."
+                    );
+                }
+
+                return response.json();
             })
+            .then(function (dados) {
+                if (!Array.isArray(dados)) {
+                    return;
+                }
 
-        }
-    </script>
+                if (dados.length === 0) {
+                    return;
+                }
 
-    <script>
+                const notificacaoAtual = dados[0];
 
-        let ultimoHorarioToast = ""
+                const horarioAtual = String(
+                    notificacaoAtual.hora || ""
+                );
 
-        function mostrarToast(notificacao) {
+                if (
+                    ultimoHorarioToast !== "" &&
+                    horarioAtual !== ultimoHorarioToast
+                ) {
+                    mostrarToast(notificacaoAtual);
+                    tocarSomNotificacao();
+                }
 
-            const container =
-                document.getElementById(
-                    "toast-notificacao"
-                )
+                ultimoHorarioToast = horarioAtual;
+            })
+            .catch(function (erro) {
+                console.log(
+                    "Erro nas notificações:",
+                    erro
+                );
+            });
+    }
 
-            const toast =
-                document.createElement("div")
+    verificarNovasNotificacoes();
 
-            toast.className = "toast"
-
-            toast.innerHTML = `
-
-        <strong>
-            🔔 Nova Venda
-        </strong>
-
-        <p>
-            ${notificacao.funcionario}
-            vendeu
-            ${notificacao.produto}
-            R$ ${parseFloat(
-                notificacao.valor
-            ).toFixed(2)}
-        </p>
-
-        <small>
-            ${notificacao.hora}
-        </small>
-
-    `
-
-            container.appendChild(
-                toast
-            )
-
-            setTimeout(() => {
-
-                toast.remove()
-
-            }, 5000)
-
-        }
-
-        function verificarNovasNotificacoes() {
-
-            fetch(
-                "/api/notificacoes?t=" +
-                new Date().getTime()
-            )
-
-                .then(response => response.json())
-
-                .then(dados => {
-
-                    if (!dados.length) {
-                        return
-                    }
-
-                    const horarioAtual =
-                        dados[0].hora
-
-                    if (
-                        ultimoHorarioToast !== "" &&
-                        horarioAtual !== ultimoHorarioToast
-                    ) {
-
-                        mostrarToast(
-                            dados[0]
-                        )
-
-                        const som =
-                            new Audio(
-                                "/static/audio/venda.mp3"
-                            )
-
-                        som.play()
-                            .catch(() => { })
-
-                    }
-
-                    ultimoHorarioToast =
-                        horarioAtual
-
-                })
-
-                .catch(erro => {
-
-                    console.log(
-                        "Erro:",
-                        erro
-                    )
-
-                })
-
-        }
-
-        verificarNovasNotificacoes()
-
-        setInterval(
-            verificarNovasNotificacoes,
-            3000
-        )
-
-    </script>
-
-
+    window.setInterval(
+        verificarNovasNotificacoes,
+        3000
+    );
+</script>
 
 </body>
 

@@ -1,0 +1,721 @@
+{% extends "layout.html" %}
+
+
+{% block css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/emprestimos.css') }}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="emprestimos-page clientes-page">
+
+    <!-- =====================================
+         CABEÇALHO
+    ====================================== -->
+
+    <header class="emprestimos-header clientes-header">
+
+        <div>
+
+            <span class="pagina-label">
+                Carteira de clientes
+            </span>
+
+            <h1>
+                Clientes
+            </h1>
+
+            <p>
+                Cadastre, consulte e acompanhe
+                os clientes dos empréstimos.
+            </p>
+
+        </div>
+
+
+        <div class="header-acoes">
+
+            <a
+                href="{{ url_for('emprestimos.dashboard') }}"
+                class="btn-secundario"
+            >
+                ← Empréstimos
+            </a>
+
+            <button
+                type="button"
+                class="btn-primario"
+                onclick="abrirModalCliente()"
+            >
+                + Novo cliente
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================
+         BUSCA E FILTROS
+    ====================================== -->
+
+    <form
+        method="GET"
+        action="{{ url_for('emprestimos.clientes') }}"
+        class="clientes-filtros"
+    >
+
+        <label class="busca-clientes">
+
+            <span>
+                Buscar cliente
+            </span>
+
+            <input
+                type="search"
+                name="busca"
+                value="{{ busca }}"
+                placeholder="Nome, telefone ou documento"
+                autocomplete="off"
+            >
+
+        </label>
+
+
+        <label class="status-clientes">
+
+            <span>
+                Status
+            </span>
+
+            <select name="status">
+
+                <option value="">
+                    Todos
+                </option>
+
+                <option
+                    value="ativo"
+                    {% if status_selecionado == "ativo" %}
+                        selected
+                    {% endif %}
+                >
+                    Ativos
+                </option>
+
+                <option
+                    value="inativo"
+                    {% if status_selecionado == "inativo" %}
+                        selected
+                    {% endif %}
+                >
+                    Inativos
+                </option>
+
+                <option
+                    value="bloqueado"
+                    {% if status_selecionado == "bloqueado" %}
+                        selected
+                    {% endif %}
+                >
+                    Bloqueados
+                </option>
+
+            </select>
+
+        </label>
+
+
+        <button
+            type="submit"
+            class="btn-primario btn-filtrar-clientes"
+        >
+            Filtrar
+        </button>
+
+
+        {% if busca or status_selecionado %}
+
+            <a
+                href="{{ url_for('emprestimos.clientes') }}"
+                class="btn-limpar-filtro"
+            >
+                Limpar
+            </a>
+
+        {% endif %}
+
+    </form>
+
+
+    <!-- =====================================
+         RESUMO DA LISTA
+    ====================================== -->
+
+    <div class="clientes-lista-topo">
+
+        <div>
+
+            <span class="filtro-label">
+                Clientes encontrados
+            </span>
+
+            <strong>
+                {{ clientes|length }}
+                cliente{% if clientes|length != 1 %}s{% endif %}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================
+         CARDS DE CLIENTES
+    ====================================== -->
+
+    {% if clientes %}
+
+        <div class="clientes-grid">
+
+            {% for cliente in clientes %}
+
+                <article class="cliente-card">
+
+                    <div class="cliente-card-topo">
+
+                        <div class="cliente-avatar cliente-avatar-grande">
+
+                            {{
+                                cliente[
+                                    "nome"
+                                ][0]|upper
+                            }}
+
+                        </div>
+
+
+                        <div class="cliente-card-identidade">
+
+                            <span>
+                                Cliente
+                            </span>
+
+                            <h2>
+                                {{ cliente["nome"] }}
+                            </h2>
+
+                            <small>
+                                {{ cliente["telefone"] }}
+                            </small>
+
+                        </div>
+
+
+                        <span
+                            class="
+                                cliente-status
+                                cliente-status-{{
+                                    cliente[
+                                        'status'
+                                    ]
+                                }}
+                            "
+                        >
+                            {{
+                                cliente[
+                                    "status"
+                                ]|capitalize
+                            }}
+                        </span>
+
+                    </div>
+
+
+                    {% if cliente["documento"] %}
+
+                        <div class="cliente-documento">
+
+                            <span>
+                                Documento
+                            </span>
+
+                            <strong>
+                                {{ cliente["documento"] }}
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="cliente-indicadores">
+
+                        <div>
+
+                            <span>
+                                Saldo devedor
+                            </span>
+
+                            <strong>
+                                R$
+                                {{
+                                    "%.2f"|format(
+                                        cliente[
+                                            "saldo_devedor"
+                                        ] or 0
+                                    )
+                                }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Contratos abertos
+                            </span>
+
+                            <strong>
+                                {{
+                                    cliente[
+                                        "emprestimos_abertos"
+                                    ] or 0
+                                }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Parcelas atrasadas
+                            </span>
+
+                            <strong
+                                class="
+                                    {% if cliente['parcelas_atrasadas'] %}
+                                        valor-atrasado
+                                    {% endif %}
+                                "
+                            >
+                                {{
+                                    cliente[
+                                        "parcelas_atrasadas"
+                                    ] or 0
+                                }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if cliente["proximo_vencimento"] %}
+
+                        <div class="cliente-vencimento">
+
+                            <span>
+                                Próximo vencimento
+                            </span>
+
+                            <strong>
+                                {{
+                                    cliente[
+                                        "proximo_vencimento"
+                                    ].strftime(
+                                        "%d/%m/%Y"
+                                    )
+                                }}
+                            </strong>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="cliente-vencimento sem-vencimento">
+
+                            <span>
+                                Próximo vencimento
+                            </span>
+
+                            <strong>
+                                Nenhum
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if cliente["parcelas_atrasadas"] %}
+
+                        <div class="cliente-aviso-atraso">
+
+                            Este cliente possui
+                            {{
+                                cliente[
+                                    "parcelas_atrasadas"
+                                ]
+                            }}
+
+                            parcela{% if cliente["parcelas_atrasadas"] != 1 %}s{% endif %}
+                            em atraso.
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="cliente-acoes">
+
+                        <button
+                            type="button"
+                            class="btn-whatsapp"
+                            data-telefone="{{ cliente['telefone'] }}"
+                            data-nome="{{ cliente['nome'] }}"
+                            onclick="abrirWhatsAppCliente(this)"
+                        >
+                            WhatsApp
+                        </button>
+
+
+                        <a
+                            href="{{
+                                url_for(
+                                    'emprestimos.cliente_detalhe',
+                                    cliente_id=cliente[
+                                        'id'
+                                    ]
+                                )
+                            }}"
+                            class="btn-card-primario"
+                        >
+                            Ver cliente
+                        </a>
+
+                    </div>
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="estado-vazio">
+
+            <div class="estado-vazio-icone">
+                #
+            </div>
+
+            <h2>
+                Nenhum cliente encontrado
+            </h2>
+
+            <p>
+                Cadastre um cliente ou altere
+                os filtros da pesquisa.
+            </p>
+
+            <button
+                type="button"
+                class="btn-primario"
+                onclick="abrirModalCliente()"
+            >
+                Cadastrar cliente
+            </button>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =====================================
+         MODAL NOVO CLIENTE
+    ====================================== -->
+
+    <div
+        id="modalCliente"
+        class="emprestimo-modal"
+    >
+
+        <div class="emprestimo-modal-content modal-cliente">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="pagina-label">
+                        Novo cadastro
+                    </span>
+
+                    <h2>
+                        Cadastrar cliente
+                    </h2>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-fechar"
+                    onclick="fecharModalCliente()"
+                    aria-label="Fechar"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="{{ url_for('emprestimos.clientes') }}"
+                class="emprestimo-form"
+            >
+
+                <div class="form-grid">
+
+                    <label class="form-campo campo-completo">
+
+                        <span>
+                            Nome completo
+                        </span>
+
+                        <input
+                            type="text"
+                            name="nome"
+                            maxlength="150"
+                            placeholder="Nome do cliente"
+                            autocomplete="name"
+                            required
+                        >
+
+                    </label>
+
+
+                    <label class="form-campo">
+
+                        <span>
+                            Telefone com DDD
+                        </span>
+
+                        <input
+                            type="tel"
+                            name="telefone"
+                            maxlength="20"
+                            placeholder="(11) 99999-9999"
+                            autocomplete="tel"
+                            required
+                        >
+
+                    </label>
+
+
+                    <label class="form-campo">
+
+                        <span>
+                            CPF ou CNPJ
+                        </span>
+
+                        <input
+                            type="text"
+                            name="documento"
+                            maxlength="20"
+                            placeholder="Somente números"
+                            inputmode="numeric"
+                        >
+
+                    </label>
+
+
+                    <label class="form-campo campo-completo">
+
+                        <span>
+                            E-mail
+                        </span>
+
+                        <input
+                            type="email"
+                            name="email"
+                            maxlength="150"
+                            placeholder="cliente@email.com"
+                            autocomplete="email"
+                        >
+
+                    </label>
+
+
+                    <label class="form-campo campo-completo">
+
+                        <span>
+                            Endereço
+                        </span>
+
+                        <textarea
+                            name="endereco"
+                            rows="2"
+                            placeholder="Endereço completo"
+                            autocomplete="street-address"
+                        ></textarea>
+
+                    </label>
+
+
+                    <label class="form-campo campo-completo">
+
+                        <span>
+                            Observações
+                        </span>
+
+                        <textarea
+                            name="observacoes"
+                            rows="3"
+                            placeholder="Informações adicionais sobre o cliente"
+                        ></textarea>
+
+                    </label>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn-primario btn-form"
+                >
+                    Cadastrar cliente
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<script>
+
+    const modalCliente =
+        document.getElementById(
+            "modalCliente"
+        )
+
+
+    function abrirModalCliente() {
+
+        modalCliente.style.display =
+            "flex"
+
+        document.body.style.overflow =
+            "hidden"
+
+    }
+
+
+    function fecharModalCliente() {
+
+        modalCliente.style.display =
+            "none"
+
+        document.body.style.overflow =
+            ""
+
+    }
+
+
+    function abrirWhatsAppCliente(
+        botao
+    ) {
+
+        const telefone =
+            String(
+                botao.dataset.telefone
+                || ""
+            ).replace(
+                /\D/g,
+                ""
+            )
+
+        const nome =
+            botao.dataset.nome
+            || "cliente"
+
+        if (!telefone) {
+
+            alert(
+                "Cliente sem telefone cadastrado."
+            )
+
+            return
+
+        }
+
+        const mensagem =
+            encodeURIComponent(
+                `Olá, ${nome}! Tudo bem? `
+                + `Estamos entrando em contato `
+                + `pelo Nexus PDV.`
+            )
+
+        const numero =
+            telefone.startsWith("55")
+                ? telefone
+                : `55${telefone}`
+
+        window.open(
+            `https://wa.me/${numero}?text=${mensagem}`,
+            "_blank",
+            "noopener,noreferrer"
+        )
+
+    }
+
+
+    window.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                event.target
+                === modalCliente
+            ) {
+
+                fecharModalCliente()
+
+            }
+
+        }
+    )
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape"
+                && modalCliente.style.display
+                    === "flex"
+            ) {
+
+                fecharModalCliente()
+
+            }
+
+        }
+    )
+
+</script>
+
+{% endblock %}

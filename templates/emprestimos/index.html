@@ -1,0 +1,1292 @@
+{% extends "layout.html" %}
+
+
+{% block css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/emprestimos.css') }}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="emprestimos-page">
+
+    <!-- =====================================
+         CABEÇALHO
+    ====================================== -->
+
+    <header class="emprestimos-header">
+
+        <div>
+
+            <span class="pagina-label">
+                Gestão financeira
+            </span>
+
+            <h1>
+                Empréstimos
+            </h1>
+
+            <p>
+                Controle clientes, contratos,
+                parcelas e pagamentos.
+            </p>
+
+        </div>
+
+
+        <div class="header-acoes">
+
+            <a
+                href="{{ url_for('emprestimos.clientes') }}"
+                class="btn-secundario"
+            >
+                Clientes
+            </a>
+
+            <button
+                type="button"
+                class="btn-primario"
+                onclick="abrirModalEmprestimo()"
+            >
+                + Novo empréstimo
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================
+         INDICADORES
+    ====================================== -->
+
+    <div class="emprestimos-indicadores">
+
+        <article class="indicador-card azul">
+
+            <span>
+                Total emprestado
+            </span>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"|format(
+                        resumo.get(
+                            "total_emprestado",
+                            0
+                        ) or 0
+                    )
+                }}
+            </strong>
+
+            <small>
+                Capital liberado
+            </small>
+
+        </article>
+
+
+        <article class="indicador-card verde">
+
+            <span>
+                Total recebido
+            </span>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"|format(
+                        resumo.get(
+                            "total_recebido",
+                            0
+                        ) or 0
+                    )
+                }}
+            </strong>
+
+            <small>
+                Pagamentos acumulados
+            </small>
+
+        </article>
+
+
+        <article class="indicador-card roxo">
+
+            <span>
+                Total a receber
+            </span>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"|format(
+                        resumo.get(
+                            "total_a_receber",
+                            0
+                        ) or 0
+                    )
+                }}
+            </strong>
+
+            <small>
+                Saldo devedor aberto
+            </small>
+
+        </article>
+
+
+        <article class="indicador-card vermelho">
+
+            <span>
+                Valor atrasado
+            </span>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"|format(
+                        resumo.get(
+                            "valor_atrasado",
+                            0
+                        ) or 0
+                    )
+                }}
+            </strong>
+
+            <small>
+                {{
+                    resumo.get(
+                        "parcelas_atrasadas",
+                        0
+                    ) or 0
+                }}
+                parcelas atrasadas
+            </small>
+
+        </article>
+
+
+        <article class="indicador-card laranja">
+
+            <span>
+                Recebido hoje
+            </span>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"|format(
+                        resumo.get(
+                            "recebido_hoje",
+                            0
+                        ) or 0
+                    )
+                }}
+            </strong>
+
+            <small>
+                Entradas do dia
+            </small>
+
+        </article>
+
+
+        <article class="indicador-card ciano">
+
+            <span>
+                Clientes ativos
+            </span>
+
+            <strong>
+                {{
+                    resumo.get(
+                        "clientes_ativos",
+                        0
+                    ) or 0
+                }}
+            </strong>
+
+            <small>
+                {{
+                    resumo.get(
+                        "total_clientes",
+                        0
+                    ) or 0
+                }}
+                clientes cadastrados
+            </small>
+
+        </article>
+
+    </div>
+
+
+    <!-- =====================================
+         FILTROS
+    ====================================== -->
+
+    <div class="emprestimos-filtros">
+
+        <div>
+
+            <span class="filtro-label">
+                Filtrar contratos
+            </span>
+
+            <strong>
+                Empréstimos cadastrados
+            </strong>
+
+        </div>
+
+
+        <div class="filtro-botoes">
+
+            <a
+                href="{{ url_for('emprestimos.dashboard') }}"
+                class="
+                    filtro-btn
+                    {% if not status_selecionado %}
+                        ativo
+                    {% endif %}
+                "
+            >
+                Todos
+            </a>
+
+            <a
+                href="{{ url_for('emprestimos.dashboard', status='ativo') }}"
+                class="
+                    filtro-btn
+                    {% if status_selecionado == 'ativo' %}
+                        ativo
+                    {% endif %}
+                "
+            >
+                Ativos
+            </a>
+
+            <a
+                href="{{ url_for('emprestimos.dashboard', status='atrasado') }}"
+                class="
+                    filtro-btn filtro-atrasado
+                    {% if status_selecionado == 'atrasado' %}
+                        ativo
+                    {% endif %}
+                "
+            >
+                Atrasados
+            </a>
+
+            <a
+                href="{{ url_for('emprestimos.dashboard', status='quitado') }}"
+                class="
+                    filtro-btn filtro-quitado
+                    {% if status_selecionado == 'quitado' %}
+                        ativo
+                    {% endif %}
+                "
+            >
+                Quitados
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================
+         LISTA DE EMPRÉSTIMOS
+    ====================================== -->
+
+    {% if emprestimos %}
+
+        <div class="emprestimos-lista">
+
+            {% for emprestimo in emprestimos %}
+
+                <article class="emprestimo-card">
+
+                    <div class="emprestimo-card-topo">
+
+                        <div class="cliente-avatar">
+
+                            {{
+                                emprestimo[
+                                    "cliente_nome"
+                                ][0]|upper
+                            }}
+
+                        </div>
+
+
+                        <div class="cliente-info">
+
+                            <span>
+                                Cliente
+                            </span>
+
+                            <h2>
+                                {{
+                                    emprestimo[
+                                        "cliente_nome"
+                                    ]
+                                }}
+                            </h2>
+
+                            <small>
+                                {{
+                                    emprestimo[
+                                        "cliente_telefone"
+                                    ]
+                                }}
+                            </small>
+
+                        </div>
+
+
+                        <span
+                            class="
+                                status-emprestimo
+                                status-{{
+                                    emprestimo[
+                                        'status'
+                                    ]
+                                }}
+                            "
+                        >
+                            {{
+                                emprestimo[
+                                    "status"
+                                ]|capitalize
+                            }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="emprestimo-valores">
+
+                        <div>
+
+                            <span>
+                                Emprestado
+                            </span>
+
+                            <strong>
+                                R$
+                                {{
+                                    "%.2f"|format(
+                                        emprestimo[
+                                            "valor_emprestado"
+                                        ]
+                                    )
+                                }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Total
+                            </span>
+
+                            <strong>
+                                R$
+                                {{
+                                    "%.2f"|format(
+                                        emprestimo[
+                                            "valor_total"
+                                        ]
+                                    )
+                                }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Saldo
+                            </span>
+
+                            <strong>
+                                R$
+                                {{
+                                    "%.2f"|format(
+                                        emprestimo[
+                                            "saldo_devedor"
+                                        ]
+                                    )
+                                }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="emprestimo-progresso">
+
+                        {% set percentual =
+                            (
+                                emprestimo[
+                                    "valor_pago"
+                                ]|float
+                                /
+                                emprestimo[
+                                    "valor_total"
+                                ]|float
+                                *
+                                100
+                            )
+                            if (
+                                emprestimo[
+                                    "valor_total"
+                                ]|float
+                                > 0
+                            )
+                            else 0
+                        %}
+
+                        <div class="progresso-topo">
+
+                            <span>
+                                Progresso do pagamento
+                            </span>
+
+                            <strong>
+                                {{
+                                    "%.1f"|format(
+                                        percentual
+                                    )
+                                }}%
+                            </strong>
+
+                        </div>
+
+                        <progress
+                            value="{{
+                                '%.2f'|format(
+                                    percentual
+                                )
+                            }}"
+                            max="100"
+                        ></progress>
+
+                    </div>
+
+
+                    <div class="emprestimo-detalhes">
+
+                        <span>
+
+                            {{
+                                emprestimo[
+                                    "quantidade_parcelas"
+                                ]
+                            }}
+                            parcelas
+
+                        </span>
+
+                        <span>
+
+                            Juros:
+                            {{
+                                emprestimo[
+                                    "taxa_juros"
+                                ]
+                            }}%
+
+                        </span>
+
+                        <span>
+
+                            {{
+                                emprestimo[
+                                    "frequencia"
+                                ]|capitalize
+                            }}
+
+                        </span>
+
+                    </div>
+
+
+                    {% if emprestimo["proximo_vencimento"] %}
+
+                        <div class="proximo-vencimento">
+
+                            <span>
+                                Próximo vencimento
+                            </span>
+
+                            <strong>
+
+                                {{
+                                    emprestimo[
+                                        "proximo_vencimento"
+                                    ].strftime(
+                                        "%d/%m/%Y"
+                                    )
+                                }}
+
+                            </strong>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if emprestimo["parcelas_atrasadas"] %}
+
+                        <div class="aviso-atraso">
+
+                            {{
+                                emprestimo[
+                                    "parcelas_atrasadas"
+                                ]
+                            }}
+
+                            parcela{% if emprestimo["parcelas_atrasadas"] != 1 %}s{% endif %}
+                            em atraso
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="emprestimo-acoes">
+
+                        <a
+                            href="{{
+                                url_for(
+                                    'emprestimos.cliente_detalhe',
+                                    cliente_id=emprestimo[
+                                        'cliente_id'
+                                    ]
+                                )
+                            }}"
+                            class="btn-card-secundario"
+                        >
+                            Cliente
+                        </a>
+
+                        <a
+                            href="{{
+                                url_for(
+                                    'emprestimos.emprestimo_detalhe',
+                                    emprestimo_id=emprestimo[
+                                        'id'
+                                    ]
+                                )
+                            }}"
+                            class="btn-card-primario"
+                        >
+                            Ver contrato
+                        </a>
+
+                    </div>
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="estado-vazio">
+
+            <div class="estado-vazio-icone">
+                R$
+            </div>
+
+            <h2>
+                Nenhum empréstimo encontrado
+            </h2>
+
+            <p>
+                Cadastre um cliente e crie o primeiro
+                empréstimo.
+            </p>
+
+            <button
+                type="button"
+                class="btn-primario"
+                onclick="abrirModalEmprestimo()"
+            >
+                Criar empréstimo
+            </button>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =====================================
+         MODAL NOVO EMPRÉSTIMO
+    ====================================== -->
+
+    <div
+        id="modalEmprestimo"
+        class="emprestimo-modal"
+    >
+
+        <div class="emprestimo-modal-content">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="pagina-label">
+                        Novo contrato
+                    </span>
+
+                    <h2>
+                        Cadastrar empréstimo
+                    </h2>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-fechar"
+                    onclick="fecharModalEmprestimo()"
+                    aria-label="Fechar"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            {% if clientes %}
+
+                <form
+                    method="POST"
+                    action="{{ url_for('emprestimos.novo_emprestimo') }}"
+                    id="formEmprestimo"
+                    class="emprestimo-form"
+                >
+
+                    <div class="form-grid">
+
+                        <label class="form-campo campo-completo">
+
+                            <span>
+                                Cliente
+                            </span>
+
+                            <select
+                                name="cliente_id"
+                                required
+                            >
+
+                                <option value="">
+                                    Selecione um cliente
+                                </option>
+
+                                {% for cliente in clientes %}
+
+                                    <option
+                                        value="{{ cliente['id'] }}"
+                                    >
+                                        {{ cliente["nome"] }}
+                                        —
+                                        {{ cliente["telefone"] }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </label>
+
+
+                        <label class="form-campo">
+
+                            <span>
+                                Valor emprestado
+                            </span>
+
+                            <input
+                                type="text"
+                                name="valor_emprestado"
+                                id="valorEmprestado"
+                                placeholder="1.000,00"
+                                inputmode="decimal"
+                                required
+                            >
+
+                        </label>
+
+
+                        <label class="form-campo">
+
+                            <span>
+                                Taxa de juros por período
+                            </span>
+
+                            <div class="input-sufixo">
+
+                                <input
+                                    type="text"
+                                    name="taxa_juros"
+                                    id="taxaJuros"
+                                    value="0"
+                                    inputmode="decimal"
+                                    required
+                                >
+
+                                <span>
+                                    %
+                                </span>
+
+                            </div>
+
+                        </label>
+
+
+                        <label class="form-campo">
+
+                            <span>
+                                Quantidade de parcelas
+                            </span>
+
+                            <input
+                                type="number"
+                                name="quantidade_parcelas"
+                                id="quantidadeParcelas"
+                                min="1"
+                                max="360"
+                                value="1"
+                                required
+                            >
+
+                        </label>
+
+
+                        <label class="form-campo">
+
+                            <span>
+                                Tipo de juros
+                            </span>
+
+                            <select
+                                name="tipo_juros"
+                                id="tipoJuros"
+                                required
+                            >
+
+                                <option value="simples">
+                                    Juros simples
+                                </option>
+
+                                <option value="composto">
+                                    Juros compostos
+                                </option>
+
+                            </select>
+
+                        </label>
+
+
+                        <label class="form-campo">
+
+                            <span>
+                                Frequência
+                            </span>
+
+                            <select
+                                name="frequencia"
+                                required
+                            >
+
+                                <option value="mensal">
+                                    Mensal
+                                </option>
+
+                                <option value="quinzenal">
+                                    Quinzenal
+                                </option>
+
+                                <option value="semanal">
+                                    Semanal
+                                </option>
+
+                            </select>
+
+                        </label>
+
+
+                        <label class="form-campo">
+
+                            <span>
+                                Data do empréstimo
+                            </span>
+
+                            <input
+                                type="date"
+                                name="data_emprestimo"
+                                id="dataEmprestimo"
+                            >
+
+                        </label>
+
+
+                        <label class="form-campo">
+
+                            <span>
+                                Primeira parcela
+                            </span>
+
+                            <input
+                                type="date"
+                                name="primeira_parcela"
+                                id="primeiraParcela"
+                                required
+                            >
+
+                        </label>
+
+
+                        <label class="form-campo campo-completo">
+
+                            <span>
+                                Observações
+                            </span>
+
+                            <textarea
+                                name="observacoes"
+                                rows="3"
+                                placeholder="Informações adicionais do contrato"
+                            ></textarea>
+
+                        </label>
+
+                    </div>
+
+
+                    <div
+                        id="simulacaoEmprestimo"
+                        class="simulacao-box"
+                    >
+
+                        <div>
+
+                            <span>
+                                Juros
+                            </span>
+
+                            <strong id="simulacaoJuros">
+                                R$ 0,00
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Total
+                            </span>
+
+                            <strong id="simulacaoTotal">
+                                R$ 0,00
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            <span>
+                                Parcela
+                            </span>
+
+                            <strong id="simulacaoParcela">
+                                R$ 0,00
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="erroSimulacao"
+                        class="erro-simulacao"
+                    ></div>
+
+
+                    <button
+                        type="submit"
+                        class="btn-primario btn-form"
+                    >
+                        Criar empréstimo
+                    </button>
+
+                </form>
+
+            {% else %}
+
+                <div class="modal-sem-clientes">
+
+                    <h3>
+                        Cadastre um cliente primeiro
+                    </h3>
+
+                    <p>
+                        É necessário possuir um cliente
+                        ativo para criar um empréstimo.
+                    </p>
+
+                    <a
+                        href="{{ url_for('emprestimos.clientes') }}"
+                        class="btn-primario"
+                    >
+                        Cadastrar cliente
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<script>
+
+    const modalEmprestimo =
+        document.getElementById(
+            "modalEmprestimo"
+        )
+
+    const valorEmprestado =
+        document.getElementById(
+            "valorEmprestado"
+        )
+
+    const taxaJuros =
+        document.getElementById(
+            "taxaJuros"
+        )
+
+    const quantidadeParcelas =
+        document.getElementById(
+            "quantidadeParcelas"
+        )
+
+    const tipoJuros =
+        document.getElementById(
+            "tipoJuros"
+        )
+
+    let temporizadorSimulacao = null
+
+
+    function abrirModalEmprestimo() {
+
+        modalEmprestimo.style.display =
+            "flex"
+
+        document.body.style.overflow =
+            "hidden"
+
+        definirDatasPadrao()
+
+    }
+
+
+    function fecharModalEmprestimo() {
+
+        modalEmprestimo.style.display =
+            "none"
+
+        document.body.style.overflow =
+            ""
+
+    }
+
+
+    function definirDatasPadrao() {
+
+        const hoje =
+            new Date()
+
+        const primeira =
+            new Date()
+
+        primeira.setMonth(
+            primeira.getMonth() + 1
+        )
+
+        const dataEmprestimo =
+            document.getElementById(
+                "dataEmprestimo"
+            )
+
+        const primeiraParcela =
+            document.getElementById(
+                "primeiraParcela"
+            )
+
+        if (
+            dataEmprestimo
+            && !dataEmprestimo.value
+        ) {
+
+            dataEmprestimo.value =
+                formatarDataInput(
+                    hoje
+                )
+
+        }
+
+        if (
+            primeiraParcela
+            && !primeiraParcela.value
+        ) {
+
+            primeiraParcela.value =
+                formatarDataInput(
+                    primeira
+                )
+
+        }
+
+    }
+
+
+    function formatarDataInput(
+        data
+    ) {
+
+        const ano =
+            data.getFullYear()
+
+        const mes =
+            String(
+                data.getMonth() + 1
+            ).padStart(
+                2,
+                "0"
+            )
+
+        const dia =
+            String(
+                data.getDate()
+            ).padStart(
+                2,
+                "0"
+            )
+
+        return `${ano}-${mes}-${dia}`
+
+    }
+
+
+    function moeda(
+        valor
+    ) {
+
+        return new Intl.NumberFormat(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        ).format(
+            Number(valor || 0)
+        )
+
+    }
+
+
+    async function simularEmprestimo() {
+
+        if (
+            !valorEmprestado
+            || !taxaJuros
+            || !quantidadeParcelas
+            || !tipoJuros
+        ) {
+            return
+        }
+
+        if (
+            !valorEmprestado.value
+            || !quantidadeParcelas.value
+        ) {
+            return
+        }
+
+        const erro =
+            document.getElementById(
+                "erroSimulacao"
+            )
+
+        erro.textContent = ""
+
+        try {
+
+            const resposta =
+                await fetch(
+                    "{{ url_for('emprestimos.simular') }}",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            valor_emprestado:
+                                valorEmprestado.value,
+
+                            taxa_juros:
+                                taxaJuros.value,
+
+                            quantidade_parcelas:
+                                quantidadeParcelas.value,
+
+                            tipo_juros:
+                                tipoJuros.value
+                        })
+                    }
+                )
+
+            const dados =
+                await resposta.json()
+
+            if (!resposta.ok) {
+
+                throw new Error(
+                    dados.erro
+                    || "Simulação inválida."
+                )
+
+            }
+
+            document.getElementById(
+                "simulacaoJuros"
+            ).textContent =
+                moeda(
+                    dados.valor_juros
+                )
+
+            document.getElementById(
+                "simulacaoTotal"
+            ).textContent =
+                moeda(
+                    dados.valor_total
+                )
+
+            document.getElementById(
+                "simulacaoParcela"
+            ).textContent =
+                moeda(
+                    dados.valor_parcela
+                )
+
+        } catch (erroRequisicao) {
+
+            erro.textContent =
+                erroRequisicao.message
+
+        }
+
+    }
+
+
+    function agendarSimulacao() {
+
+        clearTimeout(
+            temporizadorSimulacao
+        )
+
+        temporizadorSimulacao =
+            setTimeout(
+                simularEmprestimo,
+                350
+            )
+
+    }
+
+
+    [
+        valorEmprestado,
+        taxaJuros,
+        quantidadeParcelas,
+        tipoJuros
+    ].forEach(campo => {
+
+        if (campo) {
+
+            campo.addEventListener(
+                "input",
+                agendarSimulacao
+            )
+
+            campo.addEventListener(
+                "change",
+                agendarSimulacao
+            )
+
+        }
+
+    })
+
+
+    window.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                event.target
+                === modalEmprestimo
+            ) {
+
+                fecharModalEmprestimo()
+
+            }
+
+        }
+    )
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape"
+                && modalEmprestimo.style.display
+                    === "flex"
+            ) {
+
+                fecharModalEmprestimo()
+
+            }
+
+        }
+    )
+
+</script>
+
+{% endblock %}

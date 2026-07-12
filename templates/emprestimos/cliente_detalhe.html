@@ -1,0 +1,1103 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/emprestimos.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div
+    id="dadosPaginaCliente"
+    hidden
+    data-nome="{{ cliente.nome|e }}"
+    data-telefone="{{ (cliente.telefone or '')|e }}"
+    data-url-simulacao="{{ url_for('emprestimos.simular') }}"
+></div>
+
+<div class="emprestimos-container cliente-detalhe-page">
+
+    <section class="emprestimos-header cliente-detalhe-header">
+        <div>
+            <span class="pagina-etiqueta">GESTÃO DE CLIENTES</span>
+
+            <h1>{{ cliente.nome }}</h1>
+
+            <p>
+                Consulte os dados, contratos e movimentações financeiras
+                deste cliente.
+            </p>
+        </div>
+
+        <div class="header-acoes">
+            <a
+                href="{{ url_for('emprestimos.clientes') }}"
+                class="botao botao-secundario"
+            >
+                ← Clientes
+            </a>
+
+            {% if cliente.telefone %}
+            <button
+                type="button"
+                class="botao botao-whatsapp"
+                onclick="abrirWhatsAppCliente()"
+            >
+                WhatsApp
+            </button>
+            {% endif %}
+
+            <button
+                type="button"
+                class="botao botao-secundario"
+                onclick="abrirModal('modalEditarCliente')"
+            >
+                Editar cliente
+            </button>
+
+            <button
+                type="button"
+                class="botao botao-principal"
+                onclick="abrirModal('modalNovoEmprestimo')"
+                {% if cliente.status != "ativo" %}disabled{% endif %}
+            >
+                + Novo empréstimo
+            </button>
+        </div>
+    </section>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% if mensagens %}
+        <div class="mensagens-sistema">
+            {% for categoria, mensagem in mensagens %}
+            <div class="alerta alerta-{{ categoria }}">
+                {{ mensagem }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="cliente-resumo-grid">
+
+        <article class="cliente-identidade-card">
+            <div class="cliente-identidade-topo">
+                <div class="cliente-avatar-grande">
+                    {{ cliente.nome[0]|upper if cliente.nome else "C" }}
+                </div>
+
+                <div>
+                    <h2>{{ cliente.nome }}</h2>
+
+                    <span class="status-cliente status-{{ cliente.status }}">
+                        {{ cliente.status|capitalize }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="cliente-dados-lista">
+                <div class="cliente-dado">
+                    <span>Telefone</span>
+                    <strong>
+                        {{ cliente.telefone or "Não informado" }}
+                    </strong>
+                </div>
+
+                <div class="cliente-dado">
+                    <span>CPF/CNPJ</span>
+                    <strong>
+                        {{ cliente.documento or "Não informado" }}
+                    </strong>
+                </div>
+
+                <div class="cliente-dado">
+                    <span>E-mail</span>
+                    <strong>
+                        {{ cliente.email or "Não informado" }}
+                    </strong>
+                </div>
+
+                <div class="cliente-dado">
+                    <span>Endereço</span>
+                    <strong>
+                        {{ cliente.endereco or "Não informado" }}
+                    </strong>
+                </div>
+
+                <div class="cliente-dado">
+                    <span>Cadastro</span>
+
+                    <strong>
+                        {% if cliente.criado_em %}
+                            {{ cliente.criado_em.strftime("%d/%m/%Y") }}
+                        {% else %}
+                            Não informado
+                        {% endif %}
+                    </strong>
+                </div>
+            </div>
+
+            {% if cliente.observacoes %}
+            <div class="cliente-observacoes">
+                <span>Observações</span>
+                <p>{{ cliente.observacoes }}</p>
+            </div>
+            {% endif %}
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'emprestimos.cliente_status',
+                    cliente_id=cliente.id
+                ) }}"
+                class="cliente-status-form"
+            >
+                <label for="statusCliente">
+                    Situação do cliente
+                </label>
+
+                <div>
+                    <select id="statusCliente" name="status" required>
+                        <option
+                            value="ativo"
+                            {% if cliente.status == "ativo" %}
+                                selected
+                            {% endif %}
+                        >
+                            Ativo
+                        </option>
+
+                        <option
+                            value="inativo"
+                            {% if cliente.status == "inativo" %}
+                                selected
+                            {% endif %}
+                        >
+                            Inativo
+                        </option>
+
+                        <option
+                            value="bloqueado"
+                            {% if cliente.status == "bloqueado" %}
+                                selected
+                            {% endif %}
+                        >
+                            Bloqueado
+                        </option>
+                    </select>
+
+                    <button
+                        type="submit"
+                        class="botao botao-secundario"
+                    >
+                        Salvar
+                    </button>
+                </div>
+            </form>
+        </article>
+
+        <div class="cliente-indicadores">
+
+            <article class="indicador-card destaque-azul">
+                <span>Empréstimos</span>
+                <strong>{{ cliente.total_emprestimos or 0 }}</strong>
+                <small>Total de contratos cadastrados</small>
+            </article>
+
+            <article class="indicador-card destaque-roxo">
+                <span>Contratos abertos</span>
+                <strong>{{ cliente.emprestimos_abertos or 0 }}</strong>
+                <small>Em andamento ou atrasados</small>
+            </article>
+
+            <article class="indicador-card destaque-laranja">
+                <span>Saldo devedor</span>
+
+                <strong>
+                    R$ {{ "%.2f"|format(cliente.saldo_devedor or 0) }}
+                </strong>
+
+                <small>Valor que ainda falta receber</small>
+            </article>
+
+            <article class="indicador-card destaque-verde">
+                <span>Total recebido</span>
+
+                <strong>
+                    R$ {{ "%.2f"|format(cliente.total_pago or 0) }}
+                </strong>
+
+                <small>Pagamentos já realizados</small>
+            </article>
+
+            <article class="indicador-card destaque-vermelho">
+                <span>Parcelas atrasadas</span>
+                <strong>{{ cliente.parcelas_atrasadas or 0 }}</strong>
+                <small>Parcelas aguardando regularização</small>
+            </article>
+
+            <article class="indicador-card destaque-ciano">
+                <span>Próximo vencimento</span>
+
+                <strong class="valor-data">
+                    {% if cliente.proximo_vencimento %}
+                        {{ cliente.proximo_vencimento.strftime("%d/%m/%Y") }}
+                    {% else %}
+                        Nenhum
+                    {% endif %}
+                </strong>
+
+                <small>Próxima parcela em aberto</small>
+            </article>
+
+        </div>
+    </section>
+
+    <section class="contratos-secao">
+
+        <div class="secao-titulo">
+            <div>
+                <span class="pagina-etiqueta">CONTRATOS</span>
+                <h2>Empréstimos do cliente</h2>
+
+                <p>
+                    Acompanhe o progresso e a situação de cada contrato.
+                </p>
+            </div>
+
+            <span class="quantidade-registros">
+                {{ emprestimos|length }} contrato(s)
+            </span>
+        </div>
+
+        {% if emprestimos %}
+
+        <div class="contratos-lista">
+
+            {% for emprestimo in emprestimos %}
+
+                {% set total = emprestimo.valor_total or 0 %}
+                {% set saldo = emprestimo.saldo_devedor or 0 %}
+                {% set pago = total - saldo %}
+
+                {% if total > 0 %}
+                    {% set progresso = pago / total * 100 %}
+                {% else %}
+                    {% set progresso = 0 %}
+                {% endif %}
+
+            <article class="contrato-card">
+
+                <div class="contrato-card-topo">
+                    <div>
+                        <span class="contrato-numero">
+                            CONTRATO #{{ emprestimo.id }}
+                        </span>
+
+                        <h3>
+                            R$ {{
+                                "%.2f"|format(
+                                    emprestimo.valor_total or 0
+                                )
+                            }}
+                        </h3>
+                    </div>
+
+                    <span
+                        class="status-emprestimo
+                               status-{{ emprestimo.status }}"
+                    >
+                        {{
+                            emprestimo.status
+                            |replace("_", " ")
+                            |capitalize
+                        }}
+                    </span>
+                </div>
+
+                <div class="contrato-informacoes">
+
+                    <div>
+                        <span>Valor emprestado</span>
+
+                        <strong>
+                            R$ {{
+                                "%.2f"|format(
+                                    emprestimo.valor_emprestado or 0
+                                )
+                            }}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Taxa de juros</span>
+
+                        <strong>
+                            {{ emprestimo.taxa_juros or 0 }}%
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Parcelas</span>
+
+                        <strong>
+                            {{ emprestimo.quantidade_parcelas or 0 }}x
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Valor da parcela</span>
+
+                        <strong>
+                            R$ {{
+                                "%.2f"|format(
+                                    emprestimo.valor_parcela or 0
+                                )
+                            }}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Data do contrato</span>
+
+                        <strong>
+                            {% if emprestimo.data_emprestimo %}
+                                {{
+                                    emprestimo.data_emprestimo.strftime(
+                                        "%d/%m/%Y"
+                                    )
+                                }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Saldo devedor</span>
+
+                        <strong class="texto-alerta">
+                            R$ {{
+                                "%.2f"|format(
+                                    emprestimo.saldo_devedor or 0
+                                )
+                            }}
+                        </strong>
+                    </div>
+
+                </div>
+
+                <div class="contrato-progresso">
+                    <div class="progresso-cabecalho">
+                        <span>Progresso do pagamento</span>
+                        <strong>{{ "%.0f"|format(progresso) }}%</strong>
+                    </div>
+
+                    <div class="progresso-trilho">
+                        <div
+                            class="progresso-preenchimento"
+                            data-progresso="{{ progresso }}"
+                        ></div>
+                    </div>
+                </div>
+
+                <div class="contrato-card-rodape">
+                    <span>
+                        Recebido:
+                        <strong>
+                            R$ {{ "%.2f"|format(pago) }}
+                        </strong>
+                    </span>
+
+                    <a
+                        href="{{ url_for(
+                            'emprestimos.emprestimo_detalhe',
+                            emprestimo_id=emprestimo.id
+                        ) }}"
+                        class="botao botao-secundario"
+                    >
+                        Ver contrato →
+                    </a>
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="estado-vazio">
+            <div class="estado-vazio-icone">◎</div>
+
+            <h3>Nenhum empréstimo cadastrado</h3>
+
+            <p>
+                Este cliente ainda não possui contratos de empréstimo.
+            </p>
+
+            {% if cliente.status == "ativo" %}
+            <button
+                type="button"
+                class="botao botao-principal"
+                onclick="abrirModal('modalNovoEmprestimo')"
+            >
+                Criar primeiro empréstimo
+            </button>
+            {% endif %}
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+
+<!-- MODAL DE EDIÇÃO DO CLIENTE -->
+<div id="modalEditarCliente" class="modal-emprestimos">
+    <div
+        class="modal-conteudo modal-conteudo-medio"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tituloEditarCliente"
+    >
+        <div class="modal-cabecalho">
+            <div>
+                <span class="pagina-etiqueta">CLIENTE</span>
+                <h2 id="tituloEditarCliente">Editar informações</h2>
+            </div>
+
+            <button
+                type="button"
+                class="modal-fechar"
+                onclick="fecharModal('modalEditarCliente')"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+        </div>
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'emprestimos.cliente_editar',
+                cliente_id=cliente.id
+            ) }}"
+            class="formulario-emprestimos"
+        >
+            <input
+                type="hidden"
+                name="status"
+                value="{{ cliente.status }}"
+            >
+
+            <div class="formulario-grid">
+
+                <div class="campo campo-duplo">
+                    <label for="editarNome">Nome completo *</label>
+
+                    <input
+                        id="editarNome"
+                        name="nome"
+                        type="text"
+                        value="{{ cliente.nome }}"
+                        maxlength="150"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="editarDocumento">CPF/CNPJ</label>
+
+                    <input
+                        id="editarDocumento"
+                        name="documento"
+                        type="text"
+                        value="{{ cliente.documento or '' }}"
+                        maxlength="20"
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="editarTelefone">Telefone *</label>
+
+                    <input
+                        id="editarTelefone"
+                        name="telefone"
+                        type="tel"
+                        value="{{ cliente.telefone or '' }}"
+                        maxlength="20"
+                        required
+                    >
+                </div>
+
+                <div class="campo campo-duplo">
+                    <label for="editarEmail">E-mail</label>
+
+                    <input
+                        id="editarEmail"
+                        name="email"
+                        type="email"
+                        value="{{ cliente.email or '' }}"
+                        maxlength="150"
+                    >
+                </div>
+
+                <div class="campo campo-duplo">
+                    <label for="editarEndereco">Endereço</label>
+
+                    <input
+                        id="editarEndereco"
+                        name="endereco"
+                        type="text"
+                        value="{{ cliente.endereco or '' }}"
+                        maxlength="255"
+                    >
+                </div>
+
+                <div class="campo campo-duplo">
+                    <label for="editarObservacoes">Observações</label>
+
+                    <textarea
+                        id="editarObservacoes"
+                        name="observacoes"
+                        rows="4"
+                        maxlength="1000"
+                    >{{ cliente.observacoes or '' }}</textarea>
+                </div>
+
+            </div>
+
+            <div class="modal-acoes">
+                <button
+                    type="button"
+                    class="botao botao-secundario"
+                    onclick="fecharModal('modalEditarCliente')"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="botao botao-principal"
+                >
+                    Salvar alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- MODAL DE NOVO EMPRÉSTIMO -->
+<div id="modalNovoEmprestimo" class="modal-emprestimos">
+    <div
+        class="modal-conteudo modal-conteudo-grande"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tituloNovoEmprestimo"
+    >
+        <div class="modal-cabecalho">
+            <div>
+                <span class="pagina-etiqueta">NOVO CONTRATO</span>
+                <h2 id="tituloNovoEmprestimo">Cadastrar empréstimo</h2>
+                <p>Cliente: {{ cliente.nome }}</p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-fechar"
+                onclick="fecharModal('modalNovoEmprestimo')"
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+        </div>
+
+        <form
+            method="POST"
+            action="{{ url_for('emprestimos.novo_emprestimo') }}"
+            class="formulario-emprestimos"
+            id="formNovoEmprestimo"
+        >
+            <input
+                type="hidden"
+                name="cliente_id"
+                value="{{ cliente.id }}"
+            >
+
+            <div class="emprestimo-form-layout">
+
+                <div class="formulario-grid">
+
+                    <div class="campo">
+                        <label for="valorEmprestado">
+                            Valor emprestado *
+                        </label>
+
+                        <input
+                            id="valorEmprestado"
+                            name="valor_emprestado"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            placeholder="0,00"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="taxaJuros">
+                            Taxa de juros (%) *
+                        </label>
+
+                        <input
+                            id="taxaJuros"
+                            name="taxa_juros"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value="2"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="quantidadeParcelas">
+                            Quantidade de parcelas *
+                        </label>
+
+                        <input
+                            id="quantidadeParcelas"
+                            name="quantidade_parcelas"
+                            type="number"
+                            min="1"
+                            max="360"
+                            value="10"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="tipoJuros">Tipo de juros *</label>
+
+                        <select
+                            id="tipoJuros"
+                            name="tipo_juros"
+                            required
+                        >
+                            <option value="simples">
+                                Juros simples
+                            </option>
+
+                            <option value="composto">
+                                Juros compostos
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="frequenciaPagamento">
+                            Frequência de pagamento *
+                        </label>
+
+                        <select
+                            id="frequenciaPagamento"
+                            name="frequencia"
+                            required
+                        >
+                            <option value="mensal">Mensal</option>
+                            <option value="quinzenal">Quinzenal</option>
+                            <option value="semanal">Semanal</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="primeiroVencimento">
+                            Primeiro vencimento *
+                        </label>
+
+                        <input
+                            id="primeiroVencimento"
+                            name="primeira_parcela"
+                            type="date"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo campo-duplo">
+                        <label for="observacoesEmprestimo">
+                            Observações do contrato
+                        </label>
+
+                        <textarea
+                            id="observacoesEmprestimo"
+                            name="observacoes"
+                            rows="3"
+                            maxlength="1000"
+                            placeholder="Informações adicionais..."
+                        ></textarea>
+                    </div>
+
+                </div>
+
+                <aside class="simulacao-card">
+                    <span class="pagina-etiqueta">SIMULAÇÃO</span>
+                    <h3>Resumo do empréstimo</h3>
+
+                    <div class="simulacao-item">
+                        <span>Valor solicitado</span>
+                        <strong id="resumoValorEmprestado">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                    <div class="simulacao-item">
+                        <span>Valor dos juros</span>
+                        <strong id="resumoValorJuros">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                    <div class="simulacao-item">
+                        <span>Total do contrato</span>
+                        <strong id="resumoValorTotal">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                    <div class="simulacao-item simulacao-destaque">
+                        <span>Valor de cada parcela</span>
+                        <strong id="resumoValorParcela">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                    <small id="simulacaoMensagem">
+                        Informe o valor para visualizar a simulação.
+                    </small>
+                </aside>
+
+            </div>
+
+            <div class="modal-acoes">
+                <button
+                    type="button"
+                    class="botao botao-secundario"
+                    onclick="fecharModal('modalNovoEmprestimo')"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="botao botao-principal"
+                >
+                    Criar empréstimo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    const dadosPaginaCliente = document.getElementById(
+        "dadosPaginaCliente"
+    );
+
+    function abrirModal(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add("ativo");
+        document.body.classList.add("modal-aberto");
+
+        const primeiroCampo = modal.querySelector(
+            "input:not([type='hidden']), select, textarea"
+        );
+
+        if (primeiroCampo) {
+            window.setTimeout(
+                function () {
+                    primeiroCampo.focus();
+                },
+                100
+            );
+        }
+    }
+
+    function fecharModal(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("ativo");
+        document.body.classList.remove("modal-aberto");
+    }
+
+    document
+        .querySelectorAll(".modal-emprestimos")
+        .forEach(function (modal) {
+            modal.addEventListener("click", function (evento) {
+                if (evento.target === modal) {
+                    fecharModal(modal.id);
+                }
+            });
+        });
+
+    document.addEventListener("keydown", function (evento) {
+        if (evento.key !== "Escape") {
+            return;
+        }
+
+        document
+            .querySelectorAll(".modal-emprestimos.ativo")
+            .forEach(function (modal) {
+                fecharModal(modal.id);
+            });
+    });
+
+    function somenteNumeros(valor) {
+        return String(valor || "").replace(/\D/g, "");
+    }
+
+    function abrirWhatsAppCliente() {
+        if (!dadosPaginaCliente) {
+            return;
+        }
+
+        let telefone = somenteNumeros(
+            dadosPaginaCliente.dataset.telefone
+        );
+
+        const nomeCliente =
+            dadosPaginaCliente.dataset.nome || "cliente";
+
+        if (!telefone) {
+            window.alert(
+                "Este cliente não possui telefone cadastrado."
+            );
+
+            return;
+        }
+
+        if (telefone.length === 10 || telefone.length === 11) {
+            telefone = "55" + telefone;
+        }
+
+        const mensagem =
+            "Olá, " +
+            nomeCliente +
+            "! Tudo bem? Estou entrando em contato pela Nexus PDV.";
+
+        const enderecoWhatsApp =
+            "https://wa.me/" +
+            telefone +
+            "?text=" +
+            encodeURIComponent(mensagem);
+
+        window.open(
+            enderecoWhatsApp,
+            "_blank",
+            "noopener,noreferrer"
+        );
+    }
+
+    function moedaBR(valor) {
+        const numero = Number(valor || 0);
+
+        return numero.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
+
+    const camposSimulacao = {
+        valor: document.getElementById("valorEmprestado"),
+        taxa: document.getElementById("taxaJuros"),
+        parcelas: document.getElementById("quantidadeParcelas"),
+        tipo: document.getElementById("tipoJuros")
+    };
+
+    let temporizadorSimulacao;
+
+    async function atualizarSimulacao() {
+        const valor = Number(
+            camposSimulacao.valor
+                ? camposSimulacao.valor.value
+                : 0
+        );
+
+        const taxa = Number(
+            camposSimulacao.taxa
+                ? camposSimulacao.taxa.value
+                : 0
+        );
+
+        const parcelas = Number(
+            camposSimulacao.parcelas
+                ? camposSimulacao.parcelas.value
+                : 0
+        );
+
+        const tipo = camposSimulacao.tipo
+            ? camposSimulacao.tipo.value
+            : "simples";
+
+        const mensagem = document.getElementById(
+            "simulacaoMensagem"
+        );
+
+        if (valor <= 0 || parcelas <= 0 || taxa < 0) {
+            document.getElementById(
+                "resumoValorEmprestado"
+            ).textContent = moedaBR(0);
+
+            document.getElementById(
+                "resumoValorJuros"
+            ).textContent = moedaBR(0);
+
+            document.getElementById(
+                "resumoValorTotal"
+            ).textContent = moedaBR(0);
+
+            document.getElementById(
+                "resumoValorParcela"
+            ).textContent = moedaBR(0);
+
+            mensagem.textContent =
+                "Informe valores válidos para realizar a simulação.";
+
+            return;
+        }
+
+        mensagem.textContent = "Calculando simulação...";
+
+        try {
+            const urlSimulacao =
+                dadosPaginaCliente.dataset.urlSimulacao;
+
+            const resposta = await fetch(urlSimulacao, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    valor_emprestado: valor,
+                    taxa_juros: taxa,
+                    quantidade_parcelas: parcelas,
+                    tipo_juros: tipo
+                })
+            });
+
+            const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(
+                    dados.erro ||
+                    "Não foi possível realizar a simulação."
+                );
+            }
+
+            document.getElementById(
+                "resumoValorEmprestado"
+            ).textContent = moedaBR(dados.valor_emprestado);
+
+            document.getElementById(
+                "resumoValorJuros"
+            ).textContent = moedaBR(dados.valor_juros);
+
+            document.getElementById(
+                "resumoValorTotal"
+            ).textContent = moedaBR(dados.valor_total);
+
+            document.getElementById(
+                "resumoValorParcela"
+            ).textContent = moedaBR(dados.valor_parcela);
+
+            mensagem.textContent =
+                parcelas +
+                " parcela(s), usando juros " +
+                (
+                    tipo === "composto"
+                        ? "compostos."
+                        : "simples."
+                );
+        } catch (erro) {
+            mensagem.textContent = erro.message;
+        }
+    }
+
+    Object
+        .values(camposSimulacao)
+        .forEach(function (campo) {
+            if (!campo) {
+                return;
+            }
+
+            campo.addEventListener("input", function () {
+                window.clearTimeout(temporizadorSimulacao);
+
+                temporizadorSimulacao = window.setTimeout(
+                    atualizarSimulacao,
+                    300
+                );
+            });
+
+            campo.addEventListener(
+                "change",
+                atualizarSimulacao
+            );
+        });
+
+    const campoPrimeiroVencimento =
+        document.getElementById("primeiroVencimento");
+
+    if (
+        campoPrimeiroVencimento &&
+        !campoPrimeiroVencimento.value
+    ) {
+        const data = new Date();
+        data.setDate(data.getDate() + 30);
+
+        const ano = data.getFullYear();
+
+        const mes = String(
+            data.getMonth() + 1
+        ).padStart(2, "0");
+
+        const dia = String(
+            data.getDate()
+        ).padStart(2, "0");
+
+        campoPrimeiroVencimento.value =
+            ano + "-" + mes + "-" + dia;
+    }
+
+    document
+        .querySelectorAll(".progresso-preenchimento")
+        .forEach(function (barra) {
+            const progressoInformado = Number(
+                barra.dataset.progresso || 0
+            );
+
+            const progressoSeguro = Math.max(
+                0,
+                Math.min(progressoInformado, 100)
+            );
+
+            barra.style.width = progressoSeguro + "%";
+        });
+</script>
+
+{% endblock %}

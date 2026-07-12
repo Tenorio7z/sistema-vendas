@@ -808,3 +808,18 @@ RESPONSIVO
 .sidebar-logo h2 {
     margin-left: 0;
 }
+
+.nav-icon-emprestimos {
+    display: inline-grid;
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    color: currentColor;
+    border: 1.5px solid currentColor;
+    border-radius: 6px;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1;
+}
