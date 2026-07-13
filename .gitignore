@@ -1,4 +1,7 @@
 firebase-key.json
+firebase_key.json
 .env
 __pycache__/
 *.pyc
+.venv/
+database/*.db

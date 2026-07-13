@@ -1,10 +1,7 @@
 {% extends "layout.html" %}
 
 {% block css %}
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/emprestimos.css') }}"
->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/emprestimos.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -16,19 +13,14 @@
 {% set valor_recebido = valor_total - saldo_devedor %}
 
 {% if valor_total > 0 %}
-    {% set progresso = valor_recebido / valor_total * 100 %}
+{% set progresso = valor_recebido / valor_total * 100 %}
 {% else %}
-    {% set progresso = 0 %}
+{% set progresso = 0 %}
 {% endif %}
 
-<div
-    id="dadosContrato"
-    hidden
-    data-cliente-nome="{{ (emprestimo.cliente_nome or '')|e }}"
-    data-cliente-telefone="{{ (emprestimo.cliente_telefone or '')|e }}"
-    data-contrato-id="{{ emprestimo.id }}"
-    data-saldo-devedor="{{ saldo_devedor }}"
-></div>
+<div id="dadosContrato" hidden data-cliente-nome="{{ (emprestimo.cliente_nome or '')|e }}"
+    data-cliente-telefone="{{ (emprestimo.cliente_telefone or '')|e }}" data-contrato-id="{{ emprestimo.id }}"
+    data-saldo-devedor="{{ saldo_devedor }}"></div>
 
 <div class="emprestimos-container contrato-detalhe-page">
 
@@ -47,49 +39,27 @@
         </div>
 
         <div class="header-acoes">
-            <a
-                href="{{ url_for(
+            <a href="{{ url_for(
                     'emprestimos.cliente_detalhe',
                     cliente_id=emprestimo.cliente_id
-                ) }}"
-                class="botao botao-secundario"
-            >
+                ) }}" class="botao botao-secundario">
                 ← Cliente
             </a>
 
             {% if emprestimo.cliente_telefone %}
-            <button
-                type="button"
-                class="botao botao-whatsapp"
-                onclick="abrirCobrancaWhatsApp()"
-            >
+            <button type="button" class="botao botao-whatsapp" onclick="abrirCobrancaWhatsApp()">
                 Cobrar pelo WhatsApp
             </button>
             {% endif %}
 
             {% if emprestimo.status not in ["quitado", "cancelado"] %}
-            <button
-                type="button"
-                class="botao botao-principal"
-                onclick="abrirModalPagamentoGeral()"
-            >
+            <button type="button" class="botao botao-principal" onclick="abrirModalPagamentoGeral()">
                 + Registrar pagamento
             </button>
             {% endif %}
         </div>
     </section>
 
-    {% with mensagens = get_flashed_messages(with_categories=true) %}
-        {% if mensagens %}
-        <div class="mensagens-sistema">
-            {% for categoria, mensagem in mensagens %}
-            <div class="alerta alerta-{{ categoria }}">
-                {{ mensagem }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-    {% endwith %}
 
     <section class="contrato-resumo-grid">
 
@@ -105,9 +75,9 @@
 
                     <span class="status-emprestimo status-{{ emprestimo.status }}">
                         {{
-                            emprestimo.status
-                            |replace("_", " ")
-                            |capitalize
+                        emprestimo.status
+                        |replace("_", " ")
+                        |capitalize
                         }}
                     </span>
                 </div>
@@ -132,13 +102,13 @@
                     <span>Data do contrato</span>
                     <strong>
                         {% if emprestimo.data_emprestimo %}
-                            {{
-                                emprestimo.data_emprestimo.strftime(
-                                    "%d/%m/%Y"
-                                )
-                            }}
+                        {{
+                        emprestimo.data_emprestimo.strftime(
+                        "%d/%m/%Y"
+                        )
+                        }}
                         {% else %}
-                            Não informada
+                        Não informada
                         {% endif %}
                     </strong>
                 </div>
@@ -147,13 +117,13 @@
                     <span>Primeiro vencimento</span>
                     <strong>
                         {% if emprestimo.primeira_parcela %}
-                            {{
-                                emprestimo.primeira_parcela.strftime(
-                                    "%d/%m/%Y"
-                                )
-                            }}
+                        {{
+                        emprestimo.primeira_parcela.strftime(
+                        "%d/%m/%Y"
+                        )
+                        }}
                         {% else %}
-                            Não informado
+                        Não informado
                         {% endif %}
                     </strong>
                 </div>
@@ -162,8 +132,8 @@
                     <span>Frequência</span>
                     <strong>
                         {{
-                            (emprestimo.frequencia or "mensal")
-                            |capitalize
+                        (emprestimo.frequencia or "mensal")
+                        |capitalize
                         }}
                     </strong>
                 </div>
@@ -172,8 +142,8 @@
                     <span>Tipo de juros</span>
                     <strong>
                         {{
-                            (emprestimo.tipo_juros or "simples")
-                            |capitalize
+                        (emprestimo.tipo_juros or "simples")
+                        |capitalize
                         }}
                     </strong>
                 </div>
@@ -194,9 +164,9 @@
 
                 <strong>
                     R$ {{
-                        "%.2f"|format(
-                            emprestimo.valor_emprestado or 0
-                        )
+                    "%.2f"|format(
+                    emprestimo.valor_emprestado or 0
+                    )
                     }}
                 </strong>
 
@@ -208,9 +178,11 @@
 
                 <strong>
                     R$ {{
-                        "%.2f"|format(
-                            emprestimo.valor_juros or 0
-                        )
+                    "%.2f"|format(
+                    (emprestimo.valor_total or 0)
+                    -
+                    (emprestimo.valor_emprestado or 0)
+                    )
                     }}
                 </strong>
 
@@ -290,10 +262,7 @@
         </div>
 
         <div class="progresso-trilho progresso-trilho-grande">
-            <div
-                class="progresso-preenchimento"
-                data-progresso="{{ progresso }}"
-            ></div>
+            <div class="progresso-preenchimento" data-progresso="{{ progresso }}"></div>
         </div>
     </section>
 
@@ -347,23 +316,23 @@
                         <td>
                             <strong>
                                 {% if parcela.data_vencimento %}
-                                    {{
-                                        parcela.data_vencimento.strftime(
-                                            "%d/%m/%Y"
-                                        )
-                                    }}
+                                {{
+                                parcela.data_vencimento.strftime(
+                                "%d/%m/%Y"
+                                )
+                                }}
                                 {% else %}
-                                    —
+                                —
                                 {% endif %}
                             </strong>
 
                             {% if parcela.dias_atraso %}
-                                {% if parcela.dias_atraso > 0 %}
-                                <small class="dias-atraso">
-                                    {{ parcela.dias_atraso }}
-                                    dia(s) em atraso
-                                </small>
-                                {% endif %}
+                            {% if parcela.dias_atraso > 0 %}
+                            <small class="dias-atraso">
+                                {{ parcela.dias_atraso }}
+                                dia(s) em atraso
+                            </small>
+                            {% endif %}
                             {% endif %}
                         </td>
 
@@ -378,36 +347,29 @@
                         <td>
                             <strong>
                                 R$ {{
-                                    "%.2f"|format(
-                                        [saldo_parcela, 0]|max
-                                    )
+                                "%.2f"|format(
+                                [saldo_parcela, 0]|max
+                                )
                                 }}
                             </strong>
                         </td>
 
                         <td>
-                            <span
-                                class="status-parcela
-                                       status-{{ parcela.status }}"
-                            >
+                            <span class="status-parcela
+                                       status-{{ parcela.status }}">
                                 {{
-                                    parcela.status
-                                    |replace("_", " ")
-                                    |capitalize
+                                parcela.status
+                                |replace("_", " ")
+                                |capitalize
                                 }}
                             </span>
                         </td>
 
                         <td>
                             {% if parcela.status != "paga" %}
-                            <button
-                                type="button"
-                                class="botao botao-tabela"
-                                data-parcela-id="{{ parcela.id }}"
+                            <button type="button" class="botao botao-tabela" data-parcela-id="{{ parcela.id }}"
                                 data-parcela-numero="{{ parcela.numero }}"
-                                data-parcela-saldo="{{ [saldo_parcela, 0]|max }}"
-                                onclick="abrirPagamentoParcela(this)"
-                            >
+                                data-parcela-saldo="{{ [saldo_parcela, 0]|max }}" onclick="abrirPagamentoParcela(this)">
                                 Receber
                             </button>
                             {% else %}
@@ -467,22 +429,22 @@
 
                             <h3>
                                 R$ {{
-                                    "%.2f"|format(
-                                        pagamento.valor or 0
-                                    )
+                                "%.2f"|format(
+                                pagamento.valor or 0
+                                )
                                 }}
                             </h3>
                         </div>
 
                         <strong>
                             {% if pagamento.data_pagamento %}
-                                {{
-                                    pagamento.data_pagamento.strftime(
-                                        "%d/%m/%Y"
-                                    )
-                                }}
+                            {{
+                            pagamento.data_pagamento.strftime(
+                            "%d/%m/%Y"
+                            )
+                            }}
                             {% else %}
-                                —
+                            —
                             {% endif %}
                         </strong>
                     </div>
@@ -499,12 +461,12 @@
                             Forma:
                             <strong>
                                 {{
-                                    (
-                                        pagamento.forma_pagamento
-                                        or "Não informada"
-                                    )
-                                    |replace("_", " ")
-                                    |capitalize
+                                (
+                                pagamento.forma_pagamento
+                                or "Não informada"
+                                )
+                                |replace("_", " ")
+                                |capitalize
                                 }}
                             </strong>
                         </span>
@@ -539,12 +501,8 @@
 
 <!-- MODAL PARA REGISTRAR PAGAMENTO -->
 <div id="modalRegistrarPagamento" class="modal-emprestimos">
-    <div
-        class="modal-conteudo modal-conteudo-medio"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="tituloRegistrarPagamento"
-    >
+    <div class="modal-conteudo modal-conteudo-medio" role="dialog" aria-modal="true"
+        aria-labelledby="tituloRegistrarPagamento">
         <div class="modal-cabecalho">
             <div>
                 <span class="pagina-etiqueta">RECEBIMENTO</span>
@@ -557,31 +515,17 @@
                 </p>
             </div>
 
-            <button
-                type="button"
-                class="modal-fechar"
-                onclick="fecharModal('modalRegistrarPagamento')"
-                aria-label="Fechar"
-            >
+            <button type="button" class="modal-fechar" onclick="fecharModal('modalRegistrarPagamento')"
+                aria-label="Fechar">
                 ×
             </button>
         </div>
 
-        <form
-            method="POST"
-            action="{{ url_for(
+        <form method="POST" action="{{ url_for(
                 'emprestimos.registrar_pagamento',
                 emprestimo_id=emprestimo.id
-            ) }}"
-            class="formulario-emprestimos"
-            id="formRegistrarPagamento"
-        >
-            <input
-                type="hidden"
-                id="pagamentoParcelaId"
-                name="parcela_id"
-                value=""
-            >
+            ) }}" class="formulario-emprestimos" id="formRegistrarPagamento">
+            <input type="hidden" id="pagamentoParcelaId" name="parcela_id" value="">
 
             <div class="formulario-grid">
 
@@ -590,14 +534,7 @@
                         Valor recebido *
                     </label>
 
-                    <input
-                        id="pagamentoValor"
-                        name="valor"
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        required
-                    >
+                    <input id="pagamentoValor" name="valor" type="number" min="0.01" step="0.01" required>
                 </div>
 
                 <div class="campo">
@@ -605,12 +542,7 @@
                         Data do pagamento *
                     </label>
 
-                    <input
-                        id="pagamentoData"
-                        name="data_pagamento"
-                        type="date"
-                        required
-                    >
+                    <input id="pagamentoData" name="data_pagamento" type="date" required>
                 </div>
 
                 <div class="campo campo-duplo">
@@ -618,11 +550,7 @@
                         Forma de pagamento *
                     </label>
 
-                    <select
-                        id="pagamentoForma"
-                        name="forma_pagamento"
-                        required
-                    >
+                    <select id="pagamentoForma" name="forma_pagamento" required>
                         <option value="pix">PIX</option>
                         <option value="dinheiro">Dinheiro</option>
                         <option value="transferencia">
@@ -639,13 +567,8 @@
                         Observações
                     </label>
 
-                    <textarea
-                        id="pagamentoObservacoes"
-                        name="observacoes"
-                        rows="4"
-                        maxlength="1000"
-                        placeholder="Informações adicionais..."
-                    ></textarea>
+                    <textarea id="pagamentoObservacoes" name="observacoes" rows="4" maxlength="1000"
+                        placeholder="Informações adicionais..."></textarea>
                 </div>
 
             </div>
@@ -656,18 +579,11 @@
             </div>
 
             <div class="modal-acoes">
-                <button
-                    type="button"
-                    class="botao botao-secundario"
-                    onclick="fecharModal('modalRegistrarPagamento')"
-                >
+                <button type="button" class="botao botao-secundario" onclick="fecharModal('modalRegistrarPagamento')">
                     Cancelar
                 </button>
 
-                <button
-                    type="submit"
-                    class="botao botao-principal"
-                >
+                <button type="submit" class="botao botao-principal">
                     Confirmar pagamento
                 </button>
             </div>

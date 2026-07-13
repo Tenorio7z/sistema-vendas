@@ -4009,3 +4009,54 @@ body.modal-aberto {
         flex-direction: column !important;
     }
 }
+
+/* Variáveis compartilhadas pelas páginas de cliente e contrato. */
+.emprestimos-container {
+    --emprestimos-texto: var(--text, #f7faff);
+    --emprestimos-texto-suave: var(--text-secondary, #94a3b8);
+    --emprestimos-card: rgba(24, 39, 64, 0.76);
+    --emprestimos-borda: rgba(255, 255, 255, 0.1);
+    --emprestimos-sombra: 0 22px 55px rgba(0, 0, 0, 0.22);
+}
+
+/* Tema claro real para todo o módulo de empréstimos. */
+body:not(.dark) .emprestimos-page {
+    --emp-card: rgba(255, 255, 255, 0.9);
+    --emp-card-claro: rgba(15, 23, 42, 0.035);
+    --emp-borda: rgba(71, 96, 135, 0.18);
+    --emp-sombra: 0 18px 42px rgba(41, 60, 92, 0.12);
+}
+
+body:not(.dark) .emprestimos-container {
+    --emprestimos-card: rgba(255, 255, 255, 0.9);
+    --emprestimos-borda: rgba(71, 96, 135, 0.18);
+    --emprestimos-sombra: 0 18px 42px rgba(41, 60, 92, 0.12);
+}
+
+body:not(.dark) .emprestimo-card,
+body:not(.dark) .cliente-card,
+body:not(.dark) .contrato-card,
+body:not(.dark) .pagamento-card,
+body:not(.dark) .parcelas-tabela-container,
+body:not(.dark) .estado-vazio {
+    background-color: rgba(255, 255, 255, 0.72);
+}
+
+body:not(.dark) .modal-conteudo,
+body:not(.dark) .modal-emprestimos .modal-conteudo {
+    color: #0f172a !important;
+    background: #f8fafc !important;
+}
+
+body:not(.dark) .modal-emprestimos .campo input,
+body:not(.dark) .modal-emprestimos .campo select,
+body:not(.dark) .modal-emprestimos .campo textarea {
+    color: #0f172a !important;
+    border-color: rgba(71, 96, 135, 0.22) !important;
+    background: #ffffff !important;
+}
+
+body:not(.dark) .modal-emprestimos .campo select option {
+    color: #0f172a !important;
+    background: #ffffff !important;
+}

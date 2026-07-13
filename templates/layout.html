@@ -11,6 +11,19 @@
 
     <title>Sistema Nexus</title>
 
+    <script>
+        (function () {
+            const temaSalvo = localStorage.getItem("tema");
+            const prefereEscuro = window.matchMedia(
+                "(prefers-color-scheme: dark)"
+            ).matches;
+
+            if (temaSalvo === "dark" || (!temaSalvo && prefereEscuro)) {
+                document.documentElement.classList.add("dark");
+            }
+        }());
+    </script>
+
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='css/base.css') }}"
@@ -59,10 +72,11 @@
                         >
 
                         <button
+                            id="toggleTheme"
                             type="button"
                             class="theme-switch"
-                            onclick="alternarTema()"
                             aria-label="Alternar tema"
+                            aria-pressed="false"
                         >
                             <span class="switch-ball"></span>
                         </button>
@@ -257,7 +271,7 @@
                     alt=""
                 >
 
-                <span class="link-text">Assistente IA</span>
+                <span class="link-text">Assistente Nami</span>
             </a>
 
             <a href="/logout">
@@ -305,6 +319,7 @@
         const sidebar = document.querySelector(".sidebar");
         const menuIcon = document.getElementById("menuIcon");
         const switchBall = document.querySelector(".switch-ball");
+        const toggleTheme = document.getElementById("toggleTheme");
 
         const urlMenuAberto =
             "{{ url_for('static', filename='img/menu-aberto.png') }}";
@@ -312,14 +327,17 @@
         const urlMenuFechado =
             "{{ url_for('static', filename='img/menu-fechado.png') }}";
 
-        const temaSalvo = localStorage.getItem("tema");
-
-        if (temaSalvo === "dark") {
-            document.body.classList.add("dark");
-        }
+        document.body.classList.toggle(
+            "dark",
+            document.documentElement.classList.contains("dark")
+        );
 
         atualizarSwitch();
         atualizarIcones(document.body.classList.contains("dark"));
+
+        if (toggleTheme) {
+            toggleTheme.addEventListener("click", alternarTema);
+        }
 
         if (toggle && sidebar && menuIcon) {
             toggle.addEventListener("click", function () {
@@ -340,9 +358,10 @@
         }
 
         function alternarTema() {
-            document.body.classList.toggle("dark");
+            const isDark = !document.documentElement.classList.contains("dark");
 
-            const isDark = document.body.classList.contains("dark");
+            document.documentElement.classList.toggle("dark", isDark);
+            document.body.classList.toggle("dark", isDark);
 
             localStorage.setItem(
                 "tema",
@@ -361,9 +380,11 @@
             const isDark =
                 document.body.classList.contains("dark");
 
-            switchBall.style.transform = isDark
-                ? "translateX(30px)"
-                : "translateX(0)";
+            const botaoTema = document.querySelector(".theme-switch");
+
+            if (botaoTema) {
+                botaoTema.setAttribute("aria-pressed", String(isDark));
+            }
         }
 
         function atualizarIcones(isDark) {
@@ -385,6 +406,8 @@
     <!-- NOTIFICAÇÕES DE VENDAS -->
 <script>
     let ultimoHorarioToast = "";
+    let consultaNotificacoesEmAndamento = false;
+    let temporizadorNotificacoes = null;
 
     function criarElemento(tag, classe, texto) {
         const elemento = document.createElement(tag);
@@ -474,7 +497,42 @@
         });
     }
 
+    document
+        .querySelectorAll('form[method="POST"], form[method="post"]')
+        .forEach(function (formulario) {
+            formulario.addEventListener("submit", function (evento) {
+                if (formulario.dataset.enviando === "true") {
+                    evento.preventDefault();
+                    return;
+                }
+
+                formulario.dataset.enviando = "true";
+
+                const botao = formulario.querySelector(
+                    'button[type="submit"], input[type="submit"]'
+                );
+
+                if (!botao) {
+                    return;
+                }
+
+                botao.disabled = true;
+                botao.setAttribute("aria-busy", "true");
+
+                if (botao.tagName === "BUTTON") {
+                    botao.dataset.textoOriginal = botao.textContent;
+                    botao.textContent = "Processando...";
+                }
+            });
+        });
+
     function verificarNovasNotificacoes() {
+        if (document.hidden || consultaNotificacoesEmAndamento) {
+            return;
+        }
+
+        consultaNotificacoesEmAndamento = true;
+
         const url =
             "/api/notificacoes?t=" +
             Date.now();
@@ -514,20 +572,37 @@
 
                 ultimoHorarioToast = horarioAtual;
             })
-            .catch(function (erro) {
+                .catch(function (erro) {
                 console.log(
                     "Erro nas notificações:",
-                    erro
-                );
-            });
+                        erro
+                    );
+                })
+                .finally(function () {
+                    consultaNotificacoesEmAndamento = false;
+                });
     }
 
-    verificarNovasNotificacoes();
+    function iniciarNotificacoes() {
+        if (temporizadorNotificacoes) {
+            window.clearInterval(temporizadorNotificacoes);
+        }
 
-    window.setInterval(
-        verificarNovasNotificacoes,
-        3000
-    );
+        verificarNovasNotificacoes();
+
+        temporizadorNotificacoes = window.setInterval(
+            verificarNovasNotificacoes,
+            15000
+        );
+    }
+
+    document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) {
+            verificarNovasNotificacoes();
+        }
+    });
+
+    iniciarNotificacoes();
 </script>
 
 </body>

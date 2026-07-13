@@ -803,3 +803,17 @@ body:not(.dark) .alerta-item {
         transition: none;
     }
 }
+
+/* Tema claro real para os cards glass do dashboard. */
+body:not(.dark) .card-boas-vindas,
+body:not(.dark) .topo-dashboard,
+body:not(.dark) .dashboard-grid-2 {
+    --dash-card: rgba(255, 255, 255, 0.88);
+    --dash-card-claro: rgba(15, 23, 42, 0.035);
+    --dash-borda: rgba(71, 96, 135, 0.18);
+    --dash-sombra: 0 18px 42px rgba(41, 60, 92, 0.12);
+}
+
+body:not(.dark) .card-boas-vindas::after {
+    color: rgba(15, 23, 42, 0.035);
+}

@@ -99,19 +99,24 @@ def _valor_formulario(
         padrao
     )
 
-    if isinstance(
-        valor,
-        str
-    ):
-        valor = valor.strip()
+    if not isinstance(valor, str):
+        return valor
 
-        if "," in valor:
-            valor = (
-                valor
-                .replace(".", "")
-                .replace(",", ".")
-            )
+    valor = valor.strip()
 
+    if not valor:
+        return padrao
+
+    # Formato brasileiro: 4.000,00
+    if "," in valor:
+        valor = (
+            valor
+            .replace(".", "")
+            .replace(",", ".")
+        )
+
+    # Formato do input number: 4000.00
+    # O ponto decimal deve ser preservado.
     return valor
 
 
@@ -285,7 +290,7 @@ def _buscar_resumo(
 def _listar_emprestimos(
     empresa_id,
     status=None,
-    limite=100,
+    limite=50,
 ):
     conn = conectar()
     cursor = criar_cursor(conn)

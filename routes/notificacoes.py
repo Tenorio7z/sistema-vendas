@@ -6,6 +6,9 @@ def registrar_rotas(app):
     @app.route("/notificacoes")
     def notificacoes():
 
+        if not session.get("logado"):
+            return redirect("/")
+
         conn = conectar()
         cursor = criar_cursor(conn)
 
@@ -23,7 +26,7 @@ def registrar_rotas(app):
 
         notificacoes = cursor.fetchall()
 
-      
+        cursor.close()
         conn.close()
 
         return render_template(
@@ -34,6 +37,9 @@ def registrar_rotas(app):
 
     @app.route("/api/notificacoes")
     def api_notificacoes():
+
+        if not session.get("logado") or not session.get("empresa_id"):
+            return jsonify([]), 401
 
         conn = conectar()
         cursor = criar_cursor(conn)
@@ -48,7 +54,7 @@ def registrar_rotas(app):
 
         ORDER BY id DESC
 
-        LIMIT 20
+        LIMIT 1
 
         """,
         (
@@ -57,6 +63,7 @@ def registrar_rotas(app):
 
         notificacoes = cursor.fetchall()
 
+        cursor.close()
         conn.close()
 
         resultado = []

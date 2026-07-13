@@ -245,7 +245,13 @@ def registrar_rotas(app):
         if not session.get("logado"):
             return redirect("/")
 
-        pdf = gerar_pdf_fechamento(caixa_id)
+        pdf = gerar_pdf_fechamento(
+            caixa_id,
+            session["empresa_id"]
+        )
+
+        if not pdf:
+            abort(404)
 
     
 
@@ -255,5 +261,7 @@ def registrar_rotas(app):
 
         return send_file(
             pdf,
-            as_attachment=False
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=f"fechamento_caixa_{caixa_id}.pdf"
         )

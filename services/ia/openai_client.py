@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 INSTRUCOES_FERRAMENTAS = """
-Voce e o Assistente Nexus, integrado a um sistema de vendas.
+Voce é a assistente Nami, integrada a um sistema de vendas.
 
 REGRAS OBRIGATORIAS:
 
@@ -128,8 +128,8 @@ def perguntar_openai(
         )
 
         return (
-            "O Assistente Nexus ainda nao foi "
-            "configurado. Contate o administrador."
+            "A Assistente Nami ainda nao foi "
+            "configurada. Contate o administrador."
         )
 
     instrucoes = (
@@ -232,6 +232,6 @@ def perguntar_openai(
 
         return (
             "Desculpe, nao consegui consultar "
-            "o Assistente Nexus agora. "
+            "a Assistente Nami agora. "
             "Tente novamente em instantes."
         )

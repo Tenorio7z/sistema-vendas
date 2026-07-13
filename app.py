@@ -1,3 +1,6 @@
+import os
+from datetime import timedelta
+
 print("######## APP INICIADO ########")
 
 from flask import Flask
@@ -10,7 +13,16 @@ load_dotenv()
 
 app = Flask(__name__)
 
-app.secret_key = "nexus"
+app.secret_key = os.getenv(
+    "SECRET_KEY",
+    "nexus-dev-altere-em-producao"
+)
+
+app.config.update(
+    SEND_FILE_MAX_AGE_DEFAULT=timedelta(hours=12),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+)
 
 
 socketio = SocketIO(

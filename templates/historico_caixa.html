@@ -1,157 +1,179 @@
 {% extends "layout.html" %}
 
 {% block css %}
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/estatisticas.css') }}">
-
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/historico_caixas.css') }}"
+>
 {% endblock %}
-
 
 {% block content %}
 
-<h1 class="titulo-pagina">
-
-    Caixa #{{ caixa.id }}
-
-</h1>
-
-<div class="stats-grid">
-
-    <div class="stat-card">
-
-        <span>Total Faturado</span>
-
-        <h2>
-
-            R$ {{ "%.2f"|format(total_faturado) }}
-
-        </h2>
-
-    </div>
-
-    <div class="stat-card">
-
-        <span>PIX</span>
-
-        <h2>
-
-            R$ {{ "%.2f"|format(total_pix) }}
-
-        </h2>
-
-    </div>
-
-    <div class="stat-card">
-
-        <span>Dinheiro</span>
-
-        <h2>
-
-            R$ {{ "%.2f"|format(total_dinheiro) }}
-
-        </h2>
-
-    </div>
-
-    <div class="stat-card">
-
-        <span>Cartão</span>
-
-        <h2>
-
-            R$ {{ "%.2f"|format(total_cartao) }}
-
-        </h2>
-
-    </div>
-
-    <div class="stat-card">
-
-        <span>Itens Vendidos</span>
-
-        <h2>
-
-            {{ total_itens }}
-
-        </h2>
-
-    </div>
-
-    <div class="stat-card">
-
-        <span>Abertura</span>
-
-        <h2>
-
-            {{ caixa.data_abertura }}
-
-        </h2>
-
-    </div>
-
-    <div class="stat-card">
-
-        <span>Fechamento</span>
-
-        <h2>
-
-            {{ caixa.data_fechamento }}
-
-        </h2>
-
-    </div>
-
-</div>
-
-<div class="grafico-card">
-
-    <h2>
-
-        Produtos Vendidos
-
-    </h2>
-
-    <table class="tabela-vendas">
-
-        <thead>
-
-            <tr>
-
-                <th>Produto</th>
-                <th>Qtd</th>
-                <th>Valor</th>
-                <th>Pagamento</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            {% for venda in vendas %}
-
-            <tr>
-
-                <td>{{ venda.nome }}</td>
-
-                <td>{{ venda.quantidade }}</td>
-
-                <td>R$ {{ "%.2f"|format(venda.valor) }}</td>
-
-                <td>{{ venda.pagamento }}</td>
-
-            </tr>
-
-            {% endfor %}
-
-        </tbody>
-
-    </table>
-
-
-    <a href="/relatorio_caixa/{{ caixa.id }}" class="btn btn-danger">
-        📄 Exportar PDF
-    </a>
+<div class="historico-container">
+
+    <header class="historico-header">
+        <div>
+            <span class="historico-label">
+                RELATÓRIO DO CAIXA
+            </span>
+
+            <h1 class="titulo-pagina">
+                Caixa #{{ caixa.id }}
+            </h1>
+
+            <p class="subtitulo-pagina">
+                Resumo financeiro e produtos vendidos neste período.
+            </p>
+        </div>
+
+        <div class="historico-acoes">
+            <a
+                href="/historico_caixas"
+                class="btn-voltar"
+            >
+                ← Voltar
+            </a>
+
+            <a
+                href="/relatorio_caixa/{{ caixa.id }}"
+                class="btn-pdf"
+                target="_blank"
+            >
+                Exportar PDF
+            </a>
+        </div>
+    </header>
+
+    <section class="stats-grid">
+
+        <article class="stat-card">
+            <span>Total faturado</span>
+            <h2>R$ {{ "%.2f"|format(total_faturado or 0) }}</h2>
+        </article>
+
+        <article class="stat-card">
+            <span>PIX</span>
+            <h2>R$ {{ "%.2f"|format(total_pix or 0) }}</h2>
+        </article>
+
+        <article class="stat-card">
+            <span>Dinheiro</span>
+            <h2>R$ {{ "%.2f"|format(total_dinheiro or 0) }}</h2>
+        </article>
+
+        <article class="stat-card">
+            <span>Cartão</span>
+            <h2>R$ {{ "%.2f"|format(total_cartao or 0) }}</h2>
+        </article>
+
+        <article class="stat-card">
+            <span>Itens vendidos</span>
+            <h2>{{ total_itens or 0 }}</h2>
+        </article>
+
+        <article class="stat-card stat-card-data">
+            <span>Abertura</span>
+
+            <h2>
+                {% if caixa.data_abertura %}
+                    {{ caixa.data_abertura.strftime(
+                        "%d/%m/%Y às %H:%M"
+                    ) }}
+                {% else %}
+                    Não informada
+                {% endif %}
+            </h2>
+        </article>
+
+        <article class="stat-card stat-card-data">
+            <span>Fechamento</span>
+
+            <h2>
+                {% if caixa.data_fechamento %}
+                    {{ caixa.data_fechamento.strftime(
+                        "%d/%m/%Y às %H:%M"
+                    ) }}
+                {% else %}
+                    Não informado
+                {% endif %}
+            </h2>
+        </article>
+
+    </section>
+
+    <section class="grafico-card">
+
+        <div class="grafico-card-cabecalho">
+            <div>
+                <h2>Produtos vendidos</h2>
+
+                <p>
+                    Relação completa das vendas vinculadas ao caixa.
+                </p>
+            </div>
+
+            <a
+                href="/relatorio_caixa/{{ caixa.id }}"
+                class="btn-pdf"
+                target="_blank"
+            >
+                Exportar PDF
+            </a>
+        </div>
+
+        <div class="tabela-container">
+            <table class="tabela-vendas">
+
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Valor</th>
+                        <th>Pagamento</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for venda in vendas %}
+                    <tr>
+                        <td class="produto-nome">
+                            {{ venda.nome }}
+                        </td>
+
+                        <td>
+                            <span class="quantidade-badge">
+                                {{ venda.quantidade }}
+                            </span>
+                        </td>
+
+                        <td class="valor-venda">
+                            R$ {{ "%.2f"|format(venda.valor or 0) }}
+                        </td>
+
+                        <td>
+                            <span class="pagamento-badge">
+                                {{ venda.pagamento }}
+                            </span>
+                        </td>
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="4" class="tabela-vazia">
+                            Nenhuma venda encontrada neste caixa.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+        </div>
+
+    </section>
 
 </div>
 

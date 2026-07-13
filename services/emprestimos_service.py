@@ -1,4 +1,6 @@
 import calendar
+from time import monotonic
+from threading import Lock
 
 from datetime import (
     date,
@@ -127,6 +129,11 @@ def _calcular_vencimento(
 
 class EmprestimosService:
 
+    
+    _cache_atrasos = {}
+    _lock_atrasos = Lock()
+    _intervalo_atrasos = 60
+    
     FREQUENCIAS = (
         "semanal",
         "quinzenal",
@@ -559,6 +566,58 @@ class EmprestimosService:
 
     @staticmethod
     def atualizar_atrasos(
+        empresa_id,
+        forcar=False,
+    ):
+        if not empresa_id:
+            return 0
+
+        agora = monotonic()
+
+        ultima_execucao = (
+            EmprestimosService
+            ._cache_atrasos
+            .get(empresa_id, 0)
+        )
+
+        if (
+            not forcar
+            and agora - ultima_execucao
+            < EmprestimosService._intervalo_atrasos
+        ):
+            return 0
+
+        with EmprestimosService._lock_atrasos:
+            agora = monotonic()
+
+            ultima_execucao = (
+                EmprestimosService
+                ._cache_atrasos
+                .get(empresa_id, 0)
+            )
+
+            if (
+                not forcar
+                and agora - ultima_execucao
+                < EmprestimosService._intervalo_atrasos
+            ):
+                return 0
+
+            resultado = (
+                EmprestimosService
+                ._atualizar_atrasos_no_banco(
+                    empresa_id
+                )
+            )
+
+            EmprestimosService._cache_atrasos[
+                empresa_id
+            ] = monotonic()
+
+            return resultado
+    
+    @staticmethod
+    def _atualizar_atrasos_no_banco(
         empresa_id
     ):
         conn = conectar()

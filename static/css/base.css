@@ -18,7 +18,8 @@ RESET
 
 }
 
-.dark {
+html.dark,
+body.dark {
 
     --bg: #0f172a;
     --card: #1e293b;
@@ -166,11 +167,22 @@ SIDEBAR
     transform: scale(1.1);
 }
 
+/* Os PNGs da navegação recebem contraste automático por tema. */
+body:not(.dark) .sidebar img.nav-icon,
+body:not(.dark) .theme-side-icon {
+    filter: brightness(0) saturate(100%);
+}
+
+body.dark .sidebar img.nav-icon,
+body.dark .theme-side-icon {
+    filter: brightness(0) saturate(100%) invert(1);
+}
+
 /* SWITCH */
 
 .theme-switch {
-    width: 72px;
-    height: 38px;
+    width: 60px;
+    height: 34px;
     background: var(--card-hover);
     border: 2px solid var(--border);
     border-radius: 50px;
@@ -178,13 +190,13 @@ SIDEBAR
     cursor: pointer;
     display: flex;
     align-items: center;
-    padding: 4px;
+    padding: 3px;
     transition: .3s;
 }
 
 .switch-ball {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     background: white;
     border-radius: 50%;
     transition: .35s ease;
@@ -192,7 +204,21 @@ SIDEBAR
 }
 
 body.dark .switch-ball {
-    transform: translateX(30px);
+    transform: translateX(26px);
+}
+
+html.dark .switch-ball {
+    transform: translateX(26px);
+}
+
+.theme-switch:focus-visible {
+    outline: 3px solid rgba(49, 139, 255, 0.3);
+    outline-offset: 3px;
+}
+
+button[aria-busy="true"] {
+    cursor: wait !important;
+    opacity: 0.72 !important;
 }
 
 /* LOGO */
@@ -822,4 +848,64 @@ RESPONSIVO
     font-style: normal;
     font-weight: 800;
     line-height: 1;
+}
+
+/* CORREÇÃO DEFINITIVA DO SWITCH */
+
+.theme-switch {
+    position: relative;
+
+    display: block;
+
+    width: 54px;
+    height: 30px;
+
+    min-width: 54px;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    border: 1px solid var(--border);
+    border-radius: 999px;
+
+    background: var(--card-hover);
+
+    cursor: pointer;
+}
+
+.switch-ball {
+    position: absolute;
+
+    top: 2px;
+    left: 2px;
+
+    display: block;
+
+    width: 24px;
+    height: 24px;
+
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 2px 7px rgba(15, 23, 42, 0.22);
+
+    transform: translateX(0);
+
+    transition:
+        transform 0.25s ease,
+        background-color 0.25s ease;
+}
+
+html.dark .switch-ball,
+body.dark .switch-ball {
+    transform: translateX(24px);
+}
+
+.theme-switch:focus-visible {
+    outline: 3px solid rgba(49, 139, 255, 0.28);
+    outline-offset: 2px;
 }

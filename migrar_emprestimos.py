@@ -3,44 +3,30 @@ from pathlib import Path
 from database import conectar
 
 
-def executar_migracao():
-    caminho = (
-        Path(__file__).parent
-        / "migrations"
-        / "001_emprestimos.sql"
-    )
+def executar_migracoes():
+    pasta = Path(__file__).parent / "migrations"
+    arquivos = sorted(pasta.glob("*.sql"))
 
-    if not caminho.exists():
+    if not arquivos:
         raise FileNotFoundError(
-            f"Migration não encontrada: {caminho}"
+            f"Nenhuma migration encontrada em: {pasta}"
         )
-
-    sql = caminho.read_text(
-        encoding="utf-8"
-    )
 
     conn = conectar()
     cursor = conn.cursor()
 
     try:
-        cursor.execute(sql)
+        for caminho in arquivos:
+            sql = caminho.read_text(encoding="utf-8")
+            cursor.execute(sql)
+            print(f"Migration executada: {caminho.name}")
 
         conn.commit()
-
-        print(
-            "Migration de empréstimos "
-            "executada com sucesso."
-        )
+        print("Todas as migrations foram executadas com sucesso.")
 
     except Exception as erro:
         conn.rollback()
-
-        print(
-            "Erro ao executar migration:"
-        )
-
-        print(erro)
-
+        print("Erro ao executar migrations:", erro)
         raise
 
     finally:
@@ -49,4 +35,4 @@ def executar_migracao():
 
 
 if __name__ == "__main__":
-    executar_migracao()
+    executar_migracoes()

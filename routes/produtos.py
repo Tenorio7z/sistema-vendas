@@ -102,6 +102,11 @@ def registrar_rotas(app):
                 "sucesso"
             )
 
+            cursor.close()
+            conn.close()
+
+            return redirect("/produtos")
+
         cursor.execute("""
 
         SELECT *
