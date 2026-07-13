@@ -1,90 +1,302 @@
-from flask import *
+import os
 
-from database import conectar
 import psycopg2.extras
 
-from werkzeug.security import (
-    check_password_hash
+from flask import (
+    flash,
+    g,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    session,
 )
+
+from werkzeug.security import check_password_hash
+
+from database import conectar
+from services.login_token_service import LoginTokenService
+
+
+def _preencher_sessao(usuario):
+    session.clear()
+
+    session["logado"] = True
+    session["usuario_id"] = usuario["id"]
+    session["usuario"] = usuario["usuario"]
+    session["nivel"] = usuario["nivel"]
+    session["empresa_id"] = usuario.get("empresa_id")
+    session["plano"] = usuario.get("plano") or "comum"
+
+    session["emprestimos_ativo"] = bool(
+        usuario.get("emprestimos_ativo", False)
+    )
+
+
+def _endereco_ip():
+    encaminhado = request.headers.get(
+        "X-Forwarded-For",
+        ""
+    )
+
+    if encaminhado:
+        return encaminhado.split(",")[0].strip()
+
+    return request.remote_addr or ""
+
+
+def _cookie_seguro():
+    configuracao = os.getenv(
+        "COOKIE_SECURE",
+        ""
+    ).strip().lower()
+
+    if configuracao in (
+        "1",
+        "true",
+        "sim",
+        "yes",
+        "on",
+    ):
+        return True
+
+    if configuracao in (
+        "0",
+        "false",
+        "nao",
+        "não",
+        "no",
+        "off",
+    ):
+        return False
+
+    # No Render, a conexão externa é HTTPS.
+    if request.headers.get(
+        "X-Forwarded-Proto",
+        ""
+    ).lower() == "https":
+        return True
+
+    return request.is_secure
+
+
+def _salvar_cookie(
+    response,
+    token,
+):
+    response.set_cookie(
+        LoginTokenService.COOKIE_NAME,
+        token,
+        max_age=(
+            LoginTokenService.DURACAO_DIAS
+            * 24
+            * 60
+            * 60
+        ),
+        httponly=True,
+        secure=_cookie_seguro(),
+        samesite="Lax",
+        path="/",
+    )
+
+    return response
+
+
+def _remover_cookie(response):
+    response.delete_cookie(
+        LoginTokenService.COOKIE_NAME,
+        path="/",
+        httponly=True,
+        secure=_cookie_seguro(),
+        samesite="Lax",
+    )
+
+    return response
+
 
 def registrar_rotas(app):
 
-    @app.route("/", methods=["GET", "POST"])
+    # ==========================================
+    # RESTAURAÇÃO AUTOMÁTICA DO LOGIN
+    # ==========================================
+
+    @app.before_request
+    def restaurar_login_persistente():
+        if session.get("logado"):
+            return None
+
+        token = request.cookies.get(
+            LoginTokenService.COOKIE_NAME
+        )
+
+        if not token:
+            return None
+
+        usuario = LoginTokenService.autenticar(
+            token
+        )
+
+        if not usuario:
+            g.remover_login_token = True
+            return None
+
+        _preencher_sessao(usuario)
+
+        return None
+
+    @app.after_request
+    def remover_cookie_invalido(response):
+        if getattr(
+            g,
+            "remover_login_token",
+            False
+        ):
+            _remover_cookie(response)
+
+        return response
+
+    # ==========================================
+    # LOGIN
+    # ==========================================
+
+    @app.route(
+        "/",
+        methods=["GET", "POST"]
+    )
     def login():
+        if session.get("logado"):
+            return redirect("/dashboard")
 
         if request.method == "POST":
+            usuario_informado = request.form.get(
+                "usuario",
+                ""
+            ).strip()
 
-            usuario = request.form["usuario"]
-            senha = request.form["senha"]
+            senha = request.form.get(
+                "senha",
+                ""
+            )
+
+            manter_conectado = (
+                request.form.get(
+                    "manter_conectado"
+                ) == "1"
+            )
 
             conn = conectar()
-            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            cursor.execute("""
+            cursor = conn.cursor(
+                cursor_factory=(
+                    psycopg2.extras.RealDictCursor
+                )
+            )
 
-            SELECT *
+            try:
+                cursor.execute(
+                    """
+                    SELECT
+                        u.id,
+                        u.usuario,
+                        u.senha,
+                        u.nivel,
+                        u.empresa_id,
+                        u.status,
 
-            FROM usuarios
+                        e.nome AS empresa_nome,
+                        e.plano,
 
-            WHERE usuario = %s
+                        COALESCE(
+                            e.emprestimos_ativo,
+                            FALSE
+                        ) AS emprestimos_ativo
 
-            """, (usuario,))
+                    FROM usuarios u
 
-            user = cursor.fetchone()
-            
-            
-            empresa = None
-            
-            
-            if user:
+                    LEFT JOIN empresa e
+                        ON e.id = u.empresa_id
 
-                if user.get("nivel") != "master":
-                    if user.get("status") == "bloqueado":
-                        conn.close()
-                        flash("Usuário bloqueado, consulte o suporte.", "erro")
-                        return redirect("/")
+                    WHERE LOWER(u.usuario) = LOWER(%s)
 
-                if check_password_hash(
-                    user["senha"],
+                    LIMIT 1
+                    """,
+                    (
+                        usuario_informado,
+                    )
+                )
+
+                usuario = cursor.fetchone()
+
+            finally:
+                cursor.close()
+                conn.close()
+
+            if usuario:
+                usuario_bloqueado = (
+                    usuario.get("nivel") != "master"
+                    and usuario.get("status") == "bloqueado"
+                )
+
+                if usuario_bloqueado:
+                    flash(
+                        "Usuário bloqueado. Consulte o suporte.",
+                        "erro"
+                    )
+
+                    return redirect("/")
+
+                senha_correta = check_password_hash(
+                    usuario["senha"],
                     senha
-                ):
+                )
 
-                    cursor.execute("""
+                if senha_correta:
+                    _preencher_sessao(usuario)
 
-                    SELECT *
+                    response = make_response(
+                        redirect("/dashboard")
+                    )
 
-                    FROM empresa
+                    if manter_conectado:
+                        try:
+                            token = LoginTokenService.criar(
+                                usuario_id=usuario["id"],
+                                user_agent=request.headers.get(
+                                    "User-Agent",
+                                    ""
+                                ),
+                                endereco_ip=_endereco_ip(),
+                            )
 
-                    WHERE id = %s
+                            _salvar_cookie(
+                                response,
+                                token
+                            )
 
-                    """, (
+                        except Exception as erro:
+                            # O login comum continua funcionando
+                            # mesmo se o token não puder ser criado.
+                            app.logger.exception(
+                                "Erro ao criar token persistente: %s",
+                                erro
+                            )
 
-                        user["empresa_id"],
-
-                    ))
-
-                    empresa = cursor.fetchone()
-
-                    session["empresa_id"] = user["empresa_id"]
-                    session["nivel"] = user["nivel"]
-                    session["logado"] = True
-                    session["usuario"] = user["usuario"]
-                    session["usuario_id"] = user["id"]
-
-                    if empresa:
-                        session["plano"] = empresa["plano"]
                     else:
-                        session["plano"] = "comum"
+                        token_anterior = request.cookies.get(
+                            LoginTokenService.COOKIE_NAME
+                        )
 
-                    conn.close()
-                  
-                    
-                    return redirect("/dashboard")
+                        if token_anterior:
+                            LoginTokenService.revogar(
+                                token_anterior
+                            )
 
-            conn.close()
+                        _remover_cookie(response)
+
+                    return response
 
             flash(
-                "Usuário ou senha incorretos",
+                "Usuário ou senha incorretos.",
                 "erro"
             )
 
@@ -92,11 +304,27 @@ def registrar_rotas(app):
             "login.html"
         )
 
-
+    # ==========================================
+    # LOGOUT
+    # ==========================================
 
     @app.route("/logout")
     def logout():
+        token = request.cookies.get(
+            LoginTokenService.COOKIE_NAME
+        )
+
+        if token:
+            LoginTokenService.revogar(
+                token
+            )
 
         session.clear()
 
-        return redirect("/")
+        response = make_response(
+            redirect("/")
+        )
+
+        _remover_cookie(response)
+
+        return response
