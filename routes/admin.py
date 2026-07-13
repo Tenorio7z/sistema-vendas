@@ -31,21 +31,29 @@ def registrar_rotas(app):
             usuario = request.form["usuario"]
             plano = request.form["plano"]
             
+            emprestimos_ativo = (
+                request.form.get("emprestimos_ativo") == "1"
+            )
             senha = generate_password_hash(
                 request.form["senha"]
             )
 
-            cursor.execute("""
-                INSERT INTO empresa(
-                    nome,
-                    plano
-                )
-                VALUES(%s, %s)
-                RETURNING id
-            """, (
+            cursor.execute(
+            """
+            INSERT INTO empresa (
+                nome,
+                plano,
+                emprestimos_ativo
+            )
+            VALUES (%s, %s, %s)
+            RETURNING id
+            """,
+            (
                 nome_empresa,
-                plano
-            ))
+                plano,
+                emprestimos_ativo,
+            )
+        )
 
             empresa_id = cursor.fetchone()["id"]
 
@@ -94,7 +102,8 @@ def registrar_rotas(app):
 
             empresa.nome,
             empresa.plano,
-            empresa.id as empresa_id,
+            empresa.emprestimos_ativo,
+            empresa.id AS empresa_id,
 
             (
                 SELECT COUNT(*)
@@ -378,6 +387,96 @@ def registrar_rotas(app):
             conn.close()
 
         return redirect("/admin")
+    
+    
+    # ==========================================
+    # ALTERAR MÓDULO DE EMPRÉSTIMOS
+    # ==========================================
+
+    @app.route(
+        "/alterar_modulo_emprestimos/<int:empresa_id>",
+        methods=["POST"]
+    )
+    def alterar_modulo_emprestimos(empresa_id):
+
+        if not session.get("logado"):
+            return redirect("/")
+
+        if session.get("nivel") != "master":
+            return redirect("/dashboard")
+
+        valores_modulo = request.form.getlist(
+            "emprestimos_ativo"
+        )
+
+        emprestimos_ativo = (
+            "1" in valores_modulo
+        )
+
+        conn = conectar()
+
+        cursor = conn.cursor(
+            cursor_factory=(
+                psycopg2.extras.RealDictCursor
+            )
+        )
+
+        try:
+            cursor.execute(
+                """
+                UPDATE empresa
+                SET emprestimos_ativo = %s
+                WHERE id = %s
+                RETURNING nome
+                """,
+                (
+                    emprestimos_ativo,
+                    empresa_id,
+                )
+            )
+
+            empresa = cursor.fetchone()
+
+            if not empresa:
+                conn.rollback()
+
+                flash(
+                    "Empresa não encontrada.",
+                    "erro"
+                )
+
+                return redirect("/admin")
+
+            conn.commit()
+
+            estado = (
+                "ativado"
+                if emprestimos_ativo
+                else "desativado"
+            )
+
+            flash(
+                (
+                    f"Módulo de empréstimos {estado} "
+                    f"para {empresa['nome']}."
+                ),
+                "sucesso"
+            )
+
+        except Exception:
+            conn.rollback()
+
+            flash(
+                "Não foi possível alterar o módulo.",
+                "erro"
+            )
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        return redirect("/admin")
+    
     # ==========================================
     # EXCLUIR EMPRESA
     # ==========================================

@@ -2,10 +2,7 @@
 
 {% block css %}
 
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/admin.css') }}"
->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 
 {% endblock %}
 
@@ -61,10 +58,7 @@
 
         </div>
 
-        <form
-            method="POST"
-            class="admin-form-grid"
-        >
+        <form method="POST" class="admin-form-grid">
 
             <div class="form-group">
 
@@ -72,13 +66,7 @@
                     Nome da empresa
                 </label>
 
-                <input
-                    type="text"
-                    id="empresa"
-                    name="empresa"
-                    placeholder="Ex: Tenório Store"
-                    required
-                >
+                <input type="text" id="empresa" name="empresa" placeholder="Ex: Tenório Store" required>
 
             </div>
 
@@ -88,14 +76,8 @@
                     Usuário
                 </label>
 
-                <input
-                    type="text"
-                    id="usuario"
-                    name="usuario"
-                    placeholder="Usuário de acesso"
-                    autocomplete="username"
-                    required
-                >
+                <input type="text" id="usuario" name="usuario" placeholder="Usuário de acesso" autocomplete="username"
+                    required>
 
             </div>
 
@@ -105,14 +87,8 @@
                     Senha
                 </label>
 
-                <input
-                    type="password"
-                    id="senha"
-                    name="senha"
-                    placeholder="Senha segura"
-                    autocomplete="new-password"
-                    required
-                >
+                <input type="password" id="senha" name="senha" placeholder="Senha segura" autocomplete="new-password"
+                    required>
 
             </div>
 
@@ -122,11 +98,7 @@
                     Plano
                 </label>
 
-                <select
-                    id="plano"
-                    name="plano"
-                    required
-                >
+                <select id="plano" name="plano" required>
 
                     <option value="comum">
                         Comum
@@ -140,10 +112,33 @@
 
             </div>
 
-            <button
-                type="submit"
-                class="btn-primary btn-full"
-            >
+            <div class="nexus-modulo-cadastro">
+
+                <span class="nexus-modulo-titulo">
+                    Módulos adicionais
+                </span>
+
+                <label class="nexus-modulo-opcao">
+
+                    <input class="nexus-modulo-input" type="checkbox" name="emprestimos_ativo" value="1">
+
+                    <span class="nexus-modulo-controle">
+                        <span></span>
+                    </span>
+
+                    <span class="nexus-modulo-info">
+                        <strong>Módulo de empréstimos</strong>
+
+                        <small>
+                            Clientes, contratos, parcelas e cobranças.
+                        </small>
+                    </span>
+
+                </label>
+
+            </div>
+
+            <button type="submit" class="btn-primary btn-full">
                 Cadastrar Empresa
             </button>
 
@@ -191,12 +186,7 @@
 
     <div class="busca-box">
 
-        <input
-            type="search"
-            id="buscaEmpresa"
-            placeholder="Buscar empresa..."
-            autocomplete="off"
-        >
+        <input type="search" id="buscaEmpresa" placeholder="Buscar empresa..." autocomplete="off">
 
     </div>
 
@@ -209,205 +199,194 @@
 
         {% for empresa in empresas %}
 
-            <article
-                class="company-card"
-                data-empresa="{{ empresa['nome']|lower }}"
-                data-usuario="{{ empresa['usuario']|lower }}"
-            >
+        <article class="company-card" data-empresa="{{ empresa['nome']|lower }}"
+            data-usuario="{{ empresa['usuario']|lower }}">
 
-                <div class="company-header">
+            <div class="company-header">
 
-                    <div class="company-icon">
+                <div class="company-icon">
 
-                        <img
-                            src="/static/img/empresa.png"
-                            alt=""
-                        >
-
-                    </div>
-
-                    <div class="company-info">
-
-                        <h2>
-                            {{ empresa["nome"] }}
-                        </h2>
-
-                        <p>
-                            {{ empresa["usuario"] }}
-                        </p>
-
-                    </div>
-
-                    <div
-                        class="badge-plano {{ empresa['plano'] }}"
-                    >
-                        {{ empresa["plano"]|upper }}
-                    </div>
+                    <img src="/static/img/empresa.png" alt="">
 
                 </div>
 
 
-                <div class="company-status">
 
-                    {% if empresa["status"] == "ativo" %}
+                <div class="company-info">
 
-                        <span class="badge badge-success">
-                            Ativo
-                        </span>
+                    <h2>
+                        {{ empresa["nome"] }}
+                    </h2>
 
-                    {% else %}
-
-                        <span class="badge badge-danger">
-                            Bloqueado
-                        </span>
-
-                    {% endif %}
+                    <p>
+                        {{ empresa["usuario"] }}
+                    </p>
 
                 </div>
 
+                <div class="badge-plano {{ empresa['plano'] }}">
+                    {{ empresa["plano"]|upper }}
+                </div>
 
-                <div class="company-footer">
+            </div>
 
-                    <div class="empresa-stats">
 
-                        <span>
-                            {{ empresa["total_produtos"] }}
-                            produtos
+            <div class="company-status">
+
+                {% if empresa["status"] == "ativo" %}
+
+                <span class="badge badge-success">
+                    Ativo
+                </span>
+
+                {% else %}
+
+                <span class="badge badge-danger">
+                    Bloqueado
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            <form method="POST" action="/alterar_modulo_emprestimos/{{ empresa['empresa_id'] }}"
+                    class="nexus-empresa-modulo">
+
+                    <input type="hidden" name="emprestimos_ativo" value="0">
+
+                    <label class="nexus-empresa-modulo-opcao">
+
+                        <input class="nexus-empresa-modulo-input" type="checkbox" name="emprestimos_ativo" value="1" {%
+                            if empresa["emprestimos_ativo"] %} checked {% endif %} onchange="this.form.submit()">
+
+                        <span class="nexus-empresa-modulo-controle">
+                            <span></span>
                         </span>
 
-                        <span>
-                            {{ empresa["total_vendas"] }}
-                            vendas
+                        <span class="nexus-empresa-modulo-info">
+                            <strong>Empréstimos</strong>
+
+                            <small>
+                                {% if empresa["emprestimos_ativo"] %}
+                                Módulo ativado
+                                {% else %}
+                                Módulo desativado
+                                {% endif %}
+                            </small>
                         </span>
 
-                        <span>
-                            {{ empresa["total_usuarios"] }}
-                            usuários
-                        </span>
+                    </label>
 
-                    </div>
+                </form>
 
+            <div class="company-footer">
 
-                    <div class="dropdown">
+                <div class="empresa-stats">
 
-                        <button
-                            type="button"
-                            class="menu-btn"
-                            aria-label="Abrir opções da empresa"
-                            aria-expanded="false"
-                        >
-                            ⋮
-                        </button>
+                    <span>
+                        {{ empresa["total_produtos"] }}
+                        produtos
+                    </span>
 
+                    <span>
+                        {{ empresa["total_vendas"] }}
+                        vendas
+                    </span>
 
-                        <div class="dropdown-content">
+                    <span>
+                        {{ empresa["total_usuarios"] }}
+                        usuários
+                    </span>
 
-                            <!-- ALTERAR PLANO -->
+                </div>
 
-                            <form
-                                method="POST"
-                                action="/alterar_plano_empresa/{{ empresa['empresa_id'] }}"
-                                class="form-alterar-plano"
-                            >
-
-                                <label
-                                    for="planoEmpresa{{ empresa['empresa_id'] }}"
-                                >
-                                    Alterar plano
-                                </label>
-
-                                <select
-                                    id="planoEmpresa{{ empresa['empresa_id'] }}"
-                                    name="plano"
-                                    aria-label="Alterar plano da empresa {{ empresa['nome'] }}"
-                                >
-
-                                    <option
-                                        value="comum"
-                                        {% if empresa["plano"] == "comum" %}
-                                            selected
-                                        {% endif %}
-                                    >
-                                        Comum
-                                    </option>
-
-                                    <option
-                                        value="premium"
-                                        {% if empresa["plano"] == "premium" %}
-                                            selected
-                                        {% endif %}
-                                    >
-                                        Premium
-                                    </option>
-
-                                </select>
-
-                                <button
-                                    type="submit"
-                                    class="btn-salvar-plano"
-                                >
-                                    Salvar plano
-                                </button>
-
-                            </form>
+                
 
 
-                            <!-- AÇÕES -->
+                <div class="dropdown">
 
-                            {% if empresa["status"] == "ativo" %}
+                    <button type="button" class="menu-btn" aria-label="Abrir opções da empresa" aria-expanded="false">
+                        ⋮
+                    </button>
 
-                                <a
-                                    href="/bloquear_usuario/{{ empresa['id'] }}"
-                                    class="acao-bloquear"
-                                >
-                                    Bloquear acesso
-                                </a>
 
-                            {% else %}
+                    <div class="dropdown-content">
 
-                                <a
-                                    href="/liberar_usuario/{{ empresa['id'] }}"
-                                    class="acao-liberar"
-                                >
-                                    Liberar acesso
-                                </a>
+                        <!-- ALTERAR PLANO -->
 
-                            {% endif %}
+                        <form method="POST" action="/alterar_plano_empresa/{{ empresa['empresa_id'] }}"
+                            class="form-alterar-plano">
 
-                            <a
-                                href="/excluir_empresa/{{ empresa['id'] }}"
-                                class="acao-excluir"
-                                onclick="
+                            <label for="planoEmpresa{{ empresa['empresa_id'] }}">
+                                Alterar plano
+                            </label>
+
+                            <select id="planoEmpresa{{ empresa['empresa_id'] }}" name="plano"
+                                aria-label="Alterar plano da empresa {{ empresa['nome'] }}">
+
+                                <option value="comum" {% if empresa["plano"]=="comum" %} selected {% endif %}>
+                                    Comum
+                                </option>
+
+                                <option value="premium" {% if empresa["plano"]=="premium" %} selected {% endif %}>
+                                    Premium
+                                </option>
+
+                            </select>
+
+                            <button type="submit" class="btn-salvar-plano">
+                                Salvar plano
+                            </button>
+
+                        </form>
+
+
+                        <!-- AÇÕES -->
+
+                        {% if empresa["status"] == "ativo" %}
+
+                        <a href="/bloquear_usuario/{{ empresa['id'] }}" class="acao-bloquear">
+                            Bloquear acesso
+                        </a>
+
+                        {% else %}
+
+                        <a href="/liberar_usuario/{{ empresa['id'] }}" class="acao-liberar">
+                            Liberar acesso
+                        </a>
+
+                        {% endif %}
+
+                        <a href="/excluir_empresa/{{ empresa['id'] }}" class="acao-excluir" onclick="
                                     return confirm(
                                         'Deseja realmente excluir esta empresa?'
                                     )
-                                "
-                            >
-                                Excluir empresa
-                            </a>
-
-                        </div>
+                                ">
+                            Excluir empresa
+                        </a>
 
                     </div>
 
                 </div>
 
-            </article>
+            </div>
+
+        </article>
 
         {% else %}
 
-            <div class="sem-empresas">
+        <div class="sem-empresas">
 
-                <h2>
-                    Nenhuma empresa cadastrada
-                </h2>
+            <h2>
+                Nenhuma empresa cadastrada
+            </h2>
 
-                <p>
-                    Utilize o formulário acima para cadastrar
-                    a primeira empresa.
-                </p>
+            <p>
+                Utilize o formulário acima para cadastrar
+                a primeira empresa.
+            </p>
 
-            </div>
+        </div>
 
         {% endfor %}
 

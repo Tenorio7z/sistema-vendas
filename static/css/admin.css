@@ -1373,3 +1373,396 @@ body:not(.dark)
         animation: none;
     }
 }
+/* ==========================================
+   MÓDULOS DA EMPRESA
+========================================== */
+
+.admin-form-grid .nexus-modulo-cadastro {
+    display: block;
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.admin-form-grid .nexus-modulo-titulo {
+    display: block;
+    margin: 0 0 8px;
+
+    color: var(--admin-texto-suave, #9fb0cc);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.admin-form-grid label.nexus-modulo-opcao {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    width: 100%;
+    min-height: 72px;
+    margin: 0;
+    padding: 13px 15px;
+
+    border: 1px solid rgba(115, 145, 190, 0.27);
+    border-radius: 14px;
+
+    background: rgba(255, 255, 255, 0.035);
+    cursor: pointer;
+
+    box-sizing: border-box;
+}
+
+.admin-form-grid input.nexus-modulo-input,
+.empresa-card input.nexus-empresa-modulo-input {
+    position: absolute !important;
+
+    width: 1px !important;
+    height: 1px !important;
+    min-width: 1px !important;
+    min-height: 1px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+.admin-form-grid .nexus-modulo-controle {
+    position: relative;
+    display: block;
+
+    width: 48px;
+    height: 26px;
+    min-width: 48px;
+    flex: 0 0 48px;
+
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+
+    background: rgba(100, 116, 139, 0.35);
+    overflow: hidden;
+
+    transition: 0.2s ease;
+}
+
+.admin-form-grid .nexus-modulo-controle > span {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+
+    display: block;
+
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+    background: #ffffff;
+
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.28);
+    transition: transform 0.2s ease;
+}
+
+.admin-form-grid
+.nexus-modulo-input:checked
++ .nexus-modulo-controle {
+    border-color: #3b8cff;
+    background: linear-gradient(
+        135deg,
+        #31a1ff,
+        #5865f2
+    );
+}
+
+.admin-form-grid
+.nexus-modulo-input:checked
++ .nexus-modulo-controle
+> span {
+    transform: translateX(22px);
+}
+
+.admin-form-grid .nexus-modulo-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.admin-form-grid .nexus-modulo-info strong {
+    color: var(--admin-texto, #f4f7ff);
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.admin-form-grid .nexus-modulo-info small {
+    color: var(--admin-texto-suave, #9fb0cc);
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+
+/* ==========================================
+   MÓDULO DENTRO DO CARD DA EMPRESA
+========================================== */
+
+.empresa-card .nexus-empresa-modulo {
+    display: block;
+    width: 100%;
+    margin: 14px 0 0;
+    padding: 0;
+}
+
+.empresa-card label.nexus-empresa-modulo-opcao {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    width: 100%;
+    min-height: 54px;
+    margin: 0;
+    padding: 9px 11px;
+
+    border: 1px solid rgba(115, 145, 190, 0.25);
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.035);
+    cursor: pointer;
+
+    box-sizing: border-box;
+}
+
+.empresa-card .nexus-empresa-modulo-controle {
+    position: relative;
+    display: block;
+
+    width: 40px;
+    height: 22px;
+    min-width: 40px;
+    flex: 0 0 40px;
+
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.42);
+    overflow: hidden;
+
+    transition: background 0.2s ease;
+}
+
+.empresa-card .nexus-empresa-modulo-controle > span {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+
+    display: block;
+
+    width: 16px;
+    height: 16px;
+
+    border-radius: 50%;
+    background: #ffffff;
+
+    transition: transform 0.2s ease;
+}
+
+.empresa-card
+.nexus-empresa-modulo-input:checked
++ .nexus-empresa-modulo-controle {
+    background: linear-gradient(
+        135deg,
+        #20c997,
+        #318bff
+    );
+}
+
+.empresa-card
+.nexus-empresa-modulo-input:checked
++ .nexus-empresa-modulo-controle
+> span {
+    transform: translateX(18px);
+}
+
+.empresa-card .nexus-empresa-modulo-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+
+    min-width: 0;
+}
+
+.empresa-card .nexus-empresa-modulo-info strong {
+    color: var(--admin-texto, #f4f7ff);
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.empresa-card .nexus-empresa-modulo-info small {
+    color: var(--admin-texto-suave, #9fb0cc);
+    font-size: 9px;
+    line-height: 1.2;
+}
+
+
+/* TEMA CLARO */
+
+body:not(.dark) .nexus-modulo-opcao,
+body:not(.dark) .nexus-empresa-modulo-opcao {
+    border-color: rgba(65, 90, 130, 0.18);
+    background: rgba(255, 255, 255, 0.58);
+}
+
+body:not(.dark) .nexus-modulo-info strong,
+body:not(.dark) .nexus-empresa-modulo-info strong {
+    color: #17233b;
+}
+
+body:not(.dark) .nexus-modulo-info small,
+body:not(.dark) .nexus-empresa-modulo-info small,
+body:not(.dark) .nexus-modulo-titulo {
+    color: #65728a;
+}
+
+/* CORREÇÃO DO MÓDULO NOS CARDS */
+
+.company-card .nexus-empresa-modulo {
+    display: block;
+    width: 100%;
+    margin: 16px 0 12px;
+    padding: 0;
+}
+
+.company-card label.nexus-empresa-modulo-opcao {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    width: 100%;
+    min-height: 58px;
+    margin: 0;
+    padding: 10px 12px;
+
+    border: 1px solid rgba(115, 145, 190, 0.25);
+    border-radius: 13px;
+
+    background: rgba(255, 255, 255, 0.035);
+    cursor: pointer;
+    box-sizing: border-box;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.company-card label.nexus-empresa-modulo-opcao:hover {
+    border-color: rgba(49, 139, 255, 0.52);
+    background: rgba(49, 139, 255, 0.07);
+}
+
+.company-card input.nexus-empresa-modulo-input {
+    position: absolute !important;
+
+    width: 1px !important;
+    height: 1px !important;
+    min-width: 1px !important;
+    min-height: 1px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+.company-card .nexus-empresa-modulo-controle {
+    position: relative;
+    display: block;
+
+    width: 42px;
+    height: 24px;
+    min-width: 42px;
+    flex: 0 0 42px;
+
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.44);
+    overflow: hidden;
+
+    transition: background 0.2s ease;
+}
+
+.company-card .nexus-empresa-modulo-controle > span {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+
+    display: block;
+
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+    background: #ffffff;
+
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease;
+}
+
+.company-card
+.nexus-empresa-modulo-input:checked
++ .nexus-empresa-modulo-controle {
+    background: linear-gradient(
+        135deg,
+        #20c997,
+        #318bff
+    );
+}
+
+.company-card
+.nexus-empresa-modulo-input:checked
++ .nexus-empresa-modulo-controle
+> span {
+    transform: translateX(18px);
+}
+
+.company-card .nexus-empresa-modulo-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+.company-card .nexus-empresa-modulo-info strong {
+    color: var(--admin-texto, #f4f7ff);
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.company-card .nexus-empresa-modulo-info small {
+    color: var(--admin-texto-suave, #9fb0cc);
+    font-size: 9px;
+    line-height: 1.2;
+}
+
+.company-card .company-footer {
+    margin-top: auto;
+}
+
+body:not(.dark)
+.company-card
+.nexus-empresa-modulo-opcao {
+    border-color: rgba(65, 90, 130, 0.18);
+    background: rgba(255, 255, 255, 0.58);
+}
+
+body:not(.dark)
+.company-card
+.nexus-empresa-modulo-info strong {
+    color: #17233b;
+}
+
+body:not(.dark)
+.company-card
+.nexus-empresa-modulo-info small {
+    color: #65728a;
+}

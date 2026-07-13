@@ -59,9 +59,8 @@ def login_obrigatorio(
     return wrapper
 
 
-def gerente_obrigatorio(
-    funcao
-):
+def gerente_obrigatorio(funcao):
+
     @wraps(funcao)
     def wrapper(
         *args,
@@ -72,14 +71,58 @@ def gerente_obrigatorio(
 
         if session.get("nivel") != "gerente":
             flash(
-                "Você não possui permissão "
-                "para acessar empréstimos.",
+                (
+                    "Você não possui permissão "
+                    "para acessar empréstimos."
+                ),
                 "erro"
             )
 
             return redirect("/dashboard")
 
-        if not session.get("empresa_id"):
+        empresa_id = session.get("empresa_id")
+
+        if not empresa_id:
+            return redirect("/dashboard")
+
+        conn = conectar()
+        cursor = criar_cursor(conn)
+
+        try:
+            cursor.execute(
+                """
+                SELECT emprestimos_ativo
+                FROM empresa
+                WHERE id = %s
+                LIMIT 1
+                """,
+                (
+                    empresa_id,
+                )
+            )
+
+            empresa = cursor.fetchone()
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        modulo_ativo = bool(
+            empresa
+            and empresa.get("emprestimos_ativo")
+        )
+
+        session["emprestimos_ativo"] = modulo_ativo
+
+        if not modulo_ativo:
+            flash(
+                (
+                    "O módulo de empréstimos não está "
+                    "habilitado para esta empresa."
+                ),
+                "erro"
+            )
+
             return redirect("/dashboard")
 
         return funcao(
@@ -88,7 +131,6 @@ def gerente_obrigatorio(
         )
 
     return wrapper
-
 
 def _valor_formulario(
     nome,

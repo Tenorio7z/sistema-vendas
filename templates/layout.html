@@ -4,10 +4,7 @@
 <head>
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Sistema Nexus</title>
 
@@ -24,10 +21,7 @@
         }());
     </script>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/base.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
 
     {% block css %}
     {% endblock %}
@@ -44,51 +38,29 @@
 
                 <div class="sidebar-actions">
 
-                    <button
-                        id="toggleMenu"
-                        class="menu-toggle"
-                        type="button"
-                        aria-label="Alternar menu"
-                    >
-                        <img
-                            id="menuIcon"
-                            src="{{ url_for(
+                    <button id="toggleMenu" class="menu-toggle" type="button" aria-label="Alternar menu">
+                        <img id="menuIcon" src="{{ url_for(
                                 'static',
                                 filename='img/menu-aberto.png'
-                            ) }}"
-                            alt="Menu"
-                        >
+                            ) }}" alt="Menu">
                     </button>
 
                     <div class="theme-wrapper">
 
-                        <img
-                            src="{{ url_for(
+                        <img src="{{ url_for(
                                 'static',
                                 filename='icons/light.png'
-                            ) }}"
-                            alt="Modo escuro"
-                            class="theme-side-icon"
-                        >
+                            ) }}" alt="Modo escuro" class="theme-side-icon">
 
-                        <button
-                            id="toggleTheme"
-                            type="button"
-                            class="theme-switch"
-                            aria-label="Alternar tema"
-                            aria-pressed="false"
-                        >
+                        <button id="toggleTheme" type="button" class="theme-switch" aria-label="Alternar tema"
+                            aria-pressed="false">
                             <span class="switch-ball"></span>
                         </button>
 
-                        <img
-                            src="{{ url_for(
+                        <img src="{{ url_for(
                                 'static',
                                 filename='icons/dark.png'
-                            ) }}"
-                            alt="Modo claro"
-                            class="theme-side-icon"
-                        >
+                            ) }}" alt="Modo claro" class="theme-side-icon">
 
                     </div>
 
@@ -107,182 +79,120 @@
 
         <nav>
 
-            <a
-                href="/dashboard"
-                class="{% if request.path == '/dashboard' %}active{% endif %}"
-            >
-                <img
-                    src="{{ url_for(
+            <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">
+                <img src="{{ url_for(
                         'static',
                         filename='icons/dashboard.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Dashboard</span>
             </a>
 
             {% if session.get("nivel") == "gerente" %}
-            <a
-                href="/perfis"
-                class="{% if request.path.startswith('/perfis') %}active{% endif %}"
-            >
-                <img
-                    src="{{ url_for(
+            <a href="/perfis" class="{% if request.path.startswith('/perfis') %}active{% endif %}">
+                <img src="{{ url_for(
                         'static',
                         filename='icons/perfis.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Gerenciar Perfis</span>
             </a>
             {% endif %}
 
             {% if session.get("nivel") == "master" %}
-            <a
-                href="/admin"
-                class="{% if request.path.startswith('/admin') %}active{% endif %}"
-            >
-                <img
-                    src="{{ url_for(
+            <a href="/admin" class="{% if request.path.startswith('/admin') %}active{% endif %}">
+                <img src="{{ url_for(
                         'static',
                         filename='icons/master.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Painel Master</span>
             </a>
             {% endif %}
 
             {% if session.get("nivel") != "funcionario" %}
-            <a
-                href="/produtos"
-                class="{% if request.path.startswith('/produtos') %}active{% endif %}"
-            >
-                <img
-                    src="{{ url_for(
+            <a href="/produtos" class="{% if request.path.startswith('/produtos') %}active{% endif %}">
+                <img src="{{ url_for(
                         'static',
                         filename='icons/produtos.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Produtos</span>
             </a>
             {% endif %}
 
-            <a
-                href="/vendas"
-                class="{% if request.path.startswith('/vendas') %}active{% endif %}"
-            >
-                <img
-                    src="{{ url_for(
+            <a href="/vendas" class="{% if request.path.startswith('/vendas') %}active{% endif %}">
+                <img src="{{ url_for(
                         'static',
                         filename='icons/vendas.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Vendas</span>
             </a>
 
-            <a
-                href="/caixa"
-                class="{% if request.path.startswith('/caixa') %}active{% endif %}"
-            >
-                <img
-                    src="{{ url_for(
+            <a href="/caixa" class="{% if request.path.startswith('/caixa') %}active{% endif %}">
+                <img src="{{ url_for(
                         'static',
                         filename='icons/caixa.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Caixa</span>
             </a>
 
             {% if session.get("nivel") == "gerente" %}
-            <a
-                href="/estatisticas"
-                class="{% if request.path.startswith('/estatisticas') %}active{% endif %}"
-            >
-                <img
-                    src="{{ url_for(
+            <a href="/estatisticas" class="{% if request.path.startswith('/estatisticas') %}active{% endif %}">
+                <img src="{{ url_for(
                         'static',
                         filename='icons/estatisticas.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Estatísticas</span>
             </a>
+            
+            {% endif %}
 
             <!-- NOVO ITEM: EMPRÉSTIMOS -->
-            <a
-                href="/emprestimos"
-                class="{% if request.path.startswith('/emprestimos') %}active{% endif %}"
-            >
-                <span
-                    class="nav-icon nav-icon-emprestimos"
-                    aria-hidden="true"
-                >
+            {% if
+            session.get("nivel") == "gerente"
+            and session.get("emprestimos_ativo")
+            %}
+
+            <a href="/emprestimos" class="{% if request.path.startswith('/emprestimos') %}active{% endif %}">
+                <span class="nav-icon nav-icon-emprestimos" aria-hidden="true">
                     $
                 </span>
 
-                <span class="link-text">Empréstimos</span>
+                <span class="link-text">
+                    Empréstimos
+                </span>
             </a>
-            {% endif %}
 
-            <a
-                href="/planos"
-                class="{% if request.path.startswith('/planos') %}active{% endif %}"
-            >
-                <img
-                    src="{{ url_for(
+            {% endif %}
+          
+
+            <a href="/planos" class="{% if request.path.startswith('/planos') %}active{% endif %}">
+                <img src="{{ url_for(
                         'static',
                         filename='icons/planos.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Planos</span>
             </a>
 
-            <a
-                href="/ia"
-                class="{% if request.path.startswith('/ia') %}active{% endif %}"
-            >
-                <img
-                    src="{{ url_for(
+            <a href="/ia" class="{% if request.path.startswith('/ia') %}active{% endif %}">
+                <img src="{{ url_for(
                         'static',
                         filename='icons/ia.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Assistente Nami</span>
             </a>
 
             <a href="/logout">
-                <img
-                    src="{{ url_for(
+                <img src="{{ url_for(
                         'static',
                         filename='icons/sair.png'
-                    ) }}"
-                    class="nav-icon"
-                    alt=""
-                >
+                    ) }}" class="nav-icon" alt="">
 
                 <span class="link-text">Sair</span>
             </a>
@@ -296,13 +206,13 @@
     <main class="main">
 
         {% with mensagens = get_flashed_messages(with_categories=true) %}
-            {% if mensagens %}
-                {% for categoria, mensagem in mensagens %}
-                <div class="alert {{ categoria }}">
-                    {{ mensagem }}
-                </div>
-                {% endfor %}
-            {% endif %}
+        {% if mensagens %}
+        {% for categoria, mensagem in mensagens %}
+        <div class="alert {{ categoria }}">
+            {{ mensagem }}
+        </div>
+        {% endfor %}
+        {% endif %}
         {% endwith %}
 
         {% block content %}
@@ -404,206 +314,206 @@
 
 
     <!-- NOTIFICAÇÕES DE VENDAS -->
-<script>
-    let ultimoHorarioToast = "";
-    let consultaNotificacoesEmAndamento = false;
-    let temporizadorNotificacoes = null;
+    <script>
+        let ultimoHorarioToast = "";
+        let consultaNotificacoesEmAndamento = false;
+        let temporizadorNotificacoes = null;
 
-    function criarElemento(tag, classe, texto) {
-        const elemento = document.createElement(tag);
+        function criarElemento(tag, classe, texto) {
+            const elemento = document.createElement(tag);
 
-        if (classe) {
-            elemento.className = classe;
-        }
-
-        if (texto !== undefined && texto !== null) {
-            elemento.textContent = texto;
-        }
-
-        return elemento;
-    }
-
-    function mostrarToast(notificacao) {
-        const container = document.getElementById(
-            "toast-notificacao"
-        );
-
-        if (!container) {
-            return;
-        }
-
-        const toast = criarElemento("div", "toast");
-
-        const titulo = criarElemento(
-            "strong",
-            "",
-            "Nova venda"
-        );
-
-        const valorNumerico = Number(
-            notificacao.valor || 0
-        );
-
-        const valorFormatado = valorNumerico.toLocaleString(
-            "pt-BR",
-            {
-                style: "currency",
-                currency: "BRL"
+            if (classe) {
+                elemento.className = classe;
             }
-        );
 
-        const funcionario = String(
-            notificacao.funcionario || "Funcionário"
-        );
+            if (texto !== undefined && texto !== null) {
+                elemento.textContent = texto;
+            }
 
-        const produto = String(
-            notificacao.produto || "um produto"
-        );
-
-        const descricao = criarElemento(
-            "p",
-            "",
-            funcionario +
-            " vendeu " +
-            produto +
-            " por " +
-            valorFormatado
-        );
-
-        const horario = criarElemento(
-            "small",
-            "",
-            String(notificacao.hora || "")
-        );
-
-        toast.appendChild(titulo);
-        toast.appendChild(descricao);
-        toast.appendChild(horario);
-
-        container.appendChild(toast);
-
-        window.setTimeout(function () {
-            toast.remove();
-        }, 5000);
-    }
-
-    function tocarSomNotificacao() {
-        const som = new Audio(
-            "/static/audio/venda.mp3"
-        );
-
-        som.play().catch(function () {
-            return null;
-        });
-    }
-
-    document
-        .querySelectorAll('form[method="POST"], form[method="post"]')
-        .forEach(function (formulario) {
-            formulario.addEventListener("submit", function (evento) {
-                if (formulario.dataset.enviando === "true") {
-                    evento.preventDefault();
-                    return;
-                }
-
-                formulario.dataset.enviando = "true";
-
-                const botao = formulario.querySelector(
-                    'button[type="submit"], input[type="submit"]'
-                );
-
-                if (!botao) {
-                    return;
-                }
-
-                botao.disabled = true;
-                botao.setAttribute("aria-busy", "true");
-
-                if (botao.tagName === "BUTTON") {
-                    botao.dataset.textoOriginal = botao.textContent;
-                    botao.textContent = "Processando...";
-                }
-            });
-        });
-
-    function verificarNovasNotificacoes() {
-        if (document.hidden || consultaNotificacoesEmAndamento) {
-            return;
+            return elemento;
         }
 
-        consultaNotificacoesEmAndamento = true;
+        function mostrarToast(notificacao) {
+            const container = document.getElementById(
+                "toast-notificacao"
+            );
 
-        const url =
-            "/api/notificacoes?t=" +
-            Date.now();
+            if (!container) {
+                return;
+            }
 
-        fetch(url)
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error(
-                        "Erro ao consultar notificações."
+            const toast = criarElemento("div", "toast");
+
+            const titulo = criarElemento(
+                "strong",
+                "",
+                "Nova venda"
+            );
+
+            const valorNumerico = Number(
+                notificacao.valor || 0
+            );
+
+            const valorFormatado = valorNumerico.toLocaleString(
+                "pt-BR",
+                {
+                    style: "currency",
+                    currency: "BRL"
+                }
+            );
+
+            const funcionario = String(
+                notificacao.funcionario || "Funcionário"
+            );
+
+            const produto = String(
+                notificacao.produto || "um produto"
+            );
+
+            const descricao = criarElemento(
+                "p",
+                "",
+                funcionario +
+                " vendeu " +
+                produto +
+                " por " +
+                valorFormatado
+            );
+
+            const horario = criarElemento(
+                "small",
+                "",
+                String(notificacao.hora || "")
+            );
+
+            toast.appendChild(titulo);
+            toast.appendChild(descricao);
+            toast.appendChild(horario);
+
+            container.appendChild(toast);
+
+            window.setTimeout(function () {
+                toast.remove();
+            }, 5000);
+        }
+
+        function tocarSomNotificacao() {
+            const som = new Audio(
+                "/static/audio/venda.mp3"
+            );
+
+            som.play().catch(function () {
+                return null;
+            });
+        }
+
+        document
+            .querySelectorAll('form[method="POST"], form[method="post"]')
+            .forEach(function (formulario) {
+                formulario.addEventListener("submit", function (evento) {
+                    if (formulario.dataset.enviando === "true") {
+                        evento.preventDefault();
+                        return;
+                    }
+
+                    formulario.dataset.enviando = "true";
+
+                    const botao = formulario.querySelector(
+                        'button[type="submit"], input[type="submit"]'
                     );
-                }
 
-                return response.json();
-            })
-            .then(function (dados) {
-                if (!Array.isArray(dados)) {
-                    return;
-                }
+                    if (!botao) {
+                        return;
+                    }
 
-                if (dados.length === 0) {
-                    return;
-                }
+                    botao.disabled = true;
+                    botao.setAttribute("aria-busy", "true");
 
-                const notificacaoAtual = dados[0];
+                    if (botao.tagName === "BUTTON") {
+                        botao.dataset.textoOriginal = botao.textContent;
+                        botao.textContent = "Processando...";
+                    }
+                });
+            });
 
-                const horarioAtual = String(
-                    notificacaoAtual.hora || ""
-                );
+        function verificarNovasNotificacoes() {
+            if (document.hidden || consultaNotificacoesEmAndamento) {
+                return;
+            }
 
-                if (
-                    ultimoHorarioToast !== "" &&
-                    horarioAtual !== ultimoHorarioToast
-                ) {
-                    mostrarToast(notificacaoAtual);
-                    tocarSomNotificacao();
-                }
+            consultaNotificacoesEmAndamento = true;
 
-                ultimoHorarioToast = horarioAtual;
-            })
+            const url =
+                "/api/notificacoes?t=" +
+                Date.now();
+
+            fetch(url)
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error(
+                            "Erro ao consultar notificações."
+                        );
+                    }
+
+                    return response.json();
+                })
+                .then(function (dados) {
+                    if (!Array.isArray(dados)) {
+                        return;
+                    }
+
+                    if (dados.length === 0) {
+                        return;
+                    }
+
+                    const notificacaoAtual = dados[0];
+
+                    const horarioAtual = String(
+                        notificacaoAtual.hora || ""
+                    );
+
+                    if (
+                        ultimoHorarioToast !== "" &&
+                        horarioAtual !== ultimoHorarioToast
+                    ) {
+                        mostrarToast(notificacaoAtual);
+                        tocarSomNotificacao();
+                    }
+
+                    ultimoHorarioToast = horarioAtual;
+                })
                 .catch(function (erro) {
-                console.log(
-                    "Erro nas notificações:",
+                    console.log(
+                        "Erro nas notificações:",
                         erro
                     );
                 })
                 .finally(function () {
                     consultaNotificacoesEmAndamento = false;
                 });
-    }
-
-    function iniciarNotificacoes() {
-        if (temporizadorNotificacoes) {
-            window.clearInterval(temporizadorNotificacoes);
         }
 
-        verificarNovasNotificacoes();
+        function iniciarNotificacoes() {
+            if (temporizadorNotificacoes) {
+                window.clearInterval(temporizadorNotificacoes);
+            }
 
-        temporizadorNotificacoes = window.setInterval(
-            verificarNovasNotificacoes,
-            15000
-        );
-    }
-
-    document.addEventListener("visibilitychange", function () {
-        if (!document.hidden) {
             verificarNovasNotificacoes();
-        }
-    });
 
-    iniciarNotificacoes();
-</script>
+            temporizadorNotificacoes = window.setInterval(
+                verificarNovasNotificacoes,
+                15000
+            );
+        }
+
+        document.addEventListener("visibilitychange", function () {
+            if (!document.hidden) {
+                verificarNovasNotificacoes();
+            }
+        });
+
+        iniciarNotificacoes();
+    </script>
 
 </body>
 
