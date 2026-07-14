@@ -60,7 +60,7 @@ class AssistenteNexus:
             mensagem=mensagem,
             contexto=PROMPT_SISTEMA,
             historico=historico,
-            empresa_id=empresa_id,
+            usuario=usuario,
         )
 
         if not resposta:

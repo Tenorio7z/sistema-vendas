@@ -93,20 +93,85 @@ class ConexaoPooled:
 
 
 def conectar():
-    try:
-        pool = _obter_pool()
-        conexao = pool.getconn()
+    pool = _obter_pool()
+    ultimo_erro = None
 
-        if conexao.closed:
-            pool.putconn(conexao, close=True)
+    # Tenta obter uma conexão válida até 3 vezes.
+    for tentativa in range(3):
+
+        conexao = None
+
+        try:
             conexao = pool.getconn()
 
-        return ConexaoPooled(pool, conexao)
+            if conexao.closed:
+                pool.putconn(
+                    conexao,
+                    close=True
+                )
 
-    except Exception as erro:
-        print("Erro ao conectar no banco:", erro)
-        raise
+                conexao = None
+                continue
 
+            # Testa se a conexão ainda está viva.
+            cursor_teste = conexao.cursor()
+
+            try:
+                cursor_teste.execute(
+                    "SELECT 1"
+                )
+
+                cursor_teste.fetchone()
+
+            finally:
+                cursor_teste.close()
+
+            # O SELECT de teste abre uma transação.
+            # Voltamos para o estado limpo antes de entregar.
+            conexao.rollback()
+
+            return ConexaoPooled(
+                pool,
+                conexao
+            )
+
+        except (
+            psycopg2.InterfaceError,
+            psycopg2.OperationalError,
+        ) as erro:
+            ultimo_erro = erro
+
+            if conexao is not None:
+                try:
+                    pool.putconn(
+                        conexao,
+                        close=True
+                    )
+                except Exception:
+                    pass
+
+            conexao = None
+
+        except Exception as erro:
+            ultimo_erro = erro
+
+            if conexao is not None:
+                try:
+                    pool.putconn(
+                        conexao,
+                        close=True
+                    )
+                except Exception:
+                    pass
+
+            raise
+
+    print(
+        "Erro ao conectar no banco após 3 tentativas:",
+        ultimo_erro
+    )
+
+    raise ultimo_erro
 
 def criar_cursor(conn):
     return conn.cursor(
