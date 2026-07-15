@@ -178,11 +178,7 @@ def registrar_rotas(app):
                 ""
             )
 
-            manter_conectado = (
-                request.form.get(
-                    "manter_conectado"
-                ) == "1"
-            )
+            manter_conectado = True
 
             conn = conectar()
 
