@@ -338,7 +338,8 @@ def registrar_rotas(app):
                 conn.close()
 
                 pdf = gerar_pdf_fechamento(
-                    caixa_id
+                    caixa_id,
+                    session["empresa_id"]
                 )
 
                 session["carrinho"] = []
@@ -350,9 +351,19 @@ def registrar_rotas(app):
 
             
                 
+                if not pdf:
+                    flash(
+                        "Não foi possível gerar o relatório do caixa.",
+                        "erro"
+                    )
+
+                    return redirect("/caixa")
+
                 return send_file(
                     pdf,
-                    as_attachment=False
+                    mimetype="application/pdf",
+                    as_attachment=False,
+                    download_name=f"fechamento_caixa_{caixa_id}.pdf"
                 )
 
         # ==========================================
