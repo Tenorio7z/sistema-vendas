@@ -49,29 +49,85 @@ def registrar_rotas(app):
                 return redirect("/perfis")
 
                 
-            cursor.execute("""
+            # ==========================================
+            # PLANO E LIMITE DE FUNCIONÁRIOS
+            # ==========================================
 
-                SELECT COUNT(*) as total
+            cursor.execute(
+                """
+                SELECT
+                    LOWER(
+                        COALESCE(
+                            plano,
+                            'comum'
+                        )
+                    ) AS plano
 
-                FROM usuarios
+                FROM empresa
 
-                WHERE empresa_id = %s
-                AND nivel = 'funcionario'
+                WHERE id = %s
 
-                """, (
-
+                LIMIT 1
+                """,
+                (
                     empresa_id,
+                )
+            )
 
-                ))
+            empresa = cursor.fetchone()
 
-            total_funcionarios = cursor.fetchone()["total"]
+            if not empresa:
 
-            if total_funcionarios >= 2:
+                cursor.close()
+                conn.close()
 
+                flash(
+                    "Empresa não encontrada.",
+                    "erro"
+                )
+
+                return redirect("/perfis")
+
+
+            plano_atual = empresa["plano"]
+
+            # Atualiza a sessão caso o plano tenha sido
+            # alterado pelo Painel Master.
+            session["plano"] = plano_atual
+
+
+            # Somente o plano Comum possui limite.
+            if plano_atual == "comum":
+
+                cursor.execute(
+                    """
+                    SELECT COUNT(*) AS total
+
+                    FROM usuarios
+
+                    WHERE empresa_id = %s
+                    AND nivel = 'funcionario'
+                    """,
+                    (
+                        empresa_id,
+                    )
+                )
+
+                total_funcionarios = (
+                    cursor.fetchone()["total"]
+                )
+
+                if total_funcionarios >= 2:
+
+                    cursor.close()
                     conn.close()
 
                     flash(
-                        "Seu plano permite apenas 2 funcionários. Faça upgrade para Premium.",
+                        (
+                            "O plano Comum permite no máximo "
+                            "2 funcionários. Faça upgrade "
+                            "para o Premium."
+                        ),
                         "erro"
                     )
 

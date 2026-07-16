@@ -140,18 +140,62 @@ def registrar_rotas(app):
 
                     return redirect("/produtos")
 
-                # ==================================
-                # LIMITE DO PLANO COMUM
-                # ==================================
 
-                if (
-                    session.get("plano")
-                    == "comum"
-                ):
+                # ==========================================
+                # PLANO E LIMITE DE PRODUTOS
+                # ==========================================
+
+                cursor.execute(
+                    """
+                    SELECT
+                        LOWER(
+                            COALESCE(
+                                plano,
+                                'comum'
+                            )
+                        ) AS plano
+
+                    FROM empresa
+
+                    WHERE id = %s
+
+                    LIMIT 1
+                    """,
+                    (
+                        empresa_id,
+                    )
+                )
+
+                empresa = cursor.fetchone()
+
+                if not empresa:
+
+                    cursor.close()
+                    conn.close()
+
+                    flash(
+                        "Empresa não encontrada.",
+                        "erro"
+                    )
+
+                    return redirect("/produtos")
+
+
+                plano_atual = empresa["plano"]
+
+                # Mantém a sessão sincronizada com o banco.
+                session["plano"] = plano_atual
+
+
+                # Somente o plano Comum possui limite.
+                if plano_atual == "comum":
+
                     cursor.execute(
                         """
                         SELECT COUNT(*) AS total
+
                         FROM produtos
+
                         WHERE empresa_id = %s
                         """,
                         (
@@ -164,11 +208,15 @@ def registrar_rotas(app):
                     )
 
                     if total_produtos >= 50:
+
+                        cursor.close()
+                        conn.close()
+
                         flash(
                             (
-                                "Seu plano permite no máximo "
-                                "50 produtos. Faça upgrade "
-                                "para o Premium."
+                                "O plano Comum permite no máximo "
+                                "50 produtos. Faça upgrade para "
+                                "o Premium."
                             ),
                             "erro"
                         )
