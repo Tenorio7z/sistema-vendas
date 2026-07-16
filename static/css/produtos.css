@@ -1060,3 +1060,295 @@ body:not(.dark) .modal-produto input {
     top: 11px;
     right: 11px;
 }
+
+/* ==========================================
+   IMAGEM DO PRODUTO
+========================================== */
+
+.produto-card {
+    display: grid;
+    grid-template-columns:
+        64px minmax(0, 1fr) auto;
+
+    align-items: center;
+    gap: 12px;
+
+    overflow: visible;
+}
+
+.produto-imagem {
+    display: grid;
+    place-items: center;
+
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+
+    border: 1px solid rgba(95, 145, 220, 0.22);
+    border-radius: 14px;
+
+    background:
+        linear-gradient(145deg,
+            rgba(49, 139, 255, 0.1),
+            rgba(88, 101, 242, 0.05));
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+    overflow: hidden;
+}
+
+.produto-imagem img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    padding: 5px;
+
+    object-fit: contain;
+}
+
+.produto-sem-imagem {
+    font-size: 24px;
+    opacity: 0.55;
+}
+
+.produto-info {
+    min-width: 0;
+}
+
+.produto-info h2 {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ==========================================
+   UPLOAD NO MODAL
+========================================== */
+
+.upload-imagem-produto {
+    display: block;
+
+    width: 100%;
+    margin: 0;
+
+    cursor: pointer;
+}
+
+.upload-imagem-produto>input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    margin: 0;
+    padding: 0;
+
+    opacity: 0;
+    pointer-events: none;
+}
+
+.upload-preview {
+    display: grid;
+    place-items: center;
+
+    width: 100%;
+    height: 150px;
+
+    border: 1px dashed rgba(73, 145, 255, 0.55);
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(145deg,
+            rgba(49, 139, 255, 0.08),
+            rgba(88, 101, 242, 0.05));
+
+    overflow: hidden;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.upload-imagem-produto:hover .upload-preview {
+    border-color: #51b8ff;
+
+    background:
+        rgba(49, 139, 255, 0.12);
+
+    transform: translateY(-1px);
+}
+
+.upload-imagem-produto input:focus-visible+.upload-preview {
+    outline: 3px solid rgba(49, 139, 255, 0.2);
+
+    outline-offset: 3px;
+}
+
+.upload-preview>img {
+    display: none;
+
+    width: 100%;
+    height: 100%;
+
+    padding: 6px;
+
+    border-radius: 14px;
+
+    object-fit: contain;
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    padding: 16px;
+
+    color: #dce8ff;
+    text-align: center;
+}
+
+.upload-placeholder strong {
+    font-size: 13px;
+}
+
+.upload-placeholder small {
+    color: #8fa3c4;
+    font-size: 10px;
+}
+
+
+/* ==========================================
+   MODAL
+========================================== */
+
+.modal-produto-content {
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+
+    overflow-y: auto;
+}
+
+.modal-topo .fechar {
+    display: grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    border: 1px solid rgba(125, 153, 198, 0.24);
+
+    border-radius: 10px;
+
+    color: inherit;
+    background: rgba(255, 255, 255, 0.05);
+
+    cursor: pointer;
+}
+
+.btn:disabled {
+    opacity: 0.68;
+    cursor: wait;
+}
+
+
+/* ==========================================
+   LISTA VAZIA
+========================================== */
+
+.produtos-vazio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    grid-column: 1 / -1;
+
+    min-height: 230px;
+
+    padding: 32px;
+
+    border: 1px dashed rgba(100, 145, 210, 0.25);
+
+    border-radius: 20px;
+
+    color: #8fa3c4;
+    text-align: center;
+}
+
+.produtos-vazio>span {
+    margin-bottom: 12px;
+
+    font-size: 38px;
+    opacity: 0.65;
+}
+
+.produtos-vazio h2 {
+    margin-bottom: 6px;
+
+    color: #e7efff;
+    font-size: 16px;
+}
+
+
+/* ==========================================
+   TEMA CLARO
+========================================== */
+
+body:not(.dark) .produto-imagem,
+body:not(.dark) .upload-preview {
+    border-color:
+        rgba(65, 100, 155, 0.2);
+
+    background:
+        rgba(255, 255, 255, 0.62);
+}
+
+body:not(.dark) .upload-placeholder {
+    color: #1c2a45;
+}
+
+body:not(.dark) .upload-placeholder small {
+    color: #68758b;
+}
+
+body:not(.dark) .produtos-vazio h2 {
+    color: #17233b;
+}
+
+
+/* ==========================================
+   RESPONSIVO
+========================================== */
+
+@media (max-width: 560px) {
+    .produto-card {
+        grid-template-columns:
+            72px minmax(0, 1fr) auto;
+
+        gap: 10px;
+    }
+
+    .produto-imagem {
+        background:
+            radial-gradient(circle at center,
+                rgba(54, 132, 255, 0.18),
+                rgba(8, 23, 48, 0.72));
+    }
+
+    .upload-preview {
+        height: 130px;
+    }
+}

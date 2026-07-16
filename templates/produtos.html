@@ -2,49 +2,55 @@
 
 {% block css %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/produtos.css') }}">
+<link
+    rel="stylesheet"
+    href="{{ url_for(
+        'static',
+        filename='css/produtos.css'
+    ) }}"
+>
 
 {% endblock %}
 
+
 {% block content %}
 
-<!-- ===================================== -->
-<!-- TOPO -->
-<!-- ===================================== -->
+<!-- =====================================
+     TOPO
+====================================== -->
 
 <div class="topo-produtos">
 
     <div>
 
         <h1>
-
             Produtos
-
         </h1>
 
         <p class="subtitulo-pagina">
-
             Gerencie seu estoque e preços
-
         </p>
 
     </div>
 
     {% if session["nivel"] != "funcionario" %}
 
-    <button class="btn-add-produto" onclick="abrirModalProduto()">
-
+    <button
+        type="button"
+        class="btn-add-produto"
+        onclick="abrirModalProduto()"
+    >
         + Adicionar Produto
-
     </button>
 
     {% endif %}
 
 </div>
 
-<!-- ===================================== -->
-<!-- PRODUTOS -->
-<!-- ===================================== -->
+
+<!-- =====================================
+     PRODUTOS
+====================================== -->
 
 <div class="produtos-grid">
 
@@ -52,50 +58,109 @@
 
     <div class="produto-card">
 
+        <div class="produto-imagem">
+
+            {% if produto["possui_imagem"] %}
+
+            <img
+                src="{{ url_for(
+                    'produto_imagem',
+                    id=produto['id']
+                ) }}"
+                alt="{{ produto['nome'] }}"
+                loading="lazy"
+            >
+
+            {% else %}
+
+            <span
+                class="produto-sem-imagem"
+                aria-hidden="true"
+            >
+                📦
+            </span>
+
+            {% endif %}
+
+        </div>
+
         <div class="produto-info">
 
             <h2>
-
                 {{ produto["nome"] }}
-
             </h2>
 
             <span class="preco">
-
                 R$ {{ produto["preco"] }}
-
             </span>
 
             <span class="estoque">
-
                 Estoque: {{ produto["estoque"] }}
-
             </span>
 
         </div>
 
         <div class="menu-produto">
 
-            <button class="btn-menu" onclick="toggleMenu('menu{{ produto.id }}')">
+            <button
+                type="button"
+                class="btn-menu"
+                aria-label="Abrir opções do produto"
+                onclick="toggleMenu(
+                    'menu{{ produto.id }}',
+                    event
+                )"
+            >
                 ⋮
             </button>
 
-            <div id="menu{{ produto.id }}" class="dropdown-menu">
+            <div
+                id="menu{{ produto.id }}"
+                class="dropdown-menu"
+            >
+
                 {% if session["nivel"] != "funcionario" %}
-                <a href="/editar_produto/{{ produto['id'] }}">
+
+                <a
+                    href="/editar_produto/{{ produto['id'] }}"
+                >
                     Editar
                 </a>
-                {% endif %}
 
-                {% if session["nivel"] != "funcionario" %}
-
-                <a href="/excluir_produto/{{ produto['id'] }}">
+                <a
+                    href="/excluir_produto/{{ produto['id'] }}"
+                    onclick="
+                        return confirm(
+                            'Deseja excluir este produto?'
+                        )
+                    "
+                >
                     Excluir
                 </a>
+
                 {% endif %}
+
             </div>
 
         </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="produtos-vazio">
+
+        <span aria-hidden="true">
+            📦
+        </span>
+
+        <h2>
+            Nenhum produto cadastrado
+        </h2>
+
+        <p>
+            Adicione o primeiro produto para começar.
+        </p>
 
     </div>
 
@@ -103,44 +168,128 @@
 
 </div>
 
-<!-- ===================================== -->
-<!-- MODAL -->
-<!-- ===================================== -->
 
-<div id="modalProduto" class="modal-produto">
+<!-- =====================================
+     MODAL
+====================================== -->
 
-    <div class="modal-produto-content">
+<div
+    id="modalProduto"
+    class="modal-produto"
+    aria-hidden="true"
+>
+
+    <div
+        class="modal-produto-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tituloNovoProduto"
+    >
 
         <div class="modal-topo">
 
-            <h2>
+            <div>
 
-                Novo Produto
+                <h2 id="tituloNovoProduto">
+                    Novo Produto
+                </h2>
 
-            </h2>
+                <p>
+                    Cadastre as informações do produto
+                </p>
 
-            <span class="fechar" onclick="fecharModalProduto()">
+            </div>
 
-                ✖
-
-            </span>
+            <button
+                type="button"
+                class="fechar"
+                aria-label="Fechar"
+                onclick="fecharModalProduto()"
+            >
+                ✕
+            </button>
 
         </div>
 
-        <form method="POST">
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+            id="formNovoProduto"
+        >
 
-            <input type="text" name="nome" placeholder="Nome do produto" required>
+            <label class="upload-imagem-produto">
 
-            <input type="number" step="0.01" name="preco" placeholder="Preço" required>
+                <input
+                    type="file"
+                    name="imagem"
+                    id="imagemProduto"
+                    accept="image/jpeg,image/png,image/webp"
+                >
 
-            <input type="number" name="estoque" placeholder="Estoque" required>
+                <span class="upload-preview">
 
-            <input type="text" name="codigo_barras" placeholder="Código de barras" required>
+                    <img
+                        id="previewProduto"
+                        alt="Prévia da imagem do produto"
+                    >
 
-            <button type="submit" class="btn">
+                    <span
+                        id="uploadPlaceholder"
+                        class="upload-placeholder"
+                    >
 
+                        <strong>
+                            📷 Adicionar imagem
+                        </strong>
+
+                        <small>
+                            JPG, PNG ou WEBP — até 2 MB
+                        </small>
+
+                    </span>
+
+                </span>
+
+            </label>
+
+            <input
+                type="text"
+                name="nome"
+                placeholder="Nome do produto"
+                maxlength="150"
+                required
+            >
+
+            <input
+                type="number"
+                step="0.01"
+                min="0"
+                name="preco"
+                placeholder="Preço"
+                required
+            >
+
+            <input
+                type="number"
+                min="0"
+                name="estoque"
+                placeholder="Estoque"
+                required
+            >
+
+            <input
+                type="text"
+                name="codigo_barras"
+                placeholder="Código de barras"
+                maxlength="100"
+            >
+
+            <button
+                type="submit"
+                class="btn"
+                id="salvarProduto"
+            >
                 Salvar Produto
-
             </button>
 
         </form>
@@ -149,56 +298,237 @@
 
 </div>
 
+
 <script>
+    const modalProduto =
+        document.getElementById(
+            "modalProduto"
+        );
+
+    const inputImagem =
+        document.getElementById(
+            "imagemProduto"
+        );
+
+    const previewProduto =
+        document.getElementById(
+            "previewProduto"
+        );
+
+    const uploadPlaceholder =
+        document.getElementById(
+            "uploadPlaceholder"
+        );
+
+    const formNovoProduto =
+        document.getElementById(
+            "formNovoProduto"
+        );
+
+    const botaoSalvar =
+        document.getElementById(
+            "salvarProduto"
+        );
+
 
     function abrirModalProduto() {
+        modalProduto.style.display = "flex";
 
-        document.getElementById(
-            "modalProduto"
-        ).style.display = "flex"
+        modalProduto.setAttribute(
+            "aria-hidden",
+            "false"
+        );
 
+        document.body.style.overflow = "hidden";
     }
+
+
+    function limparImagemProduto() {
+        if (inputImagem) {
+            inputImagem.value = "";
+        }
+
+        if (previewProduto) {
+            previewProduto.removeAttribute(
+                "src"
+            );
+
+            previewProduto.style.display =
+                "none";
+        }
+
+        if (uploadPlaceholder) {
+            uploadPlaceholder.style.display =
+                "flex";
+        }
+    }
+
 
     function fecharModalProduto() {
+        modalProduto.style.display = "none";
 
-        document.getElementById(
-            "modalProduto"
-        ).style.display = "none"
+        modalProduto.setAttribute(
+            "aria-hidden",
+            "true"
+        );
 
+        document.body.style.overflow = "";
+
+        limparImagemProduto();
     }
 
-    window.onclick = function (event) {
 
-        const modal =
-            document.getElementById(
-                "modalProduto"
+    function fecharMenusProduto(
+        menuIgnorado = null
+    ) {
+        document
+            .querySelectorAll(
+                ".dropdown-menu"
             )
-
-        if (event.target == modal) {
-
-            modal.style.display = "none"
-
-        }
-
+            .forEach(function (menu) {
+                if (menu !== menuIgnorado) {
+                    menu.style.display = "none";
+                }
+            });
     }
 
-    function toggleMenu(id) {
+
+    function toggleMenu(
+        id,
+        event
+    ) {
+        if (event) {
+            event.stopPropagation();
+        }
 
         const menu =
-            document.getElementById(id)
+            document.getElementById(id);
 
-        if (menu.style.display === "block") {
-
-            menu.style.display = "none"
-
-        } else {
-
-            menu.style.display = "block"
-
+        if (!menu) {
+            return;
         }
 
+        const estaAberto =
+            menu.style.display === "block";
+
+        fecharMenusProduto(menu);
+
+        menu.style.display =
+            estaAberto
+                ? "none"
+                : "block";
     }
 
+
+    if (inputImagem) {
+        inputImagem.addEventListener(
+            "change",
+            function () {
+                const arquivo =
+                    this.files[0];
+
+                if (!arquivo) {
+                    limparImagemProduto();
+                    return;
+                }
+
+                const tiposPermitidos = [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                ];
+
+                if (
+                    !tiposPermitidos.includes(
+                        arquivo.type
+                    )
+                ) {
+                    alert(
+                        "Use uma imagem JPG, PNG ou WEBP."
+                    );
+
+                    limparImagemProduto();
+                    return;
+                }
+
+                if (
+                    arquivo.size
+                    > 2 * 1024 * 1024
+                ) {
+                    alert(
+                        "A imagem deve ter no máximo 2 MB."
+                    );
+
+                    limparImagemProduto();
+                    return;
+                }
+
+                const leitor =
+                    new FileReader();
+
+                leitor.onload =
+                    function (evento) {
+                        previewProduto.src =
+                            evento.target.result;
+
+                        previewProduto.style.display =
+                            "block";
+
+                        uploadPlaceholder.style.display =
+                            "none";
+                    };
+
+                leitor.readAsDataURL(
+                    arquivo
+                );
+            }
+        );
+    }
+
+
+    if (formNovoProduto) {
+        formNovoProduto.addEventListener(
+            "submit",
+            function () {
+                if (!botaoSalvar) {
+                    return;
+                }
+
+                botaoSalvar.disabled = true;
+                botaoSalvar.textContent =
+                    "Salvando...";
+            }
+        );
+    }
+
+
+    window.addEventListener(
+        "click",
+        function (event) {
+            fecharMenusProduto();
+
+            if (
+                event.target
+                === modalProduto
+            ) {
+                fecharModalProduto();
+            }
+        }
+    );
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (
+                event.key === "Escape"
+                && modalProduto.style.display
+                    === "flex"
+            ) {
+                fecharModalProduto();
+            }
+        }
+    );
 </script>
 
 {% endblock %}
