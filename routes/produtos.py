@@ -466,12 +466,12 @@ def registrar_rotas(app):
             cursor.close()
             conn.close()
 
-        # ==========================================
+    # ==========================================
     # IMAGEM OTIMIZADA DO PRODUTO
     # ==========================================
 
     @app.route(
-        "/produto_imagem/<int:id>"
+    "/produto_imagem/<int:id>"
     )
     def produto_imagem(id):
 
@@ -498,7 +498,7 @@ def registrar_rotas(app):
                 FROM produtos
 
                 WHERE id = %s
-                  AND empresa_id = %s
+                AND empresa_id = %s
 
                 LIMIT 1
                 """,
@@ -516,34 +516,25 @@ def registrar_rotas(app):
             ):
                 abort(404)
 
-            imagem_original = produto["imagem"]
+            imagem = produto["imagem"]
 
-            if isinstance(
-                imagem_original,
-                memoryview
-            ):
-                imagem_original = (
-                    imagem_original.tobytes()
-                )
+            if isinstance(imagem, memoryview):
+                imagem = imagem.tobytes()
 
-            miniatura = _converter_para_webp(
-                imagem_original,
-                LARGURA_MINIATURA,
-                ALTURA_MINIATURA,
-                recortar=True,
+            mimetype = (
+                produto.get("imagem_mime")
+                or "image/webp"
             )
 
             identificador = sha256(
-                miniatura
+                imagem
             ).hexdigest()
 
             resposta = send_file(
-                BytesIO(miniatura),
-                mimetype="image/webp",
+                BytesIO(imagem),
+                mimetype=mimetype,
                 conditional=False,
-                download_name=(
-                    f"produto-{id}.webp"
-                ),
+                download_name=f"produto-{id}.webp",
             )
 
             resposta.set_etag(
@@ -554,16 +545,11 @@ def registrar_rotas(app):
             resposta.cache_control.max_age = 604800
             resposta.cache_control.no_cache = False
 
-            resposta.headers[
-                "Vary"
-            ] = "Cookie"
+            resposta.headers["Vary"] = "Cookie"
 
             return resposta.make_conditional(
                 request
             )
-
-        except ValueError:
-            abort(404)
 
         finally:
             cursor.close()

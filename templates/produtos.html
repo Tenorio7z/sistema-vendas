@@ -56,17 +56,17 @@
             {% if produto["possui_imagem"] %}
 
             <img src="{{ url_for(
-                    'produto_imagem',
-                    id=produto['id']
-                ) }}" alt="{{ produto['nome'] }}" loading="lazy">
+        'produto_imagem',
+        id=produto['id']
+    ) }}" alt="{{ produto['nome'] }}" loading="lazy" decoding="async" width="480" height="320">
 
-            {% else %}
+                {% else %}
 
-            <span class="produto-sem-imagem" aria-hidden="true">
-                📦
-            </span>
+                <span class="produto-sem-imagem" aria-hidden="true">
+                    📦
+                </span>
 
-            {% endif %}
+                {% endif %}
 
         </div>
 
