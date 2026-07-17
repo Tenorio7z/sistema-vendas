@@ -387,6 +387,7 @@
     line-height: 1.3;
 
     display: -webkit-box;
+    line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 
@@ -1418,3 +1419,155 @@ body:not(.dark) .modal form select option {
         animation: none;
     }
 }
+
+/* =========================================
+   IMAGENS DOS PRODUTOS NO PDV
+========================================= */
+
+.pdv-layout > .produtos-grid {
+    grid-template-columns:
+        repeat(auto-fill, minmax(165px, 1fr));
+}
+
+.pdv-layout .produto-card {
+    min-height: 255px;
+    padding: 9px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.produto-imagem-box {
+    position: relative;
+
+    width: 100%;
+    height: 115px;
+
+    margin-bottom: 10px;
+
+    overflow: hidden;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.09);
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(49, 139, 255, 0.1),
+            rgba(119, 104, 255, 0.055)
+        ),
+        rgba(7, 17, 32, 0.2);
+}
+
+.produto-imagem {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+    object-position: center;
+
+    transition:
+        transform 0.35s ease,
+        filter 0.35s ease;
+}
+
+.produto-card:hover .produto-imagem {
+    transform: scale(1.055);
+    filter: brightness(1.06);
+}
+
+.produto-sem-imagem {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--venda-texto-secundario);
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(49, 139, 255, 0.13),
+            transparent 70%
+        );
+}
+
+.produto-sem-imagem span {
+    font-size: 2.6rem;
+    line-height: 1;
+
+    opacity: 0.7;
+
+    filter:
+        drop-shadow(
+            0 8px 15px
+            rgba(0, 0, 0, 0.2)
+        );
+}
+
+.pdv-layout .produto-info {
+    flex: 1 1 auto;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.pdv-layout .produto-info h3 {
+    min-height: 34px;
+    margin-bottom: 7px;
+}
+
+.produto-dados {
+    margin-top: auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.pdv-layout .produto-card::after {
+    display: none;
+}
+
+body:not(.dark) .produto-imagem-box {
+    border-color:
+        rgba(44, 77, 120, 0.12);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(49, 139, 255, 0.08),
+            rgba(119, 104, 255, 0.035)
+        ),
+        rgba(235, 242, 251, 0.78);
+}
+
+@media (max-width: 600px) {
+    .pdv-layout .produto-card {
+        min-height: 230px;
+        padding: 8px;
+    }
+
+    .produto-imagem-box {
+        height: 100px;
+        margin-bottom: 8px;
+
+        border-radius: 11px;
+    }
+
+    .produto-sem-imagem span {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .produto-imagem-box {
+        height: 130px;
+    }
+}                                                                         

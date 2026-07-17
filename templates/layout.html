@@ -110,7 +110,7 @@
             </a>
             {% endif %}
 
-            {% if session.get("nivel") != "funcionario" %}
+          
             <a href="/produtos" class="{% if request.path.startswith('/produtos') %}active{% endif %}">
                 <img src="{{ url_for(
                         'static',
@@ -119,7 +119,7 @@
 
                 <span class="link-text">Produtos</span>
             </a>
-            {% endif %}
+            
 
             <a href="/vendas" class="{% if request.path.startswith('/vendas') %}active{% endif %}">
                 <img src="{{ url_for(

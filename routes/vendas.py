@@ -47,12 +47,32 @@ def registrar_rotas(app, socketio):
         # ==========================================
         # BUSCAR PRODUTOS
         # ==========================================
-        cursor.execute("""
-            SELECT *
-            FROM produtos
-            WHERE empresa_id = %s
-        """, (empresa_id,))
+        cursor.execute(
+            """
+            SELECT
+                id,
+                nome,
+                preco,
+                estoque,
+                codigo_barras,
+                empresa_id,
 
+                CASE
+                    WHEN imagem IS NOT NULL
+                    THEN TRUE
+                    ELSE FALSE
+                END AS possui_imagem
+
+            FROM produtos
+
+            WHERE empresa_id = %s
+
+            ORDER BY nome ASC
+            """,
+            (
+                empresa_id,
+            )
+        )
         produtos = cursor.fetchall()
 
         # ==========================================

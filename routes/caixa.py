@@ -469,145 +469,251 @@ def registrar_rotas(app):
 
         )
         
-    @app.route("/cancelar_venda/<int:venda_id>")
+        # ==========================================
+    # CANCELAR VENDA
+    # ==========================================
+
+    @app.route(
+        "/cancelar_venda/<int:venda_id>",
+        methods=["POST"],
+    )
     def cancelar_venda(venda_id):
 
         if not session.get("logado"):
             return redirect("/")
 
-        if session.get("nivel") != "gerente":
-
+        if session.get("nivel") not in (
+            "gerente",
+            "funcionario",
+        ):
             flash(
-                "Apenas gerentes podem cancelar vendas",
-                "erro"
+                (
+                    "Você não possui permissão "
+                    "para cancelar vendas."
+                ),
+                "erro",
             )
 
             return redirect("/caixa")
+
+        empresa_id = session.get(
+            "empresa_id"
+        )
+
+        if not empresa_id:
+            session.clear()
+            return redirect("/")
 
         conn = conectar()
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-        # ==========================
-        # BUSCAR VENDA
-        # ==========================
+        cursor = conn.cursor(
+            cursor_factory=(
+                psycopg2.extras.RealDictCursor
+            )
+        )
 
-        cursor.execute("""
+        try:
+            # A venda é bloqueada durante o cancelamento.
+            # Também verificamos a empresa para impedir
+            # acesso aos registros de outro cliente.
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    produto_id,
+                    quantidade,
+                    valor,
+                    caixa_id,
+                    empresa_id,
 
-        SELECT *
+                    COALESCE(
+                        cancelada,
+                        0
+                    ) AS cancelada
 
-        FROM vendas
+                FROM vendas
 
-        WHERE id = %s
+                WHERE id = %s
+                  AND empresa_id = %s
 
-        """, (
+                LIMIT 1
 
-            venda_id,
-
-        ))
-
-        venda = cursor.fetchone()
-
-        if not venda:
-
-            conn.close()
-
-            flash(
-                "Venda não encontrada",
-                "erro"
+                FOR UPDATE
+                """,
+                (
+                    venda_id,
+                    empresa_id,
+                ),
             )
 
-            return redirect("/caixa")
+            venda = cursor.fetchone()
 
-        # ==========================
-        # DEVOLVER ESTOQUE
-        # ==========================
+            if not venda:
+                raise ValueError(
+                    "Venda não encontrada."
+                )
 
-        cursor.execute("""
+            if venda["cancelada"]:
+                raise ValueError(
+                    "Esta venda já foi cancelada."
+                )
 
-        UPDATE produtos
+            # ======================================
+            # DEVOLVER ESTOQUE
+            # ======================================
 
-        SET estoque = estoque + %s
+            cursor.execute(
+                """
+                UPDATE produtos
 
-        WHERE id = %s
+                SET estoque = estoque + %s
 
-        """, (
+                WHERE id = %s
+                  AND empresa_id = %s
+                """,
+                (
+                    venda["quantidade"],
+                    venda["produto_id"],
+                    empresa_id,
+                ),
+            )
 
-            venda["quantidade"],
-            venda["produto_id"]
+            if cursor.rowcount == 0:
+                raise ValueError(
+                    (
+                        "O produto relacionado à venda "
+                        "não foi encontrado."
+                    )
+                )
 
-        ))
+            # ======================================
+            # ATUALIZAR O CAIXA
+            # ======================================
 
-        # ==========================
-        # DESCONTAR DO CAIXA
-        # ==========================
+            cursor.execute(
+                """
+                UPDATE caixa
 
-        cursor.execute("""
+                SET valor_final = (
+                    COALESCE(
+                        valor_final,
+                        0
+                    ) - %s
+                )
 
-        UPDATE caixa
+                WHERE id = %s
+                  AND empresa_id = %s
+                """,
+                (
+                    venda["valor"],
+                    venda["caixa_id"],
+                    empresa_id,
+                ),
+            )
 
-        SET valor_final = valor_final - %s
+            if cursor.rowcount == 0:
+                raise ValueError(
+                    (
+                        "O caixa relacionado à venda "
+                        "não foi encontrado."
+                    )
+                )
 
-        WHERE id = %s
+            # ======================================
+            # MARCAR A VENDA COMO CANCELADA
+            # ======================================
 
-        """, (
+            cursor.execute(
+                """
+                UPDATE vendas
 
-            venda["valor"],
-            venda["caixa_id"]
+                SET cancelada = 1
 
-        ))
+                WHERE id = %s
+                  AND empresa_id = %s
+                  AND COALESCE(
+                      cancelada,
+                      0
+                  ) = 0
+                """,
+                (
+                    venda_id,
+                    empresa_id,
+                ),
+            )
 
-        # ==========================
-        # MARCAR COMO CANCELADA
-        # ==========================
+            if cursor.rowcount == 0:
+                raise ValueError(
+                    "Esta venda já foi cancelada."
+                )
 
-        cursor.execute("""
+            # ======================================
+            # REGISTRAR MOVIMENTAÇÃO
+            # ======================================
 
-        UPDATE vendas
+            cursor.execute(
+                """
+                INSERT INTO movimentacoes_caixa (
+                    tipo,
+                    descricao,
+                    valor,
+                    empresa_id,
+                    caixa_id,
+                    data
+                )
+                VALUES (
+                    'saida',
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    CURRENT_TIMESTAMP
+                )
+                """,
+                (
+                    (
+                        "Cancelamento da venda "
+                        f"#{venda_id} por "
+                        f"{session.get('usuario', 'usuário')}"
+                    ),
+                    venda["valor"],
+                    empresa_id,
+                    venda["caixa_id"],
+                ),
+            )
 
-        SET cancelada = 1
+            conn.commit()
 
-        WHERE id = %s
+            flash(
+                "Venda cancelada com sucesso.",
+                "sucesso",
+            )
 
-        """, (
+        except ValueError as erro:
+            conn.rollback()
 
-            venda_id,
+            flash(
+                str(erro),
+                "erro",
+            )
 
-        ))
+        except Exception:
+            conn.rollback()
 
-        # ==========================
-        # REGISTRAR MOVIMENTAÇÃO
-        # ==========================
+            app.logger.exception(
+                "Erro ao cancelar venda."
+            )
 
-        cursor.execute("""
+            flash(
+                (
+                    "Não foi possível cancelar "
+                    "a venda."
+                ),
+                "erro",
+            )
 
-        INSERT INTO movimentacoes_caixa(
-
-            tipo,
-            descricao,
-            valor,
-            empresa_id,
-            caixa_id
-
-        )
-
-        VALUES(%s,%s,%s,%s,%s)
-
-        """, (
-
-            "saida",
-            "Cancelamento de venda",
-            venda["valor"],
-            venda["empresa_id"],
-            venda["caixa_id"]
-
-        ))
-
-        conn.commit()
-        conn.close()
-
-        flash(
-            "Venda cancelada com sucesso",
-            "sucesso"
-        )
+        finally:
+            cursor.close()
+            conn.close()
 
         return redirect("/caixa")

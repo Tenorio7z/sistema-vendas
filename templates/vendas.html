@@ -56,19 +56,43 @@
 
         <div class="produto-card">
 
+            <div class="produto-imagem-box">
+
+                {% if produto["possui_imagem"] %}
+
+                <img src="{{ url_for(
+                'produto_imagem',
+                id=produto['id']
+            ) }}" alt="{{ produto['nome'] }}" class="produto-imagem" loading="lazy" decoding="async" width="480"
+                    height="320">
+
+                {% else %}
+
+                <div class="produto-sem-imagem">
+                    <span>📦</span>
+                </div>
+
+                {% endif %}
+
+            </div>
+
             <div class="produto-info">
 
                 <h3>
                     {{ produto["nome"] }}
                 </h3>
 
-                <span class="preco">
-                    R$ {{ produto["preco"] }}
-                </span>
+                <div class="produto-dados">
 
-                <span class="estoque">
-                    Estoque: {{ produto["estoque"] }}
-                </span>
+                    <span class="preco">
+                        R$ {{ produto["preco"] }}
+                    </span>
+
+                    <span class="estoque">
+                        Estoque: {{ produto["estoque"] }}
+                    </span>
+
+                </div>
 
             </div>
 
@@ -355,10 +379,10 @@
 
 <script>
 
-window.open(
-    "/abrir_cupom",
-    "_blank"
-)
+    window.open(
+        "/abrir_cupom",
+        "_blank"
+    )
 
 </script>
 

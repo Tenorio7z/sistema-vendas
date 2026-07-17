@@ -1,76 +1,855 @@
 {% extends "layout.html" %}
 
 {% block css %}
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/perfis.css') }}">
-
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/perfis.css') }}"
+>
 {% endblock %}
 
 {% block content %}
 
-<section class="perfis">
+<section class="perfis equipe-dashboard">
 
-    <div class="page-header">
+    <header class="page-header equipe-header">
 
-        <div>
+        <div class="equipe-header-texto">
+
+            <span class="equipe-eyebrow">
+                GESTÃO DA EQUIPE
+            </span>
 
             <h1>
-                Gerenciar Perfis
+                Dashboard dos funcionários
             </h1>
 
             <p>
-                Funcionários da empresa
+                Acompanhe desempenho, salários,
+                comissões e pagamentos.
             </p>
 
         </div>
 
-        <button class="btn-novo-funcionario" onclick="abrirModalFuncionario()">
-            + Funcionário
-        </button>
+        <div class="equipe-header-acoes">
+
+            <form
+                method="GET"
+                action="/perfis"
+                class="competencia-form"
+            >
+                <label for="competencia">
+                    Competência
+                </label>
+
+                <input
+                    type="month"
+                    id="competencia"
+                    name="competencia"
+                    value="{{ competencia }}"
+                    onchange="this.form.submit()"
+                >
+            </form>
+
+            <a
+                href="/folha/historico"
+                class="btn-historico-folha"
+            >
+                Histórico da folha
+            </a>
+
+            <button
+                type="button"
+                class="btn-novo-funcionario"
+                onclick="abrirModal('modalFuncionario')"
+            >
+                + Funcionário
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- INDICADORES -->
+
+    <section class="equipe-indicadores">
+
+        <article class="indicador-equipe verde">
+
+            <span class="indicador-label">
+                Faturamento da equipe
+            </span>
+
+            <strong>
+                R$
+                {{ "%.2f"|format(
+                    resumo["vendas"]["faturamento_equipe"]|float
+                ) }}
+            </strong>
+
+            <small>
+                {{ resumo["vendas"]["itens_vendidos"] }}
+                itens vendidos
+            </small>
+
+        </article>
+
+        <article class="indicador-equipe azul">
+
+            <span class="indicador-label">
+                Funcionários ativos
+            </span>
+
+            <strong>
+                {{ resumo["funcionarios"]["funcionarios_ativos"] }}
+            </strong>
+
+            <small>
+                {{ resumo["funcionarios"]["total_funcionarios"] }}
+                cadastrados
+            </small>
+
+        </article>
+
+        <article class="indicador-equipe roxo">
+
+            <span class="indicador-label">
+                Comissões geradas
+            </span>
+
+            <strong>
+                R$
+                {{ "%.2f"|format(
+                    resumo["comissoes"]["comissoes_geradas"]|float
+                ) }}
+            </strong>
+
+            <small>
+                Calculadas pelas vendas
+            </small>
+
+        </article>
+
+        <article class="indicador-equipe laranja">
+
+            <span class="indicador-label">
+                Folha pendente
+            </span>
+
+            <strong>
+                R$
+                {{ "%.2f"|format(
+                    resumo["folha"]["total_pendente"]|float
+                ) }}
+            </strong>
+
+            <small>
+                {{ resumo["folha"]["folhas_pendentes"] }}
+                pagamentos pendentes
+            </small>
+
+        </article>
+
+        <article class="indicador-equipe ciano">
+
+            <span class="indicador-label">
+                Total pago
+            </span>
+
+            <strong>
+                R$
+                {{ "%.2f"|format(
+                    resumo["folha"]["total_pago"]|float
+                ) }}
+            </strong>
+
+            <small>
+                {{ resumo["folha"]["folhas_pagas"] }}
+                pagamentos realizados
+            </small>
+
+        </article>
+
+        <article
+            class="
+                indicador-equipe
+                {% if resumo['resultado_operacional']|float >= 0 %}
+                    resultado-positivo
+                {% else %}
+                    resultado-negativo
+                {% endif %}
+            "
+        >
+
+            <span class="indicador-label">
+                Resultado operacional
+            </span>
+
+            <strong>
+                R$
+                {{ "%.2f"|format(
+                    resumo["resultado_operacional"]|float
+                ) }}
+            </strong>
+
+            <small>
+                Faturamento menos pagamentos e despesas
+            </small>
+
+        </article>
+
+    </section>
+
+
+    <!-- LISTA -->
+
+    <div class="equipe-section-header">
+
+        <div>
+
+            <span class="equipe-eyebrow">
+                DESEMPENHO
+            </span>
+
+            <h2>
+                Equipe em
+                {{ periodo_inicio.strftime("%m/%Y") }}
+            </h2>
+
+        </div>
+
+        <span class="equipe-periodo">
+            {{ periodo_inicio.strftime("%d/%m/%Y") }}
+            até
+            {{ periodo_fim.strftime("%d/%m/%Y") }}
+        </span>
 
     </div>
 
-    <div id="modalFuncionario" class="modal-funcionario">
+
+    <div class="funcionarios-grid equipe-grid">
+
+        {% for funcionario in funcionarios %}
+
+        <article class="funcionario-card equipe-card">
+
+            <div class="funcionario-topo">
+
+                <div class="funcionario-identidade">
+
+                    <div class="funcionario-avatar">
+
+                        {% if funcionario["possui_foto"] %}
+
+                        <img
+                            src="{{ url_for(
+                                'foto_funcionario',
+                                id=funcionario['id']
+                            ) }}"
+                            alt="{{ funcionario['usuario'] }}"
+                            loading="lazy"
+                            decoding="async"
+                        >
+
+                        {% else %}
+
+                        <span>
+                            {{ funcionario["usuario"][0]|upper }}
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            {{ funcionario["usuario"] }}
+                        </h3>
+
+                        <span>
+                            {{ funcionario["cargo"] }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                {% if funcionario["status"] == "ativo" %}
+
+                <span class="status-funcionario ativo">
+                    Ativo
+                </span>
+
+                {% else %}
+
+                <span class="status-funcionario bloqueado">
+                    Bloqueado
+                </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="funcionario-resumo-principal">
+
+                <span>
+                    Faturamento no período
+                </span>
+
+                <strong>
+                    R$
+                    {{ "%.2f"|format(
+                        funcionario["faturamento"]|float
+                    ) }}
+                </strong>
+
+                <small>
+                    {{ funcionario["itens_vendidos"] }}
+                    itens em
+                    {{ funcionario["registros_venda"] }}
+                    registros
+                </small>
+
+            </div>
+
+
+            <div class="funcionario-metricas">
+
+                <div>
+                    <span>Salário-base</span>
+
+                    <strong>
+                        R$
+                        {{ "%.2f"|format(
+                            funcionario["salario_base"]|float
+                        ) }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Comissão</span>
+
+                    <strong>
+                        {{ funcionario["percentual_comissao"] }}%
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Comissão gerada</span>
+
+                    <strong>
+                        R$
+                        {{ "%.2f"|format(
+                            funcionario["comissao_gerada"]|float
+                        ) }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Dia do pagamento</span>
+
+                    <strong>
+                        Dia {{ funcionario["dia_pagamento"] }}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="folha-status-box">
+
+                {% if funcionario["folha_status"] == "pago" %}
+
+                <div class="folha-status pago">
+
+                    <span>Folha paga</span>
+
+                    <strong>
+                        R$
+                        {{ "%.2f"|format(
+                            funcionario["folha_total"]|float
+                        ) }}
+                    </strong>
+
+                </div>
+
+                {% elif funcionario["folha_status"] == "pendente" %}
+
+                <div class="folha-status pendente">
+
+                    <span>Pagamento pendente</span>
+
+                    <strong>
+                        R$
+                        {{ "%.2f"|format(
+                            funcionario["folha_total"]|float
+                        ) }}
+                    </strong>
+
+                </div>
+
+                {% else %}
+
+                <div class="folha-status nao-gerada">
+
+                    <span>
+                        Folha ainda não gerada
+                    </span>
+
+                    <strong>
+                        {{ competencia }}
+                    </strong>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="funcionario-acoes">
+
+                <a
+                    href="/funcionario/{{ funcionario['id'] }}"
+                    class="btn-equipe secundario"
+                >
+                    Dashboard
+                </a>
+
+                <button
+                    type="button"
+                    class="btn-equipe secundario"
+                    onclick="abrirConfiguracao(this)"
+                    data-id="{{ funcionario['id'] }}"
+                    data-usuario="{{ funcionario['usuario'] }}"
+                    data-cargo="{{ funcionario['cargo'] }}"
+                    data-salario="{{ funcionario['salario_base'] }}"
+                    data-dia="{{ funcionario['dia_pagamento'] }}"
+                    data-admissao="{{ funcionario['data_admissao'] or '' }}"
+                >
+                    Configurar
+                </button>
+
+                {% if funcionario["folha_status"] != "pago" %}
+
+                <button
+                    type="button"
+                    class="btn-equipe primario"
+                    onclick="abrirGerarFolha(this)"
+                    data-id="{{ funcionario['id'] }}"
+                    data-usuario="{{ funcionario['usuario'] }}"
+                    data-salario="{{ funcionario['salario_base'] }}"
+                    data-comissao="{{ funcionario['comissao_gerada'] }}"
+                >
+                    Gerar folha
+                </button>
+
+                {% endif %}
+
+                {% if funcionario["folha_status"] == "pendente" %}
+
+                <button
+                    type="button"
+                    class="btn-equipe pagar"
+                    onclick="abrirPagamento(this)"
+                    data-folha="{{ funcionario['folha_id'] }}"
+                    data-usuario="{{ funcionario['usuario'] }}"
+                    data-total="{{ funcionario['folha_total'] }}"
+                >
+                    Pagar
+                </button>
+
+                {% endif %}
+
+            </div>
+
+
+            <details class="funcionario-mais-acoes">
+
+                <summary>
+                    Mais opções
+                </summary>
+
+                <div>
+
+                    {% if funcionario["status"] == "ativo" %}
+
+                    <form
+                        method="POST"
+                        action="/bloquear_funcionario/{{ funcionario['id'] }}"
+                    >
+                        <button type="submit">
+                            Bloquear acesso
+                        </button>
+                    </form>
+
+                    {% else %}
+
+                    <form
+                        method="POST"
+                        action="/liberar_funcionario/{{ funcionario['id'] }}"
+                    >
+                        <button type="submit">
+                            Liberar acesso
+                        </button>
+                    </form>
+
+                    {% endif %}
+
+                    <form
+                        method="POST"
+                        action="/excluir_funcionario/{{ funcionario['id'] }}"
+                        onsubmit="
+                            return confirm(
+                                'Deseja realmente excluir este funcionário?'
+                            )
+                        "
+                    >
+                        <button
+                            type="submit"
+                            class="acao-excluir"
+                        >
+                            Excluir funcionário
+                        </button>
+                    </form>
+
+                </div>
+
+            </details>
+
+        </article>
+
+        {% else %}
+
+        <div class="equipe-vazia">
+
+            <span>👥</span>
+
+            <h2>
+                Nenhum funcionário cadastrado
+            </h2>
+
+            <p>
+                Cadastre sua equipe para acompanhar
+                vendas, salários e comissões.
+            </p>
+
+            <button
+                type="button"
+                class="btn-novo-funcionario"
+                onclick="abrirModal('modalFuncionario')"
+            >
+                + Cadastrar funcionário
+            </button>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- HISTÓRICO -->
+
+    {% if historico_folha %}
+
+    <section class="historico-recente">
+
+        <div class="equipe-section-header">
+
+            <div>
+
+                <span class="equipe-eyebrow">
+                    PAGAMENTOS
+                </span>
+
+                <h2>
+                    Histórico recente
+                </h2>
+
+            </div>
+
+            <a href="/folha/historico">
+                Ver histórico completo
+            </a>
+
+        </div>
+
+        <div class="tabela-equipe-wrapper">
+
+            <table class="tabela-equipe">
+
+                <thead>
+                    <tr>
+                        <th>Funcionário</th>
+                        <th>Competência</th>
+                        <th>Salário</th>
+                        <th>Comissão</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for pagamento in historico_folha %}
+
+                    <tr>
+
+                        <td>
+                            <strong>
+                                {{ pagamento["usuario"] }}
+                            </strong>
+
+                            <small>
+                                {{ pagamento["cargo"] }}
+                            </small>
+                        </td>
+
+                        <td>
+                            {{ pagamento["competencia"].strftime("%m/%Y") }}
+                        </td>
+
+                        <td>
+                            R$
+                            {{ "%.2f"|format(
+                                pagamento["salario_base"]|float
+                            ) }}
+                        </td>
+
+                        <td>
+                            R$
+                            {{ "%.2f"|format(
+                                pagamento["valor_comissao"]|float
+                            ) }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                R$
+                                {{ "%.2f"|format(
+                                    pagamento["valor_total"]|float
+                                ) }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            <span
+                                class="
+                                    tabela-status
+                                    {{ pagamento['status'] }}
+                                "
+                            >
+                                {{ pagamento["status"]|upper }}
+                            </span>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- MODAL: NOVO FUNCIONÁRIO -->
+
+    <div
+        id="modalFuncionario"
+        class="modal-funcionario equipe-modal"
+    >
 
         <div class="modal-funcionario-content">
 
             <div class="modal-header">
 
-                <h2>
-                    Novo Funcionário
-                </h2>
+                <div>
+                    <span class="equipe-eyebrow">
+                        NOVO MEMBRO
+                    </span>
 
-                <span class="fechar-modal" onclick="fecharModalFuncionario()">
+                    <h2>
+                        Cadastrar funcionário
+                    </h2>
+                </div>
+
+                <button
+                    type="button"
+                    class="fechar-modal"
+                    onclick="fecharModal('modalFuncionario')"
+                >
                     ✕
-                </span>
+                </button>
 
             </div>
 
-            <form method="POST">
+            <form
+                method="POST"
+                action="/perfis"
+                enctype="multipart/form-data"
+            >
 
-                <input type="text" name="usuario" placeholder="Usuário" required>
+                <input
+                    type="hidden"
+                    name="competencia"
+                    value="{{ competencia }}"
+                >
 
-                <input type="password" name="senha" placeholder="Senha" required>
+                <div class="foto-funcionario-upload">
 
-                <select name="comissao" required>
+                    <label
+                        for="fotoFuncionario"
+                        class="foto-upload-preview"
+                    >
+                        <img
+                            id="fotoPreviewImagem"
+                            alt="Prévia da foto"
+                        >
 
-                    <option value="5">5%</option>
+                        <span id="fotoPreviewIcone">
+                            📷
+                        </span>
 
-                    <option value="10">10%</option>
+                        <small>
+                            Escolher foto
+                        </small>
+                    </label>
 
-                    <option value="15">15%</option>
+                    <div class="foto-upload-texto">
 
-                    <option value="20">20%</option>
+                        <strong>
+                            Foto do funcionário
+                        </strong>
 
-                    <option value="25">25%</option>
+                        <p>
+                            JPG, PNG ou WEBP de até 5 MB.
+                            A imagem será otimizada.
+                        </p>
 
-                </select>
+                        <input
+                            type="file"
+                            id="fotoFuncionario"
+                            name="foto"
+                            accept="image/jpeg,image/png,image/webp"
+                        >
 
+                    </div>
 
-                <button type="submit">
+                </div>
 
-                    Cadastrar Funcionário
+                <div class="modal-form-grid">
 
+                    <label>
+                        <span>Usuário</span>
+
+                        <input
+                            type="text"
+                            name="usuario"
+                            placeholder="Nome de acesso"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        <span>Senha</span>
+
+                        <input
+                            type="password"
+                            name="senha"
+                            placeholder="Mínimo de 6 caracteres"
+                            minlength="6"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        <span>Cargo</span>
+
+                        <input
+                            type="text"
+                            name="cargo"
+                            value="Vendedor"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        <span>Comissão</span>
+
+                        <div class="input-sufixo">
+
+                            <input
+                                type="number"
+                                name="comissao"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                value="5"
+                                required
+                            >
+
+                            <span>%</span>
+
+                        </div>
+                    </label>
+
+                    <label>
+                        <span>Salário-base</span>
+
+                        <div class="input-prefixo">
+
+                            <span>R$</span>
+
+                            <input
+                                type="number"
+                                name="salario_base"
+                                min="0"
+                                step="0.01"
+                                value="0"
+                                required
+                            >
+
+                        </div>
+                    </label>
+
+                    <label>
+                        <span>Dia do pagamento</span>
+
+                        <input
+                            type="number"
+                            name="dia_pagamento"
+                            min="1"
+                            max="31"
+                            value="5"
+                            required
+                        >
+                    </label>
+
+                    <label class="campo-largo">
+                        <span>Data de admissão</span>
+
+                        <input
+                            type="date"
+                            name="data_admissao"
+                        >
+                    </label>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn-modal-principal"
+                >
+                    Cadastrar funcionário
                 </button>
 
             </form>
@@ -79,105 +858,360 @@
 
     </div>
 
-    <div class="funcionarios-grid">
 
-        {% for funcionario in funcionarios %}
+    <!-- MODAL: CONFIGURAÇÃO -->
 
-        <div class="funcionario-card">
-
-            <div class="funcionario-topo">
-
-                <div data-inicial="{{ funcionario['usuario'][0]|upper }}">
-
-                    <h3>
-                        {{ funcionario["usuario"] }}
-                    </h3>
-
-                    <span>
-                        Funcionário
-                    </span>
-
-                </div>
-
-                <div class="lado-direito-funcionario">
-
-                    {% if funcionario["status"] == "ativo" %}
-
-                    <span class="ativo">
-                        Ativo
-                    </span>
-
-                    {% else %}
-
-                    <span class="bloqueado">
-                        Bloqueado
-                    </span>
-
-                    {% endif %}
-
-                    <button class="btn-opcoes" data-id="{{ funcionario['id'] }}"
-                        data-usuario="{{ funcionario['usuario'] }}" data-status="{{ funcionario['status'] }}"
-                        data-comissao="{{ funcionario['comissao'] }}" data-total="{{ funcionario['total_vendido'] }}"
-                        data-valorcomissao="{{ funcionario['valor_comissao'] }}"
-                        data-vendas="{{ funcionario['total_vendas'] }}"
-                        data-ultima="{{ funcionario['ultima_venda'] or 'Nenhuma venda' }}"
-                        onclick="abrirDetalhesFuncionario(this)">
-                        ⋮
-                    </button>
-
-                </div>
-
-            </div>
-
-            <div class="estatisticas-funcionario">
-
-                <div>
-
-                    <small>Total vendido</small>
-
-                    <strong>
-                        R$ {{ "%.2f"|format(funcionario["total_vendido"]) }}
-                    </strong>
-
-                </div>
-
-                <div>
-
-                    <small>Comissão</small>
-
-                    <strong>
-                        {{ funcionario["comissao"] }}%
-                    </strong>
-
-                </div>
-
-                <div>
-
-                    <small>Valor comissão</small>
-
-                    <strong>
-                        R$ {{ "%.2f"|format(funcionario["valor_comissao"]) }}
-                    </strong>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        {% endfor %}
-
-    </div>
-
-    <div id="modalDetalhes" class="modal-funcionario">
+    <div
+        id="modalConfiguracao"
+        class="modal-funcionario equipe-modal"
+    >
 
         <div class="modal-funcionario-content">
 
-            <span class="fechar-modal" onclick="fecharDetalhes()">
-                ✕
-            </span>
+            <div class="modal-header">
 
-            <div id="conteudoDetalhes"></div>
+                <div>
+                    <span class="equipe-eyebrow">
+                        CONFIGURAÇÃO
+                    </span>
+
+                    <h2 id="configuracaoTitulo">
+                        Funcionário
+                    </h2>
+                </div>
+
+                <button
+                    type="button"
+                    class="fechar-modal"
+                    onclick="fecharModal('modalConfiguracao')"
+                >
+                    ✕
+                </button>
+
+            </div>
+
+            <form
+                method="POST"
+                id="formConfiguracao"
+            >
+
+                <input
+                    type="hidden"
+                    name="competencia"
+                    value="{{ competencia }}"
+                >
+
+                <div class="modal-form-grid">
+
+                    <label class="campo-largo">
+                        <span>Cargo</span>
+
+                        <input
+                            type="text"
+                            name="cargo"
+                            id="configCargo"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        <span>Salário-base</span>
+
+                        <div class="input-prefixo">
+
+                            <span>R$</span>
+
+                            <input
+                                type="number"
+                                name="salario_base"
+                                id="configSalario"
+                                min="0"
+                                step="0.01"
+                                required
+                            >
+
+                        </div>
+                    </label>
+
+                    <label>
+                        <span>Dia do pagamento</span>
+
+                        <input
+                            type="number"
+                            name="dia_pagamento"
+                            id="configDia"
+                            min="1"
+                            max="31"
+                            required
+                        >
+                    </label>
+
+                    <label class="campo-largo">
+                        <span>Data de admissão</span>
+
+                        <input
+                            type="date"
+                            name="data_admissao"
+                            id="configAdmissao"
+                        >
+                    </label>
+
+                    <label class="campo-largo">
+                        <span>Observações</span>
+
+                        <textarea
+                            name="observacoes"
+                            rows="3"
+                        ></textarea>
+                    </label>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn-modal-principal"
+                >
+                    Salvar configuração
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- MODAL: GERAR FOLHA -->
+
+    <div
+        id="modalGerarFolha"
+        class="modal-funcionario equipe-modal"
+    >
+
+        <div class="modal-funcionario-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <span class="equipe-eyebrow">
+                        FOLHA DE PAGAMENTO
+                    </span>
+
+                    <h2 id="folhaTitulo">
+                        Gerar folha
+                    </h2>
+                </div>
+
+                <button
+                    type="button"
+                    class="fechar-modal"
+                    onclick="fecharModal('modalGerarFolha')"
+                >
+                    ✕
+                </button>
+
+            </div>
+
+            <div class="folha-previa">
+
+                <div>
+                    <span>Salário-base</span>
+
+                    <strong id="folhaSalario">
+                        R$ 0,00
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Comissão gerada</span>
+
+                    <strong id="folhaComissao">
+                        R$ 0,00
+                    </strong>
+                </div>
+
+            </div>
+
+            <form
+                method="POST"
+                id="formGerarFolha"
+            >
+
+                <input
+                    type="hidden"
+                    name="competencia"
+                    value="{{ competencia }}"
+                >
+
+                <div class="modal-form-grid">
+
+                    <label>
+                        <span>Bônus</span>
+
+                        <div class="input-prefixo">
+
+                            <span>R$</span>
+
+                            <input
+                                type="number"
+                                name="bonus"
+                                min="0"
+                                step="0.01"
+                                value="0"
+                            >
+
+                        </div>
+                    </label>
+
+                    <label>
+                        <span>Descontos</span>
+
+                        <div class="input-prefixo">
+
+                            <span>R$</span>
+
+                            <input
+                                type="number"
+                                name="descontos"
+                                min="0"
+                                step="0.01"
+                                value="0"
+                            >
+
+                        </div>
+                    </label>
+
+                    <label class="campo-largo">
+                        <span>Observações</span>
+
+                        <textarea
+                            name="observacoes"
+                            rows="3"
+                        ></textarea>
+                    </label>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn-modal-principal"
+                >
+                    Gerar folha da competência
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- MODAL: PAGAMENTO -->
+
+    <div
+        id="modalPagamento"
+        class="modal-funcionario equipe-modal"
+    >
+
+        <div class="modal-funcionario-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <span class="equipe-eyebrow">
+                        PAGAMENTO
+                    </span>
+
+                    <h2 id="pagamentoTitulo">
+                        Registrar pagamento
+                    </h2>
+                </div>
+
+                <button
+                    type="button"
+                    class="fechar-modal"
+                    onclick="fecharModal('modalPagamento')"
+                >
+                    ✕
+                </button>
+
+            </div>
+
+            <div class="pagamento-total-box">
+
+                <span>Total da folha</span>
+
+                <strong id="pagamentoTotal">
+                    R$ 0,00
+                </strong>
+
+            </div>
+
+            <form
+                method="POST"
+                id="formPagamento"
+            >
+
+                <input
+                    type="hidden"
+                    name="competencia"
+                    value="{{ competencia }}"
+                >
+
+                <label class="campo-form-modal">
+                    <span>Forma de pagamento</span>
+
+                    <select
+                        name="forma_pagamento"
+                        required
+                    >
+                        <option value="pix">PIX</option>
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="transferencia">Transferência</option>
+                        <option value="cartao">Cartão</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </label>
+
+                <label class="checkbox-caixa">
+
+                    <input
+                        type="checkbox"
+                        name="registrar_no_caixa"
+                        value="1"
+                    >
+
+                    <span></span>
+
+                    <div>
+                        <strong>
+                            Registrar saída no caixa
+                        </strong>
+
+                        <small>
+                            Exige um caixa aberto.
+                        </small>
+                    </div>
+
+                </label>
+
+                <label class="campo-form-modal">
+                    <span>Observações</span>
+
+                    <textarea
+                        name="observacoes"
+                        rows="3"
+                    ></textarea>
+                </label>
+
+                <button
+                    type="submit"
+                    class="btn-modal-principal pagamento"
+                >
+                    Confirmar pagamento
+                </button>
+
+            </form>
 
         </div>
 
@@ -185,201 +1219,253 @@
 
 </section>
 
+
 <script>
+    function moeda(valor) {
+        return Number(
+            valor || 0
+        ).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+    }
 
-    async function abrirDetalhesFuncionario(botao) {
 
-        let usuario = botao.dataset.usuario
-        let status = botao.dataset.status
-        let comissao = botao.dataset.comissao
-        let totalVendido = botao.dataset.total
-        let valorComissao = botao.dataset.valorcomissao
-        let totalVendas = botao.dataset.vendas
-        let ultimaVenda = botao.dataset.ultima
-        let id = botao.dataset.id
+    function abrirModal(id) {
+        const modal =
+            document.getElementById(id);
 
-        let resposta =
-            await fetch(
-                `/historico_funcionario/${id}`
-            )
-
-        let vendas =
-            await resposta.json()
-
-        let historico = ""
-
-        if (vendas.length === 0) {
-
-            historico = `
-
-            <p>
-                Nenhuma venda encontrada.
-            </p>
-
-        `
-
-        } else {
-
-            vendas.forEach(venda => {
-
-                historico += `
-
-                <div class="item-historico">
-
-                    <strong>
-                        ${venda.produto}
-                    </strong>
-
-                    <p>
-                        Quantidade: ${venda.quantidade}
-                    </p>
-
-                    <p>
-                        Valor: R$ ${parseFloat(venda.valor).toFixed(2)}
-                    </p>
-
-                    <p>
-                        Pagamento: ${venda.pagamento}
-                    </p>
-
-                    <p>
-                        ${venda.data}
-                    </p>
-
-                </div>
-
-            `
-
-            })
-
+        if (!modal) {
+            return;
         }
 
-        document.getElementById(
-            "conteudoDetalhes"
-        ).innerHTML = `
-
-        <h2>${usuario}</h2>
-
-        <p>
-            <b>Status:</b>
-            ${status}
-        </p>
-
-        <p>
-            <b>Total vendido:</b>
-            R$ ${parseFloat(totalVendido).toFixed(2)}
-        </p>
-
-        <p>
-            <b>Comissão:</b>
-            ${comissao}%
-        </p>
-
-        <p>
-            <b>Valor comissão:</b>
-            R$ ${parseFloat(valorComissao).toFixed(2)}
-        </p>
-
-        <p>
-            <b>Quantidade de vendas:</b>
-            ${totalVendas}
-        </p>
-
-        <p>
-            <b>Última venda:</b>
-            ${ultimaVenda}
-        </p>
-
- 
-
-        <div class="acoes-modal">
-
-
-            <a
-                class="btn-dashboard"
-                href="/dashboard_funcionario/${id}">
-                Dashboard
-            </a>
-
-            <a
-                class="btn-bloquear"
-                href="/bloquear_funcionario/${id}">
-                Bloquear
-            </a>
-
-            <a
-                class="btn-liberar"
-                href="/liberar_funcionario/${id}">
-                Liberar
-            </a>
-
-            <a
-                class="btn-excluir"
-                href="/excluir_funcionario/${id}">
-                Excluir
-            </a>
-
-        </div>
-
-    `
-
-        document.getElementById(
-            "modalDetalhes"
-        ).style.display = "flex"
-
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
     }
 
-    function fecharDetalhes() {
 
-        document.getElementById(
-            "modalDetalhes"
-        ).style.display = "none"
+    function fecharModal(id) {
+        const modal =
+            document.getElementById(id);
 
-    }
-
-    function abrirModalFuncionario() {
-
-        document.getElementById(
-            "modalFuncionario"
-        ).style.display = "flex"
-
-    }
-
-    function fecharModalFuncionario() {
-
-        document.getElementById(
-            "modalFuncionario"
-        ).style.display = "none"
-
-    }
-
-    window.onclick = function (event) {
-
-        const modalFuncionario =
-            document.getElementById(
-                "modalFuncionario"
-            )
-
-        const modalDetalhes =
-            document.getElementById(
-                "modalDetalhes"
-            )
-
-        if (event.target === modalFuncionario) {
-
-            modalFuncionario.style.display = "none"
-
+        if (!modal) {
+            return;
         }
 
-        if (event.target === modalDetalhes) {
-
-            modalDetalhes.style.display = "none"
-
-        }
-
+        modal.style.display = "none";
+        document.body.style.overflow = "";
     }
 
+
+    function abrirConfiguracao(botao) {
+        const id = botao.dataset.id;
+
+        document.getElementById(
+            "configuracaoTitulo"
+        ).textContent =
+            botao.dataset.usuario;
+
+        document.getElementById(
+            "configCargo"
+        ).value =
+            botao.dataset.cargo || "";
+
+        document.getElementById(
+            "configSalario"
+        ).value =
+            botao.dataset.salario || 0;
+
+        document.getElementById(
+            "configDia"
+        ).value =
+            botao.dataset.dia || 5;
+
+        document.getElementById(
+            "configAdmissao"
+        ).value =
+            botao.dataset.admissao || "";
+
+        document.getElementById(
+            "formConfiguracao"
+        ).action =
+            `/funcionario/configurar/${id}`;
+
+        abrirModal(
+            "modalConfiguracao"
+        );
+    }
+
+
+    function abrirGerarFolha(botao) {
+        const id = botao.dataset.id;
+
+        document.getElementById(
+            "folhaTitulo"
+        ).textContent =
+            `Folha de ${botao.dataset.usuario}`;
+
+        document.getElementById(
+            "folhaSalario"
+        ).textContent =
+            moeda(botao.dataset.salario);
+
+        document.getElementById(
+            "folhaComissao"
+        ).textContent =
+            moeda(botao.dataset.comissao);
+
+        document.getElementById(
+            "formGerarFolha"
+        ).action =
+            `/folha/gerar/${id}`;
+
+        abrirModal(
+            "modalGerarFolha"
+        );
+    }
+
+
+    function abrirPagamento(botao) {
+        const folhaId =
+            botao.dataset.folha;
+
+        document.getElementById(
+            "pagamentoTitulo"
+        ).textContent =
+            `Pagar ${botao.dataset.usuario}`;
+
+        document.getElementById(
+            "pagamentoTotal"
+        ).textContent =
+            moeda(botao.dataset.total);
+
+        document.getElementById(
+            "formPagamento"
+        ).action =
+            `/folha/pagar/${folhaId}`;
+
+        abrirModal(
+            "modalPagamento"
+        );
+    }
+
+
+    const campoFoto =
+        document.getElementById(
+            "fotoFuncionario"
+        );
+
+    if (campoFoto) {
+        campoFoto.addEventListener(
+            "change",
+            function () {
+
+                const arquivo =
+                    campoFoto.files[0];
+
+                const imagem =
+                    document.getElementById(
+                        "fotoPreviewImagem"
+                    );
+
+                const icone =
+                    document.getElementById(
+                        "fotoPreviewIcone"
+                    );
+
+                if (!arquivo) {
+                    imagem.removeAttribute("src");
+                    imagem.style.display = "none";
+                    icone.style.display = "block";
+                    return;
+                }
+
+                if (
+                    !arquivo.type.startsWith(
+                        "image/"
+                    )
+                ) {
+                    campoFoto.value = "";
+
+                    alert(
+                        "Selecione uma imagem válida."
+                    );
+
+                    return;
+                }
+
+                const urlTemporaria =
+                    URL.createObjectURL(
+                        arquivo
+                    );
+
+                imagem.src = urlTemporaria;
+                imagem.style.display = "block";
+                icone.style.display = "none";
+
+                imagem.onload = function () {
+                    URL.revokeObjectURL(
+                        urlTemporaria
+                    );
+                };
+
+            }
+        );
+    }
+
+
+    document
+        .querySelectorAll(
+            ".equipe-modal"
+        )
+        .forEach(function (modal) {
+
+            modal.addEventListener(
+                "click",
+                function (event) {
+
+                    if (event.target === modal) {
+                        fecharModal(
+                            modal.id
+                        );
+                    }
+
+                }
+            );
+
+        });
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            document
+                .querySelectorAll(
+                    ".equipe-modal"
+                )
+                .forEach(function (modal) {
+
+                    if (
+                        modal.style.display
+                        === "flex"
+                    ) {
+                        fecharModal(
+                            modal.id
+                        );
+                    }
+
+                });
+
+        }
+    );
 </script>
-
 
 {% endblock %}

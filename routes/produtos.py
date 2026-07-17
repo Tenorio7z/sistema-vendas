@@ -1,6 +1,13 @@
+from hashlib import sha256
 from io import BytesIO
 
 import psycopg2
+
+from PIL import (
+    Image,
+    ImageOps,
+    UnidentifiedImageError,
+)
 
 from flask import (
     abort,
@@ -24,14 +31,90 @@ TIPOS_IMAGEM_PERMITIDOS = {
     "image/webp",
 }
 
-TAMANHO_MAXIMO_IMAGEM = (
-    2 * 1024 * 1024
-)
+TAMANHO_MAXIMO_IMAGEM = 5 * 1024 * 1024
+LARGURA_MAXIMA_IMAGEM = 1200
+ALTURA_MAXIMA_IMAGEM = 1200
+LARGURA_MINIATURA = 480
+ALTURA_MINIATURA = 320
 
 
-def _validar_imagem(
-    arquivo,
+def _converter_para_webp(
+    dados_imagem,
+    largura_maxima,
+    altura_maxima,
+    recortar=False,
 ):
+    try:
+        with Image.open(
+            BytesIO(dados_imagem)
+        ) as imagem:
+
+            imagem = ImageOps.exif_transpose(
+                imagem
+            )
+
+            if imagem.mode in (
+                "RGBA",
+                "LA",
+            ):
+                fundo = Image.new(
+                    "RGBA",
+                    imagem.size,
+                    (255, 255, 255, 0),
+                )
+
+                fundo.alpha_composite(
+                    imagem.convert("RGBA")
+                )
+
+                imagem = fundo
+
+            elif imagem.mode != "RGB":
+                imagem = imagem.convert("RGB")
+
+            if recortar:
+                imagem = ImageOps.fit(
+                    imagem,
+                    (
+                        largura_maxima,
+                        altura_maxima,
+                    ),
+                    method=Image.Resampling.LANCZOS,
+                    centering=(0.5, 0.5),
+                )
+
+            else:
+                imagem.thumbnail(
+                    (
+                        largura_maxima,
+                        altura_maxima,
+                    ),
+                    Image.Resampling.LANCZOS,
+                )
+
+            saida = BytesIO()
+
+            imagem.save(
+                saida,
+                format="WEBP",
+                quality=80,
+                method=6,
+                optimize=True,
+            )
+
+            return saida.getvalue()
+
+    except (
+        UnidentifiedImageError,
+        OSError,
+        ValueError,
+    ) as erro:
+        raise ValueError(
+            "O arquivo enviado não é uma imagem válida."
+        ) from erro
+
+
+def _validar_imagem(arquivo):
     if (
         not arquivo
         or not arquivo.filename
@@ -47,51 +130,34 @@ def _validar_imagem(
             "Use uma imagem JPG, PNG ou WEBP."
         )
 
-    imagem = arquivo.read(
+    imagem_original = arquivo.read(
         TAMANHO_MAXIMO_IMAGEM + 1
     )
 
-    if not imagem:
+    if not imagem_original:
         raise ValueError(
             "O arquivo de imagem está vazio."
         )
 
-    if len(imagem) > TAMANHO_MAXIMO_IMAGEM:
-        raise ValueError(
-            "A imagem deve ter no máximo 2 MB."
-        )
-
-    # Validação básica da assinatura do arquivo.
-    assinaturas_validas = {
-        "image/jpeg": (
-            imagem.startswith(b"\xff\xd8\xff")
-        ),
-
-        "image/png": (
-            imagem.startswith(
-                b"\x89PNG\r\n\x1a\n"
-            )
-        ),
-
-        "image/webp": (
-            len(imagem) >= 12
-            and imagem[:4] == b"RIFF"
-            and imagem[8:12] == b"WEBP"
-        ),
-    }
-
-    if not assinaturas_validas.get(
-        mimetype,
-        False
+    if (
+        len(imagem_original)
+        > TAMANHO_MAXIMO_IMAGEM
     ):
         raise ValueError(
-            (
-                "O conteúdo do arquivo não corresponde "
-                "a uma imagem válida."
-            )
+            "A imagem original deve ter no máximo 5 MB."
         )
 
-    return imagem, mimetype
+    imagem_otimizada = _converter_para_webp(
+        imagem_original,
+        LARGURA_MAXIMA_IMAGEM,
+        ALTURA_MAXIMA_IMAGEM,
+        recortar=False,
+    )
+
+    return (
+        imagem_otimizada,
+        "image/webp",
+    )
 
 
 def registrar_rotas(app):
@@ -126,19 +192,7 @@ def registrar_rotas(app):
         try:
             if request.method == "POST":
 
-                if (
-                    session.get("nivel")
-                    == "funcionario"
-                ):
-                    flash(
-                        (
-                            "Você não possui permissão "
-                            "para cadastrar produtos."
-                        ),
-                        "erro"
-                    )
-
-                    return redirect("/produtos")
+                
 
 
                 # ==========================================
@@ -412,8 +466,8 @@ def registrar_rotas(app):
             cursor.close()
             conn.close()
 
-    # ==========================================
-    # IMAGEM DO PRODUTO
+        # ==========================================
+    # IMAGEM OTIMIZADA DO PRODUTO
     # ==========================================
 
     @app.route(
@@ -462,23 +516,54 @@ def registrar_rotas(app):
             ):
                 abort(404)
 
-            imagem = produto["imagem"]
+            imagem_original = produto["imagem"]
 
             if isinstance(
-                imagem,
+                imagem_original,
                 memoryview
             ):
-                imagem = imagem.tobytes()
+                imagem_original = (
+                    imagem_original.tobytes()
+                )
 
-            return send_file(
-                BytesIO(imagem),
-                mimetype=(
-                    produto.get("imagem_mime")
-                    or "image/jpeg"
-                ),
-                max_age=86400,
-                conditional=True,
+            miniatura = _converter_para_webp(
+                imagem_original,
+                LARGURA_MINIATURA,
+                ALTURA_MINIATURA,
+                recortar=True,
             )
+
+            identificador = sha256(
+                miniatura
+            ).hexdigest()
+
+            resposta = send_file(
+                BytesIO(miniatura),
+                mimetype="image/webp",
+                conditional=False,
+                download_name=(
+                    f"produto-{id}.webp"
+                ),
+            )
+
+            resposta.set_etag(
+                identificador
+            )
+
+            resposta.cache_control.private = True
+            resposta.cache_control.max_age = 604800
+            resposta.cache_control.no_cache = False
+
+            resposta.headers[
+                "Vary"
+            ] = "Cookie"
+
+            return resposta.make_conditional(
+                request
+            )
+
+        except ValueError:
+            abort(404)
 
         finally:
             cursor.close()
@@ -566,16 +651,7 @@ def registrar_rotas(app):
         if not session.get("logado"):
             return redirect("/")
 
-        if (
-            session.get("nivel")
-            == "funcionario"
-        ):
-            flash(
-                "Você não possui permissão.",
-                "erro"
-            )
-
-            return redirect("/produtos")
+      
 
         empresa_id = session.get(
             "empresa_id"

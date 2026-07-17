@@ -197,16 +197,14 @@
 
                 R$ {{ venda["valor"] }}
 
-                {% if session["nivel"] == "gerente" %}
-
                 <br>
 
-                <a href="/cancelar_venda/{{ venda['id'] }}" onclick="return confirm('Cancelar esta venda?')"
-                    style="color:red;text-decoration:none;">
-                    ❌ Cancelar
-                </a>
-
-                {% endif %}
+                <form method="POST" action="/cancelar_venda/{{ venda['id'] }}" class="form-cancelar-venda"
+                    onsubmit="return confirm('Deseja realmente cancelar esta venda?');">
+                    <button type="submit" class="btn-cancelar-venda">
+                        ❌ Cancelar
+                    </button>
+                </form>
 
             </div>
 
