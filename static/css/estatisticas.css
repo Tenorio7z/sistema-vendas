@@ -1569,3 +1569,42 @@ body:not(.dark) .filtro-atalhos {
     }
 }
 
+/* CARD DE DESCONTOS */
+
+.indicador-card.desconto-comercial::before {
+    background: #ffad45;
+}
+
+.indicador-card.desconto-comercial strong {
+    color: #ffad45;
+}
+
+.indicador-card.desconto-comercial {
+    background:
+        radial-gradient(
+            circle at bottom right,
+            rgba(255, 173, 69, 0.1),
+            transparent 48%
+        ),
+        var(--stats-card);
+}
+
+.entrada-valor {
+    color: #35d6a4 !important;
+
+    font-weight: 850;
+
+    text-shadow:
+        0 0 14px
+        rgba(53, 214, 164, 0.2);
+}
+
+.saida-valor {
+    color: #ff6389 !important;
+
+    font-weight: 850;
+
+    text-shadow:
+        0 0 14px
+        rgba(255, 99, 137, 0.2);
+}

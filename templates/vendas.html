@@ -202,13 +202,32 @@
 
 <!-- MODAL PAGAMENTO -->
 
+<!-- =====================================
+     MODAL DE PAGAMENTO
+====================================== -->
+
 <div id="modalPagamento" class="modal">
 
-    <div class="modal-content">
+    <div class="modal-content modal-pagamento-content">
+
+        <button type="button" class="fechar-modal-venda" onclick="fecharModalPagamento()" aria-label="Fechar">
+            ×
+        </button>
+
+        <span class="modal-etiqueta">
+            CONFIRMAÇÃO DA VENDA
+        </span>
 
         <h2>
-            Finalizar Pagamento
+            Finalizar pagamento
         </h2>
+
+        <p class="modal-subtitulo">
+            Confira os itens e selecione a forma
+            de pagamento.
+        </p>
+
+        <div id="dadosVenda" data-total="{{ '%.2f'|format(total) }}"></div>
 
         <div class="resumo-venda">
 
@@ -225,9 +244,13 @@
 
                 <strong>
 
-                    R$ {{
-                    item["preco"] *
-                    item["quantidade"]
+                    R$
+                    {{
+                    "%.2f"|format(
+                    (item["preco"]|float)
+                    *
+                    (item["quantidade"]|int)
+                    )
                     }}
 
                 </strong>
@@ -236,15 +259,51 @@
 
             {% endfor %}
 
-            <hr>
+            <div class="divisor-resumo"></div>
+
+            <div class="subtotal-resumo">
+
+                <span>
+                    Subtotal
+                </span>
+
+                <strong id="subtotalPagamento">
+
+                    R$
+                    {{ "%.2f"|format(total) }}
+
+                </strong>
+
+            </div>
+
+            <div id="linhaDescontoPagamento" class="desconto-resumo oculto">
+
+                <span>
+
+                    Desconto
+
+                    <small id="percentualResumo">
+                        0%
+                    </small>
+
+                </span>
+
+                <strong id="valorDescontoResumo">
+                    - R$ 0,00
+                </strong>
+
+            </div>
 
             <div class="total-resumo">
 
-                <span>Total</span>
+                <span>
+                    Total a pagar
+                </span>
 
-                <strong>
+                <strong id="totalFinalPagamento">
 
-                    R$ {{ total }}
+                    R$
+                    {{ "%.2f"|format(total) }}
 
                 </strong>
 
@@ -252,26 +311,68 @@
 
         </div>
 
-        <form method="POST" action="/finalizar_venda">
+        <button type="button" id="abrirModalDesconto" class="btn-adicionar-desconto">
 
-            <select name="pagamento">
+            <span aria-hidden="true">
+                %
+            </span>
 
-                <option value="Dinheiro">
-                    Dinheiro
-                </option>
+            <div>
 
-                <option value="PIX">
-                    PIX
-                </option>
+                <strong>
+                    Adicionar desconto
+                </strong>
 
-                <option value="Cartão">
-                    Cartão
-                </option>
+                <small>
+                    Aplicar desconto em porcentagem
+                    ou valor
+                </small>
 
-            </select>
+            </div>
 
-            <button type="submit" class="btn">
-                Finalizar Venda
+        </button>
+
+        <form method="POST" action="/finalizar_venda" id="formFinalizarVenda">
+
+            <input type="hidden" name="desconto_tipo" id="descontoTipoFinal" value="nenhum">
+
+            <input type="hidden" name="desconto_valor" id="descontoValorFinal" value="0">
+
+            <label class="campo-pagamento">
+
+                <span>
+                    Forma de pagamento
+                </span>
+
+                <select name="pagamento" required>
+
+                    <option value="Dinheiro">
+                        Dinheiro
+                    </option>
+
+                    <option value="PIX">
+                        PIX
+                    </option>
+
+                    <option value="Cartão">
+                        Cartão
+                    </option>
+
+                </select>
+
+            </label>
+
+            <button type="submit" class="btn btn-finalizar-venda">
+
+                Finalizar por
+
+                <strong id="valorBotaoFinalizar">
+
+                    R$
+                    {{ "%.2f"|format(total) }}
+
+                </strong>
+
             </button>
 
         </form>
@@ -281,94 +382,791 @@
 </div>
 
 
+<!-- =====================================
+     MODAL DE DESCONTO
+====================================== -->
+
+<div id="modalDesconto" class="modal modal-desconto">
+
+    <div class="modal-content desconto-content">
+
+        <button type="button" class="fechar-modal-venda" onclick="fecharModalDesconto()" aria-label="Fechar">
+            ×
+        </button>
+
+        <span class="modal-etiqueta">
+            CONDIÇÃO ESPECIAL
+        </span>
+
+        <h2>
+            Aplicar desconto
+        </h2>
+
+        <p class="modal-subtitulo">
+            Escolha como deseja informar
+            o desconto da venda.
+        </p>
+
+        <div class="tipos-desconto">
+
+            <button type="button" class="tipo-desconto-btn ativo" data-tipo="percentual">
+                Porcentagem
+            </button>
+
+            <button type="button" class="tipo-desconto-btn" data-tipo="valor">
+                Valor em reais
+            </button>
+
+        </div>
+
+        <div class="campo-desconto">
+
+            <label for="entradaDesconto">
+                Valor do desconto
+            </label>
+
+            <div class="input-desconto-box">
+
+                <span id="prefixoDesconto">
+                    %
+                </span>
+
+                <input type="number" id="entradaDesconto" min="0" max="100" step="0.01" inputmode="decimal"
+                    placeholder="0,00">
+
+            </div>
+
+        </div>
+
+        <div class="conversao-desconto">
+
+            <span>
+                Equivale a
+            </span>
+
+            <strong id="equivalenciaDesconto">
+                R$ 0,00
+            </strong>
+
+        </div>
+
+        <div class="preview-desconto">
+
+            <div>
+
+                <span>
+                    Valor original
+                </span>
+
+                <strong id="previewValorOriginal">
+                    R$ 0,00
+                </strong>
+
+            </div>
+
+            <div>
+
+                <span>
+                    Desconto
+                </span>
+
+                <strong id="previewValorDesconto" class="valor-negativo">
+                    - R$ 0,00
+                </strong>
+
+            </div>
+
+            <div class="preview-total">
+
+                <span>
+                    Novo total
+                </span>
+
+                <strong id="previewNovoTotal">
+                    R$ 0,00
+                </strong>
+
+            </div>
+
+        </div>
+
+        <div class="acoes-desconto">
+
+            <button type="button" id="removerDesconto" class="btn-remover-desconto">
+                Remover desconto
+            </button>
+
+            <button type="button" id="confirmarDesconto" class="btn-confirmar-desconto">
+                Aplicar desconto
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 
 <script>
 
-    const busca =
-        document.getElementById("scanner")
+    (function () {
 
-    busca.addEventListener("keyup", () => {
+        "use strict";
 
-        const texto =
-            busca.value.toLowerCase()
+        const dadosVenda =
+            document.getElementById(
+                "dadosVenda"
+            );
 
-        const cards =
-            document.querySelectorAll(".produto-card")
+        const totalBruto = Number(
+            dadosVenda
+                ? dadosVenda.dataset.total
+                : 0
+        );
 
-        cards.forEach(card => {
-
-            const nome =
-                card.innerText.toLowerCase()
-
-            card.style.display =
-                nome.includes(texto)
-                    ? "flex"
-                    : "none"
-
-        })
-
-    })
-
-    function abrirModal() {
-
-        document.getElementById(
-            "modalPagamento"
-        ).style.display = "flex"
-
-    }
-
-    window.onclick = function (event) {
-
-        const modal =
+        const modalPagamento =
             document.getElementById(
                 "modalPagamento"
-            )
+            );
 
-        if (event.target == modal) {
+        const modalDesconto =
+            document.getElementById(
+                "modalDesconto"
+            );
 
-            modal.style.display = "none"
+        const entradaDesconto =
+            document.getElementById(
+                "entradaDesconto"
+            );
 
+        const prefixoDesconto =
+            document.getElementById(
+                "prefixoDesconto"
+            );
+
+        const equivalenciaDesconto =
+            document.getElementById(
+                "equivalenciaDesconto"
+            );
+
+        const previewValorOriginal =
+            document.getElementById(
+                "previewValorOriginal"
+            );
+
+        const previewValorDesconto =
+            document.getElementById(
+                "previewValorDesconto"
+            );
+
+        const previewNovoTotal =
+            document.getElementById(
+                "previewNovoTotal"
+            );
+
+        const linhaDescontoPagamento =
+            document.getElementById(
+                "linhaDescontoPagamento"
+            );
+
+        const percentualResumo =
+            document.getElementById(
+                "percentualResumo"
+            );
+
+        const valorDescontoResumo =
+            document.getElementById(
+                "valorDescontoResumo"
+            );
+
+        const totalFinalPagamento =
+            document.getElementById(
+                "totalFinalPagamento"
+            );
+
+        const valorBotaoFinalizar =
+            document.getElementById(
+                "valorBotaoFinalizar"
+            );
+
+        const descontoTipoFinal =
+            document.getElementById(
+                "descontoTipoFinal"
+            );
+
+        const descontoValorFinal =
+            document.getElementById(
+                "descontoValorFinal"
+            );
+
+        let tipoDescontoAtual =
+            "percentual";
+
+        let descontoAplicado = {
+            tipo: "nenhum",
+            informado: 0,
+            valor: 0,
+            percentual: 0,
+            total: totalBruto
+        };
+
+
+        function moeda(valor) {
+
+            return Number(
+                valor || 0
+            ).toLocaleString(
+                "pt-BR",
+                {
+                    style: "currency",
+                    currency: "BRL"
+                }
+            );
         }
 
-    }
 
-    const scanner =
-        document.getElementById("scanner")
+        function numeroEntrada(valor) {
 
-    scanner.focus()
+            const numero = Number(
+                String(
+                    valor || 0
+                ).replace(
+                    ",",
+                    "."
+                )
+            );
 
-    scanner.addEventListener("keypress", function (event) {
+            return Number.isFinite(numero)
+                ? numero
+                : 0;
+        }
 
-        if (event.key === "Enter") {
 
-            event.preventDefault()
+        function limitar(
+            valor,
+            minimo,
+            maximo
+        ) {
 
-            let codigo = this.value.trim()
+            return Math.min(
+                Math.max(
+                    valor,
+                    minimo
+                ),
+                maximo
+            );
+        }
 
-            if (codigo !== "") {
 
-                window.location.href =
-                    "/codigo/" + codigo
+        function calcularDescontoPreview() {
 
+            const informado =
+                numeroEntrada(
+                    entradaDesconto
+                        ? entradaDesconto.value
+                        : 0
+                );
+
+            let valorDesconto = 0;
+            let percentual = 0;
+
+            if (
+                tipoDescontoAtual
+                === "percentual"
+            ) {
+
+                percentual = limitar(
+                    informado,
+                    0,
+                    100
+                );
+
+                valorDesconto =
+                    totalBruto
+                    * percentual
+                    / 100;
+
+            } else {
+
+                valorDesconto = limitar(
+                    informado,
+                    0,
+                    totalBruto
+                );
+
+                percentual = totalBruto > 0
+                    ? (
+                        valorDesconto
+                        / totalBruto
+                        * 100
+                    )
+                    : 0;
             }
 
+            valorDesconto =
+                Math.round(
+                    valorDesconto * 100
+                ) / 100;
+
+            const novoTotal =
+                Math.max(
+                    0,
+                    totalBruto
+                    - valorDesconto
+                );
+
+            if (equivalenciaDesconto) {
+
+                equivalenciaDesconto.textContent =
+                    tipoDescontoAtual
+                        === "percentual"
+                        ? moeda(valorDesconto)
+                        : (
+                            percentual
+                                .toFixed(2)
+                            + "%"
+                        );
+            }
+
+            if (previewValorOriginal) {
+                previewValorOriginal.textContent =
+                    moeda(totalBruto);
+            }
+
+            if (previewValorDesconto) {
+                previewValorDesconto.textContent =
+                    "- " + moeda(valorDesconto);
+            }
+
+            if (previewNovoTotal) {
+                previewNovoTotal.textContent =
+                    moeda(novoTotal);
+            }
+
+            return {
+                informado: informado,
+                valor: valorDesconto,
+                percentual: percentual,
+                total: novoTotal
+            };
         }
 
-    })
 
-    window.onload = function () {
+        function atualizarResumoPagamento() {
 
-        const scanner =
-            document.getElementById("scanner")
+            const possuiDesconto =
+                descontoAplicado.valor > 0;
 
-        if (scanner) {
+            if (linhaDescontoPagamento) {
 
-            scanner.value = ""
-            scanner.focus()
+                linhaDescontoPagamento
+                    .classList.toggle(
+                        "oculto",
+                        !possuiDesconto
+                    );
+            }
 
+            if (percentualResumo) {
+
+                percentualResumo.textContent =
+                    descontoAplicado
+                        .percentual
+                        .toFixed(2)
+                    + "%";
+            }
+
+            if (valorDescontoResumo) {
+
+                valorDescontoResumo.textContent =
+                    "- "
+                    + moeda(
+                        descontoAplicado.valor
+                    );
+            }
+
+            if (totalFinalPagamento) {
+
+                totalFinalPagamento.textContent =
+                    moeda(
+                        descontoAplicado.total
+                    );
+            }
+
+            if (valorBotaoFinalizar) {
+
+                valorBotaoFinalizar.textContent =
+                    moeda(
+                        descontoAplicado.total
+                    );
+            }
+
+            if (descontoTipoFinal) {
+
+                descontoTipoFinal.value =
+                    descontoAplicado.tipo;
+            }
+
+            if (descontoValorFinal) {
+
+                descontoValorFinal.value =
+                    descontoAplicado.informado
+                        .toFixed(2);
+            }
         }
 
-    }
+
+        function selecionarTipo(tipo) {
+
+            tipoDescontoAtual = tipo;
+
+            document
+                .querySelectorAll(
+                    ".tipo-desconto-btn"
+                )
+                .forEach(function (botao) {
+
+                    botao.classList.toggle(
+                        "ativo",
+                        botao.dataset.tipo === tipo
+                    );
+                });
+
+            if (entradaDesconto) {
+
+                entradaDesconto.value = "";
+
+                entradaDesconto.max =
+                    tipo === "percentual"
+                        ? "100"
+                        : totalBruto.toFixed(2);
+
+                entradaDesconto.placeholder =
+                    tipo === "percentual"
+                        ? "Ex: 30"
+                        : "Ex: 50,00";
+            }
+
+            if (prefixoDesconto) {
+
+                prefixoDesconto.textContent =
+                    tipo === "percentual"
+                        ? "%"
+                        : "R$";
+            }
+
+            calcularDescontoPreview();
+
+            if (entradaDesconto) {
+                entradaDesconto.focus();
+            }
+        }
+
+
+        window.abrirModal = function () {
+
+            if (!modalPagamento) {
+                return;
+            }
+
+            modalPagamento.style.display =
+                "flex";
+        };
+
+
+        window.fecharModalPagamento =
+            function () {
+
+                if (modalPagamento) {
+
+                    modalPagamento.style.display =
+                        "none";
+                }
+            };
+
+
+        window.fecharModalDesconto =
+            function () {
+
+                if (modalDesconto) {
+
+                    modalDesconto.style.display =
+                        "none";
+                }
+            };
+
+
+        const botaoAbrirDesconto =
+            document.getElementById(
+                "abrirModalDesconto"
+            );
+
+        if (botaoAbrirDesconto) {
+
+            botaoAbrirDesconto.addEventListener(
+                "click",
+                function () {
+
+                    if (!modalDesconto) {
+                        return;
+                    }
+
+                    modalDesconto.style.display =
+                        "flex";
+
+                    selecionarTipo(
+                        descontoAplicado.tipo
+                            === "valor"
+                            ? "valor"
+                            : "percentual"
+                    );
+                }
+            );
+        }
+
+
+        document
+            .querySelectorAll(
+                ".tipo-desconto-btn"
+            )
+            .forEach(function (botao) {
+
+                botao.addEventListener(
+                    "click",
+                    function () {
+
+                        selecionarTipo(
+                            botao.dataset.tipo
+                        );
+                    }
+                );
+            });
+
+
+        if (entradaDesconto) {
+
+            entradaDesconto.addEventListener(
+                "input",
+                calcularDescontoPreview
+            );
+        }
+
+
+        const confirmarDesconto =
+            document.getElementById(
+                "confirmarDesconto"
+            );
+
+        if (confirmarDesconto) {
+
+            confirmarDesconto.addEventListener(
+                "click",
+                function () {
+
+                    const calculo =
+                        calcularDescontoPreview();
+
+                    if (
+                        calculo.informado < 0
+                        || calculo.valor < 0
+                    ) {
+                        return;
+                    }
+
+                    descontoAplicado = {
+                        tipo: (
+                            calculo.valor > 0
+                                ? tipoDescontoAtual
+                                : "nenhum"
+                        ),
+
+                        informado:
+                            calculo.informado,
+
+                        valor:
+                            calculo.valor,
+
+                        percentual:
+                            calculo.percentual,
+
+                        total:
+                            calculo.total
+                    };
+
+                    atualizarResumoPagamento();
+
+                    window
+                        .fecharModalDesconto();
+                }
+            );
+        }
+
+
+        const removerDesconto =
+            document.getElementById(
+                "removerDesconto"
+            );
+
+        if (removerDesconto) {
+
+            removerDesconto.addEventListener(
+                "click",
+                function () {
+
+                    descontoAplicado = {
+                        tipo: "nenhum",
+                        informado: 0,
+                        valor: 0,
+                        percentual: 0,
+                        total: totalBruto
+                    };
+
+                    atualizarResumoPagamento();
+
+                    window
+                        .fecharModalDesconto();
+                }
+            );
+        }
+
+
+        window.addEventListener(
+            "click",
+            function (evento) {
+
+                if (
+                    evento.target
+                    === modalPagamento
+                ) {
+                    window
+                        .fecharModalPagamento();
+                }
+
+                if (
+                    evento.target
+                    === modalDesconto
+                ) {
+                    window
+                        .fecharModalDesconto();
+                }
+            }
+        );
+
+
+        document.addEventListener(
+            "keydown",
+            function (evento) {
+
+                if (evento.key !== "Escape") {
+                    return;
+                }
+
+                window.fecharModalDesconto();
+                window.fecharModalPagamento();
+            }
+        );
+
+
+        const busca =
+            document.getElementById(
+                "scanner"
+            );
+
+        if (busca) {
+
+            busca.addEventListener(
+                "keyup",
+                function () {
+
+                    const texto =
+                        busca.value
+                            .toLowerCase();
+
+                    document
+                        .querySelectorAll(
+                            ".produto-card"
+                        )
+                        .forEach(
+                            function (card) {
+
+                                const nome =
+                                    card.innerText
+                                        .toLowerCase();
+
+                                card.style.display =
+                                    nome.includes(texto)
+                                        ? "flex"
+                                        : "none";
+                            }
+                        );
+                }
+            );
+
+            busca.addEventListener(
+                "keypress",
+                function (evento) {
+
+                    if (
+                        evento.key
+                        !== "Enter"
+                    ) {
+                        return;
+                    }
+
+                    evento.preventDefault();
+
+                    const codigo =
+                        busca.value.trim();
+
+                    if (codigo) {
+
+                        window.location.href =
+                            "/codigo/"
+                            + encodeURIComponent(
+                                codigo
+                            );
+                    }
+                }
+            );
+
+            busca.value = "";
+            busca.focus();
+        }
+
+
+        const formFinalizar =
+            document.getElementById(
+                "formFinalizarVenda"
+            );
+
+        if (formFinalizar) {
+
+            formFinalizar.addEventListener(
+                "submit",
+                function () {
+
+                    const botao =
+                        formFinalizar
+                            .querySelector(
+                                "button[type='submit']"
+                            );
+
+                    if (botao) {
+
+                        botao.disabled = true;
+
+                        botao.classList.add(
+                            "carregando"
+                        );
+                    }
+                }
+            );
+        }
+
+
+        atualizarResumoPagamento();
+
+    })();
 
 </script>
 

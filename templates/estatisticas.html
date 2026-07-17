@@ -2,13 +2,10 @@
 
 {% block css %}
 
-<link
-    rel="stylesheet"
-    href="{{ url_for(
+<link rel="stylesheet" href="{{ url_for(
         'static',
         filename='css/estatisticas.css'
-    ) }}"
->
+    ) }}">
 
 {% endblock %}
 
@@ -36,10 +33,7 @@
         financeiros completos.
     </p>
 
-    <a
-        href="/planos"
-        class="btn-upgrade"
-    >
+    <a href="/planos" class="btn-upgrade">
         Fazer upgrade
     </a>
 
@@ -74,18 +68,11 @@
 
         <div class="estatisticas-acoes">
 
-            <button
-                type="button"
-                class="btn-imprimir"
-                onclick="window.print()"
-            >
+            <button type="button" class="btn-imprimir" onclick="window.print()">
                 🖨️ Gerar relatório
             </button>
 
-            <a
-                href="/historico_caixas"
-                class="btn-historico"
-            >
+            <a href="/historico_caixas" class="btn-historico">
                 📁 Histórico de caixas
             </a>
 
@@ -118,62 +105,45 @@
                 até
 
                 {{
-                    filtro["fim_exibicao"]
-                    .strftime("%d/%m/%Y")
+                filtro["fim_exibicao"]
+                .strftime("%d/%m/%Y")
                 }}
 
             </span>
 
         </div>
 
-        <form
-            method="GET"
-            action="/estatisticas"
-            class="filtro-form"
-        >
+        <form method="GET" action="/estatisticas" class="filtro-form">
 
             <div class="filtro-atalhos">
 
-                <a
-                    href="/estatisticas?periodo=hoje"
-                    class="{{
+                <a href="/estatisticas?periodo=hoje" class="{{
                         'ativo'
                         if filtro['periodo'] == 'hoje'
                         else ''
-                    }}"
-                >
+                    }}">
                     Hoje
                 </a>
 
-                <a
-                    href="/estatisticas?periodo=mes"
-                    class="{{
+                <a href="/estatisticas?periodo=mes" class="{{
                         'ativo'
                         if filtro['periodo'] == 'mes'
                         else ''
-                    }}"
-                >
+                    }}">
                     Este mês
                 </a>
 
-                <a
-                    href="/estatisticas?periodo=ano"
-                    class="{{
+                <a href="/estatisticas?periodo=ano" class="{{
                         'ativo'
                         if filtro['periodo'] == 'ano'
                         else ''
-                    }}"
-                >
+                    }}">
                     Este ano
                 </a>
 
             </div>
 
-            <input
-                type="hidden"
-                name="periodo"
-                value="personalizado"
-            >
+            <input type="hidden" name="periodo" value="personalizado">
 
             <label>
 
@@ -181,15 +151,10 @@
                     Data inicial
                 </span>
 
-                <input
-                    type="date"
-                    name="inicio"
-                    value="{{
+                <input type="date" name="inicio" value="{{
                         filtro['inicio']
                         .strftime('%Y-%m-%d')
-                    }}"
-                    required
-                >
+                    }}" required>
 
             </label>
 
@@ -199,22 +164,14 @@
                     Data final
                 </span>
 
-                <input
-                    type="date"
-                    name="fim"
-                    value="{{
+                <input type="date" name="fim" value="{{
                         filtro['fim_exibicao']
                         .strftime('%Y-%m-%d')
-                    }}"
-                    required
-                >
+                    }}" required>
 
             </label>
 
-            <button
-                type="submit"
-                class="btn-filtrar"
-            >
+            <button type="submit" class="btn-filtrar">
                 Aplicar período
             </button>
 
@@ -245,8 +202,8 @@
             <strong>
                 R$
                 {{
-                    "%.2f"
-                    |format(faturamento_bruto)
+                "%.2f"
+                |format(faturamento_bruto)
                 }}
             </strong>
 
@@ -273,8 +230,8 @@
             <strong>
                 R$
                 {{
-                    "%.2f"
-                    |format(faturamento_realizado)
+                "%.2f"
+                |format(faturamento_realizado)
                 }}
             </strong>
 
@@ -301,8 +258,8 @@
             <strong>
                 R$
                 {{
-                    "%.2f"
-                    |format(total_saidas)
+                "%.2f"
+                |format(total_saidas)
                 }}
             </strong>
 
@@ -331,9 +288,9 @@
                 <span class="card-icone">
 
                     {{
-                        "✨"
-                        if resultado_liquido >= 0
-                        else "⚠️"
+                    "✨"
+                    if resultado_liquido >= 0
+                    else "⚠️"
                     }}
 
                 </span>
@@ -343,8 +300,8 @@
             <strong>
                 R$
                 {{
-                    "%.2f"
-                    |format(resultado_liquido)
+                "%.2f"
+                |format(resultado_liquido)
                 }}
             </strong>
 
@@ -387,8 +344,8 @@
             <strong>
                 R$
                 {{
-                    "%.2f"
-                    |format(ticket_medio)
+                "%.2f"
+                |format(ticket_medio)
                 }}
             </strong>
 
@@ -411,10 +368,30 @@
             <small>
                 R$
                 {{
-                    "%.2f"
-                    |format(total_cancelado)
+                "%.2f"
+                |format(total_cancelado)
                 }}
                 cancelados
+            </small>
+
+        </article>
+
+        <article class="indicador-card desconto-comercial">
+
+            <span>
+                Descontos concedidos
+            </span>
+
+            <strong>
+                - R$
+                {{
+                "%.2f"
+                |format(descontos_comerciais)
+                }}
+            </strong>
+
+            <small>
+                Redução aplicada nas vendas válidas
             </small>
 
         </article>
@@ -427,8 +404,8 @@
 
             <strong>
                 {{
-                    "%.1f"
-                    |format(margem_liquida)
+                "%.1f"
+                |format(margem_liquida)
                 }}%
             </strong>
 
@@ -464,8 +441,8 @@
             <strong>
                 R$
                 {{
-                    "%.2f"
-                    |format(outras_entradas)
+                "%.2f"
+                |format(outras_entradas)
                 }}
             </strong>
 
@@ -563,8 +540,8 @@
                     <strong>
                         R$
                         {{
-                            "%.2f"
-                            |format(salarios)
+                        "%.2f"
+                        |format(salarios)
                         }}
                     </strong>
 
@@ -579,8 +556,8 @@
                     <strong>
                         R$
                         {{
-                            "%.2f"
-                            |format(comissoes)
+                        "%.2f"
+                        |format(comissoes)
                         }}
                     </strong>
 
@@ -595,8 +572,8 @@
                     <strong>
                         R$
                         {{
-                            "%.2f"
-                            |format(bonus)
+                        "%.2f"
+                        |format(bonus)
                         }}
                     </strong>
 
@@ -611,8 +588,8 @@
                     <strong class="valor-desconto">
                         - R$
                         {{
-                            "%.2f"
-                            |format(descontos_folha)
+                        "%.2f"
+                        |format(descontos_folha)
                         }}
                     </strong>
 
@@ -627,8 +604,8 @@
                     <strong>
                         R$
                         {{
-                            "%.2f"
-                            |format(total_folha)
+                        "%.2f"
+                        |format(total_folha)
                         }}
                     </strong>
 
@@ -636,10 +613,7 @@
 
             </div>
 
-            <a
-                href="/folha/historico"
-                class="btn-detalhes"
-            >
+            <a href="/folha/historico" class="btn-detalhes">
                 Ver histórico da folha
             </a>
 
@@ -678,8 +652,8 @@
                     <strong>
                         R$
                         {{
-                            "%.2f"
-                            |format(total_folha)
+                        "%.2f"
+                        |format(total_folha)
                         }}
                     </strong>
 
@@ -694,8 +668,8 @@
                     <strong>
                         R$
                         {{
-                            "%.2f"
-                            |format(outras_saidas)
+                        "%.2f"
+                        |format(outras_saidas)
                         }}
                     </strong>
 
@@ -710,8 +684,8 @@
                     <strong class="valor-desconto">
                         R$
                         {{
-                            "%.2f"
-                            |format(total_cancelado)
+                        "%.2f"
+                        |format(total_cancelado)
                         }}
                     </strong>
 
@@ -726,8 +700,8 @@
                     <strong>
                         R$
                         {{
-                            "%.2f"
-                            |format(total_saidas)
+                        "%.2f"
+                        |format(total_saidas)
                         }}
                     </strong>
 
@@ -762,19 +736,19 @@
                 </span>
 
                 <h2>
-                    Últimas saídas registradas
+                    Extrato financeiro
                 </h2>
 
                 <p>
-                    Pagamentos, retiradas e cancelamentos
-                    identificados no período.
+                    Todas as entradas e saídas identificadas
+                    no período selecionado.
                 </p>
 
             </div>
 
         </div>
 
-        {% if ultimas_saidas %}
+        {% if movimentacoes_financeiras %}
 
         <div class="tabela-container">
 
@@ -806,7 +780,7 @@
 
                 <tbody>
 
-                    {% for item in ultimas_saidas %}
+                    {% for item in movimentacoes_financeiras %}
 
                     <tr>
 
@@ -815,8 +789,8 @@
                             {% if item["data"] %}
 
                             {{
-                                item["data"]
-                                .strftime("%d/%m/%Y %H:%M")
+                            item["data"]
+                            .strftime("%d/%m/%Y %H:%M")
                             }}
 
                             {% else %}
@@ -841,12 +815,28 @@
                             {{ item["descricao"] }}
                         </td>
 
-                        <td class="coluna-valor saida-valor">
+                        <td class="
+    coluna-valor
+    {{
+        'entrada-valor'
+        if item['tipo'] == 'entrada'
+        else 'saida-valor'
+    }}
+">
+
+                            {% if item["tipo"] == "entrada" %}
+
+                            + R$
+
+                            {% else %}
 
                             - R$
+
+                            {% endif %}
+
                             {{
-                                "%.2f"
-                                |format(item["valor"])
+                            "%.2f"
+                            |format(item["valor"])
                             }}
 
                         </td>
@@ -870,11 +860,11 @@
             </span>
 
             <strong>
-                Nenhuma saída encontrada
+                Nenhuma movimentação encontrada
             </strong>
 
             <p>
-                Não existem despesas registradas
+                Não existem entradas ou saídas
                 no período selecionado.
             </p>
 
@@ -890,278 +880,267 @@
 
 {% if not bloqueado %}
 
-<script
-    src="https://cdn.jsdelivr.net/npm/chart.js"
-></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script
-    id="dadosLabelsFinanceiro"
-    type="application/json"
->
+<script id="dadosLabelsFinanceiro" type="application/json">
     {{ labels | tojson }}
 </script>
 
-<script
-    id="dadosEntradasFinanceiro"
-    type="application/json"
->
+<script id="dadosEntradasFinanceiro" type="application/json">
     {{ valores | tojson }}
 </script>
 
-<script
-    id="dadosSaidasFinanceiro"
-    type="application/json"
->
+<script id="dadosSaidasFinanceiro" type="application/json">
     {{ valores_saidas | tojson }}
 </script>
 
 <script>
 
-(function () {
+    (function () {
 
-    "use strict";
+        "use strict";
 
-    function lerDadosJson(id) {
+        function lerDadosJson(id) {
 
-        const elemento =
-            document.getElementById(id);
+            const elemento =
+                document.getElementById(id);
 
-        if (!elemento) {
-            return [];
+            if (!elemento) {
+                return [];
+            }
+
+            try {
+                return JSON.parse(
+                    elemento.textContent.trim()
+                    || "[]"
+                );
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro ao carregar dados do gráfico:",
+                    erro
+                );
+
+                return [];
+            }
         }
 
-        try {
-            return JSON.parse(
-                elemento.textContent.trim()
-                || "[]"
-            );
+        function criarGraficoFinanceiro() {
 
-        } catch (erro) {
+            const elementoGrafico =
+                document.getElementById(
+                    "graficoFinanceiro"
+                );
 
-            console.error(
-                "Erro ao carregar dados do gráfico:",
-                erro
-            );
+            if (
+                !elementoGrafico
+                || typeof Chart === "undefined"
+            ) {
+                return;
+            }
 
-            return [];
-        }
-    }
+            const diasFinanceiro =
+                lerDadosJson(
+                    "dadosLabelsFinanceiro"
+                );
 
-    function criarGraficoFinanceiro() {
+            const entradasFinanceiro =
+                lerDadosJson(
+                    "dadosEntradasFinanceiro"
+                );
 
-        const elementoGrafico =
-            document.getElementById(
-                "graficoFinanceiro"
-            );
+            const saidasFinanceiro =
+                lerDadosJson(
+                    "dadosSaidasFinanceiro"
+                );
 
-        if (
-            !elementoGrafico
-            || typeof Chart === "undefined"
-        ) {
-            return;
-        }
+            const temaEscuro =
+                document.body.classList.contains(
+                    "dark"
+                );
 
-        const diasFinanceiro =
-            lerDadosJson(
-                "dadosLabelsFinanceiro"
-            );
+            const corTexto = temaEscuro
+                ? "rgba(219, 232, 250, 0.72)"
+                : "rgba(31, 52, 82, 0.72)";
 
-        const entradasFinanceiro =
-            lerDadosJson(
-                "dadosEntradasFinanceiro"
-            );
+            const corGrade = temaEscuro
+                ? "rgba(130, 165, 215, 0.09)"
+                : "rgba(55, 91, 140, 0.09)";
 
-        const saidasFinanceiro =
-            lerDadosJson(
-                "dadosSaidasFinanceiro"
-            );
+            new Chart(
+                elementoGrafico,
+                {
+                    type: "line",
 
-        const temaEscuro =
-            document.body.classList.contains(
-                "dark"
-            );
+                    data: {
+                        labels: diasFinanceiro,
 
-        const corTexto = temaEscuro
-            ? "rgba(219, 232, 250, 0.72)"
-            : "rgba(31, 52, 82, 0.72)";
+                        datasets: [
+                            {
+                                label: "Entradas",
 
-        const corGrade = temaEscuro
-            ? "rgba(130, 165, 215, 0.09)"
-            : "rgba(55, 91, 140, 0.09)";
+                                data:
+                                    entradasFinanceiro,
 
-        new Chart(
-            elementoGrafico,
-            {
-                type: "line",
+                                borderColor:
+                                    "#35d6a4",
 
-                data: {
-                    labels: diasFinanceiro,
+                                backgroundColor:
+                                    "rgba(53, 214, 164, 0.11)",
 
-                    datasets: [
-                        {
-                            label: "Entradas",
+                                pointBackgroundColor:
+                                    "#35d6a4",
 
-                            data:
-                                entradasFinanceiro,
+                                pointBorderColor:
+                                    "#ffffff",
 
-                            borderColor:
-                                "#35d6a4",
+                                pointRadius: 4,
 
-                            backgroundColor:
-                                "rgba(53, 214, 164, 0.11)",
+                                pointHoverRadius: 6,
 
-                            pointBackgroundColor:
-                                "#35d6a4",
+                                borderWidth: 3,
 
-                            pointBorderColor:
-                                "#ffffff",
+                                tension: 0.36,
 
-                            pointRadius: 4,
+                                fill: true
+                            },
+                            {
+                                label: "Saídas",
 
-                            pointHoverRadius: 6,
+                                data:
+                                    saidasFinanceiro,
 
-                            borderWidth: 3,
+                                borderColor:
+                                    "#ff6389",
 
-                            tension: 0.36,
+                                backgroundColor:
+                                    "rgba(255, 99, 137, 0.08)",
 
-                            fill: true
-                        },
-                        {
-                            label: "Saídas",
+                                pointBackgroundColor:
+                                    "#ff6389",
 
-                            data:
-                                saidasFinanceiro,
+                                pointBorderColor:
+                                    "#ffffff",
 
-                            borderColor:
-                                "#ff6389",
+                                pointRadius: 4,
 
-                            backgroundColor:
-                                "rgba(255, 99, 137, 0.08)",
+                                pointHoverRadius: 6,
 
-                            pointBackgroundColor:
-                                "#ff6389",
+                                borderWidth: 3,
 
-                            pointBorderColor:
-                                "#ffffff",
+                                tension: 0.36,
 
-                            pointRadius: 4,
-
-                            pointHoverRadius: 6,
-
-                            borderWidth: 3,
-
-                            tension: 0.36,
-
-                            fill: true
-                        }
-                    ]
-                },
-
-                options: {
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    interaction: {
-                        mode: "index",
-                        intersect: false
+                                fill: true
+                            }
+                        ]
                     },
 
-                    plugins: {
-                        legend: {
-                            display: false
+                    options: {
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        interaction: {
+                            mode: "index",
+                            intersect: false
                         },
 
-                        tooltip: {
-                            padding: 12,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
 
-                            callbacks: {
-                                label: function (
-                                    contexto
-                                ) {
+                            tooltip: {
+                                padding: 12,
 
-                                    const valor =
-                                        Number(
-                                            contexto.raw
-                                            || 0
-                                        );
-
-                                    return (
+                                callbacks: {
+                                    label: function (
                                         contexto
-                                            .dataset
-                                            .label
-                                        + ": "
-                                        + valor
-                                            .toLocaleString(
-                                                "pt-BR",
-                                                {
-                                                    style:
-                                                        "currency",
+                                    ) {
 
-                                                    currency:
-                                                        "BRL"
-                                                }
-                                            )
-                                    );
+                                        const valor =
+                                            Number(
+                                                contexto.raw
+                                                || 0
+                                            );
+
+                                        return (
+                                            contexto
+                                                .dataset
+                                                .label
+                                            + ": "
+                                            + valor
+                                                .toLocaleString(
+                                                    "pt-BR",
+                                                    {
+                                                        style:
+                                                            "currency",
+
+                                                        currency:
+                                                            "BRL"
+                                                    }
+                                                )
+                                        );
+                                    }
                                 }
-                            }
-                        }
-                    },
-
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: corTexto
-                            },
-
-                            grid: {
-                                color: corGrade
                             }
                         },
 
-                        y: {
-                            beginAtZero: true,
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: corTexto
+                                },
 
-                            ticks: {
-                                color: corTexto,
-
-                                callback: function (
-                                    valor
-                                ) {
-                                    return (
-                                        "R$ "
-                                        + Number(valor)
-                                            .toLocaleString(
-                                                "pt-BR"
-                                            )
-                                    );
+                                grid: {
+                                    color: corGrade
                                 }
                             },
 
-                            grid: {
-                                color: corGrade
+                            y: {
+                                beginAtZero: true,
+
+                                ticks: {
+                                    color: corTexto,
+
+                                    callback: function (
+                                        valor
+                                    ) {
+                                        return (
+                                            "R$ "
+                                            + Number(valor)
+                                                .toLocaleString(
+                                                    "pt-BR"
+                                                )
+                                        );
+                                    }
+                                },
+
+                                grid: {
+                                    color: corGrade
+                                }
                             }
                         }
                     }
                 }
-            }
-        );
-    }
+            );
+        }
 
-    if (
-        document.readyState
-        === "loading"
-    ) {
-        document.addEventListener(
-            "DOMContentLoaded",
-            criarGraficoFinanceiro
-        );
+        if (
+            document.readyState
+            === "loading"
+        ) {
+            document.addEventListener(
+                "DOMContentLoaded",
+                criarGraficoFinanceiro
+            );
 
-    } else {
-        criarGraficoFinanceiro();
-    }
+        } else {
+            criarGraficoFinanceiro();
+        }
 
-})();
+    })();
 
 </script>
 

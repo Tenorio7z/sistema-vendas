@@ -3,6 +3,151 @@ from database import conectar, criar_cursor
 from services.cupom_service import gerar_cupom_venda
 from services.notificacoes import notificar_gerente
 from services.fcm_services import enviar_notificacao
+from decimal import (
+    Decimal,
+    InvalidOperation,
+    ROUND_HALF_UP,
+)
+
+from uuid import uuid4
+
+CENTAVOS = Decimal("0.01")
+
+
+def _decimal_monetario(valor):
+
+    try:
+        texto = str(
+            valor
+            if valor is not None
+            else "0"
+        ).strip()
+
+        texto = texto.replace(
+            "R$",
+            "",
+        ).strip()
+
+        if (
+            "," in texto
+            and "." in texto
+        ):
+            texto = texto.replace(
+                ".",
+                "",
+            ).replace(
+                ",",
+                ".",
+            )
+
+        else:
+            texto = texto.replace(
+                ",",
+                ".",
+            )
+
+        return Decimal(
+            texto or "0"
+        ).quantize(
+            CENTAVOS,
+            rounding=ROUND_HALF_UP,
+        )
+
+    except (
+        InvalidOperation,
+        TypeError,
+        ValueError,
+    ) as erro:
+        raise ValueError(
+            "Valor de desconto inválido."
+        ) from erro
+
+
+def _calcular_desconto(
+    total_bruto,
+    tipo_desconto,
+    valor_informado,
+):
+
+    total_bruto = _decimal_monetario(
+        total_bruto
+    )
+
+    tipo_desconto = str(
+        tipo_desconto or "nenhum"
+    ).strip().lower()
+
+    valor_informado = _decimal_monetario(
+        valor_informado
+    )
+
+    if tipo_desconto in (
+        "",
+        "nenhum",
+    ):
+        return (
+            Decimal("0.00"),
+            Decimal("0.0000"),
+        )
+
+    if valor_informado < 0:
+        raise ValueError(
+            "O desconto não pode ser negativo."
+        )
+
+    if tipo_desconto == "percentual":
+
+        if valor_informado > 100:
+            raise ValueError(
+                (
+                    "O desconto percentual não "
+                    "pode ultrapassar 100%."
+                )
+            )
+
+        percentual = valor_informado
+
+        desconto = (
+            total_bruto
+            * percentual
+            / Decimal("100")
+        ).quantize(
+            CENTAVOS,
+            rounding=ROUND_HALF_UP,
+        )
+
+    elif tipo_desconto == "valor":
+
+        desconto = valor_informado
+
+        if desconto > total_bruto:
+            raise ValueError(
+                (
+                    "O desconto não pode ser maior "
+                    "que o total da venda."
+                )
+            )
+
+        percentual = (
+            desconto
+            / total_bruto
+            * Decimal("100")
+            if total_bruto > 0
+            else Decimal("0")
+        ).quantize(
+            Decimal("0.0001"),
+            rounding=ROUND_HALF_UP,
+        )
+
+    else:
+        raise ValueError(
+            "Tipo de desconto inválido."
+        )
+
+    return (
+        desconto,
+        percentual,
+    )
 
 def registrar_rotas(app, socketio):
 
@@ -217,190 +362,498 @@ def registrar_rotas(app, socketio):
     # ==========================================
 
 
-    @app.route("/finalizar_venda", methods=["POST"])
+    @app.route(
+    "/finalizar_venda",
+    methods=["POST"],
+)
     def finalizar_venda():
 
         if not session.get("logado"):
             return redirect("/")
 
-        usuario_id = session.get("usuario_id")
-        empresa_id = session.get("empresa_id")
+        usuario_id = session.get(
+            "usuario_id"
+        )
+
+        empresa_id = session.get(
+            "empresa_id"
+        )
 
         if not usuario_id or not empresa_id:
-            flash("Sessão inválida. Faça login novamente.", "erro")
+
+            flash(
+                (
+                    "Sessão inválida. "
+                    "Faça login novamente."
+                ),
+                "erro",
+            )
+
             return redirect("/vendas")
-        
-        forma_pagamento = request.form["pagamento"]
-        carrinho = session.get("carrinho", [])
+
+        pagamentos_permitidos = {
+            "dinheiro": "Dinheiro",
+            "pix": "PIX",
+            "cartão": "Cartão",
+            "cartao": "Cartão",
+        }
+
+        pagamento_recebido = str(
+            request.form.get(
+                "pagamento",
+                "",
+            )
+        ).strip().lower()
+
+        forma_pagamento = (
+            pagamentos_permitidos.get(
+                pagamento_recebido
+            )
+        )
+
+        if not forma_pagamento:
+
+            flash(
+                "Forma de pagamento inválida.",
+                "erro",
+            )
+
+            return redirect("/vendas")
+
+        carrinho = session.get(
+            "carrinho",
+            [],
+        )
 
         if not carrinho:
-            flash("Carrinho vazio", "erro")
+
+            flash(
+                "Carrinho vazio.",
+                "erro",
+            )
+
             return redirect("/vendas")
+
+        tipo_desconto = request.form.get(
+            "desconto_tipo",
+            "nenhum",
+        )
+
+        desconto_informado = request.form.get(
+            "desconto_valor",
+            "0",
+        )
 
         conn = conectar()
         cursor = criar_cursor(conn)
+
         conn.autocommit = False
-        
-        # ==========================================
-        # BUSCAR CAIXA ABERTO
-        # ==========================================
-        
-        cursor.execute("""
-            SELECT *
-            FROM caixa
-            WHERE empresa_id = %s
-            AND status = 'aberto'
-            ORDER BY id DESC
-            LIMIT 1
-        """, (empresa_id,))
 
-        caixa = cursor.fetchone()
-
-        if not caixa:
-            conn.close()
-            flash("Nenhum caixa aberto", "erro")
-            return redirect("/vendas")
-
-        valor_venda = 0
-        vendas_cupom = []
-
-        # ==========================================
-        # PROCESSAR ITENS DO CARRINHO
-        # ==========================================
         try:
+
+            # =====================================
+            # CAIXA ABERTO
+            # =====================================
+
+            cursor.execute(
+                """
+                SELECT *
+
+                FROM caixa
+
+                WHERE empresa_id = %s
+                AND status = 'aberto'
+
+                ORDER BY id DESC
+
+                LIMIT 1
+
+                FOR UPDATE
+                """,
+                (
+                    empresa_id,
+                ),
+            )
+
+            caixa = cursor.fetchone()
+
+            if not caixa:
+                raise ValueError(
+                    "Nenhum caixa aberto."
+                )
+
+            # =====================================
+            # PRODUTOS E VALORES REAIS
+            # =====================================
+
+            itens_processados = []
+            total_bruto = Decimal("0.00")
+
             for item in carrinho:
 
-                cursor.execute("""
-                    SELECT *
+                produto_id = int(
+                    item["id"]
+                )
+
+                quantidade = int(
+                    item["quantidade"]
+                )
+
+                if quantidade <= 0:
+                    raise ValueError(
+                        "Quantidade inválida."
+                    )
+
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        nome,
+                        preco,
+                        estoque
+
                     FROM produtos
+
                     WHERE id = %s
                     AND empresa_id = %s
+
                     FOR UPDATE
-                """, (item["id"], empresa_id))
+                    """,
+                    (
+                        produto_id,
+                        empresa_id,
+                    ),
+                )
 
                 produto = cursor.fetchone()
 
                 if not produto:
-                    conn.rollback()
-                    conn.close()
-                    flash("Produto não encontrado", "erro")
-                    return redirect("/vendas")
+                    raise ValueError(
+                        "Produto não encontrado."
+                    )
 
-                if produto["estoque"] < item["quantidade"]:
-                    conn.rollback()
-                    conn.close()
-                    flash(f'Estoque insuficiente para {produto["nome"]}', "erro")
-                    return redirect("/vendas")
-                
-                novo_estoque = produto["estoque"] - item["quantidade"]
-                valor_total = float(item["preco"]) * int(item["quantidade"])
+                if (
+                    int(produto["estoque"])
+                    < quantidade
+                ):
+                    raise ValueError(
+                        (
+                            "Estoque insuficiente para "
+                            f"{produto['nome']}."
+                        )
+                    )
 
-                valor_venda += valor_total
-
-                # ==========================================
-                # ATUALIZAR ESTOQUE
-                # ==========================================
-                
-                cursor.execute("""
-                    UPDATE produtos
-                    SET estoque = %s
-                    WHERE id = %s
-                    AND empresa_id = %s
-                """, (novo_estoque, item["id"], empresa_id))
-
-                # ==========================================
-                # REGISTRAR VENDA
-                # ==========================================
-                cursor.execute("""
-                INSERT INTO vendas (
-                    produto_id,
-                    quantidade,
-                    valor,
-                    pagamento,
-                    empresa_id,
-                    caixa_id,
-                    usuario_id,
-                    data_venda
+                preco_unitario = (
+                    _decimal_monetario(
+                        produto["preco"]
+                    )
                 )
-                VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
-                """, (
-                    item["id"],
-                    item["quantidade"],
-                    valor_total,
-                    forma_pagamento,
-                    empresa_id,
-                    caixa["id"],
-                    usuario_id
-                ))
 
-                vendas_cupom.append({
-                    "nome": produto["nome"],
-                    "quantidade": item["quantidade"],
-                    "valor": valor_total,
-                    "pagamento": forma_pagamento,
-                    "empresa_id": empresa_id
-                })
-                
-                
-        except Exception as e:
-            conn.rollback()
-            conn.close()
-            flash(f"Erro ao finalizar venda: {str(e)}", "erro")
-            return redirect("/vendas")
-        
-        
-        # ==========================================
-        # ATUALIZAR CAIXA
-        # ==========================================
-        cursor.execute("""
-            UPDATE caixa
-            SET valor_final = COALESCE(valor_final, 0) + %s
-            WHERE id = %s
-        """, (valor_venda, caixa["id"]))
+                valor_bruto_item = (
+                    preco_unitario
+                    * quantidade
+                ).quantize(
+                    CENTAVOS,
+                    rounding=ROUND_HALF_UP,
+                )
 
-        conn.commit()
+                total_bruto += (
+                    valor_bruto_item
+                )
 
-        # ==========================================
-        # NOTIFICAÇÃO GERENTE (CORRIGIDA)
-        # ==========================================
-        notificar_gerente(
-            usuario_id,
-            "Venda realizada",
-            valor_venda,
-            empresa_id
-        )
+                itens_processados.append(
+                    {
+                        "produto": produto,
+                        "quantidade": quantidade,
+                        "preco_unitario": (
+                            preco_unitario
+                        ),
+                        "valor_bruto": (
+                            valor_bruto_item
+                        ),
+                    }
+                )
 
-        # ==========================================
-        # PUSH NOTIFICATION
-        # ==========================================
-        cursor.execute("""
-            SELECT fcm_token
-            FROM usuarios
-            WHERE empresa_id = %s
-            AND nivel = 'gerente'
-            LIMIT 1
-        """, (empresa_id,))
-
-        gerente = cursor.fetchone()
-
-        if gerente and gerente["fcm_token"]:
-            enviar_notificacao(
-                gerente["fcm_token"],
-                "Nova Venda",
-                f'{session["usuario"]} realizou uma venda de R$ {valor_venda:.2f}'
+            total_bruto = total_bruto.quantize(
+                CENTAVOS,
+                rounding=ROUND_HALF_UP,
             )
 
-        conn.close()
+            if total_bruto <= 0:
+                raise ValueError(
+                    "O total da venda é inválido."
+                )
 
-        # ==========================================
+            # =====================================
+            # DESCONTO GERAL DA VENDA
+            # =====================================
+
+            desconto_total, percentual = (
+                _calcular_desconto(
+                    total_bruto,
+                    tipo_desconto,
+                    desconto_informado,
+                )
+            )
+
+            total_liquido = (
+                total_bruto
+                - desconto_total
+            ).quantize(
+                CENTAVOS,
+                rounding=ROUND_HALF_UP,
+            )
+
+            venda_grupo = str(
+                uuid4()
+            )
+
+            desconto_restante = (
+                desconto_total
+            )
+
+            vendas_cupom = []
+
+            # =====================================
+            # RATEAR DESCONTO E REGISTRAR ITENS
+            # =====================================
+
+            for indice, item in enumerate(
+                itens_processados
+            ):
+
+                produto = item["produto"]
+                quantidade = item["quantidade"]
+                valor_bruto_item = (
+                    item["valor_bruto"]
+                )
+
+                ultimo_item = (
+                    indice
+                    == len(itens_processados) - 1
+                )
+
+                if ultimo_item:
+                    desconto_item = (
+                        desconto_restante
+                    )
+
+                else:
+                    desconto_item = (
+                        desconto_total
+                        * valor_bruto_item
+                        / total_bruto
+                    ).quantize(
+                        CENTAVOS,
+                        rounding=ROUND_HALF_UP,
+                    )
+
+                    if (
+                        desconto_item
+                        > desconto_restante
+                    ):
+                        desconto_item = (
+                            desconto_restante
+                        )
+
+                desconto_restante -= (
+                    desconto_item
+                )
+
+                valor_liquido_item = (
+                    valor_bruto_item
+                    - desconto_item
+                ).quantize(
+                    CENTAVOS,
+                    rounding=ROUND_HALF_UP,
+                )
+
+                novo_estoque = (
+                    int(produto["estoque"])
+                    - quantidade
+                )
+
+                cursor.execute(
+                    """
+                    UPDATE produtos
+
+                    SET estoque = %s
+
+                    WHERE id = %s
+                    AND empresa_id = %s
+                    """,
+                    (
+                        novo_estoque,
+                        produto["id"],
+                        empresa_id,
+                    ),
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO vendas (
+                        produto_id,
+                        quantidade,
+                        valor,
+                        valor_bruto,
+                        desconto_valor,
+                        desconto_percentual,
+                        venda_grupo,
+                        pagamento,
+                        empresa_id,
+                        caixa_id,
+                        usuario_id,
+                        data_venda
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        CURRENT_TIMESTAMP
+                    )
+                    """,
+                    (
+                        produto["id"],
+                        quantidade,
+                        valor_liquido_item,
+                        valor_bruto_item,
+                        desconto_item,
+                        percentual,
+                        venda_grupo,
+                        forma_pagamento,
+                        empresa_id,
+                        caixa["id"],
+                        usuario_id,
+                    ),
+                )
+
+                vendas_cupom.append(
+                    {
+                        "nome": produto["nome"],
+                        "quantidade": quantidade,
+                        "preco_unitario": (
+                            item["preco_unitario"]
+                        ),
+                        "valor_bruto": (
+                            valor_bruto_item
+                        ),
+                        "desconto": (
+                            desconto_item
+                        ),
+                        "valor": (
+                            valor_liquido_item
+                        ),
+                        "pagamento": (
+                            forma_pagamento
+                        ),
+                        "empresa_id": (
+                            empresa_id
+                        ),
+                        "venda_grupo": (
+                            venda_grupo
+                        ),
+                    }
+                )
+
+            # =====================================
+            # ATUALIZAR CAIXA PELO TOTAL LÍQUIDO
+            # =====================================
+
+            cursor.execute(
+                """
+                UPDATE caixa
+
+                SET valor_final =
+                    COALESCE(valor_final, 0)
+                    + %s
+
+                WHERE id = %s
+                AND empresa_id = %s
+                """,
+                (
+                    total_liquido,
+                    caixa["id"],
+                    empresa_id,
+                ),
+            )
+
+            conn.commit()
+
+        except ValueError as erro:
+
+            conn.rollback()
+
+            flash(
+                str(erro),
+                "erro",
+            )
+
+            return redirect("/vendas")
+
+        except Exception as erro:
+
+            conn.rollback()
+
+            flash(
+                (
+                    "Erro ao finalizar venda: "
+                    f"{erro}"
+                ),
+                "erro",
+            )
+
+            return redirect("/vendas")
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        # =====================================
+        # NOTIFICAÇÃO COM VALOR LÍQUIDO
+        # =====================================
+
+        try:
+            notificar_gerente(
+                usuario_id,
+                "Venda realizada",
+                float(total_liquido),
+                empresa_id,
+            )
+
+        except Exception:
+            app.logger.exception(
+                "Erro ao notificar gerente."
+            )
+
+        # =====================================
         # CUPOM
-        # ==========================================
-        pdf = gerar_cupom_venda(vendas_cupom, empresa_id)
+        # =====================================
+
+        pdf = gerar_cupom_venda(
+            vendas_cupom,
+            empresa_id,
+        )
 
         session["carrinho"] = []
         session["ultimo_cupom"] = pdf
 
-        flash("Venda finalizada", "sucesso")
+        flash(
+            (
+                "Venda finalizada. "
+                f"Total bruto: R$ {total_bruto:.2f} | "
+                f"Desconto: R$ {desconto_total:.2f} | "
+                f"Total pago: R$ {total_liquido:.2f}"
+            ),
+            "sucesso",
+        )
 
         return redirect("/vendas")
         

@@ -1027,6 +1027,8 @@ body.dark .switch-ball {
         transform 0.2s ease,
         border-color 0.2s ease,
         background 0.2s ease;
+    
+    
 }
 
 .btn-atualizacoes:hover {
@@ -1435,9 +1437,122 @@ body:not(.dark)
     .atualizacoes-footer {
         align-items: stretch;
         flex-direction: column;
+        
     }
 
     .btn-entendi-atualizacoes {
         width: 100%;
+    }
+}
+
+/* =========================================
+   RODAPÉ DA SIDEBAR NO CELULAR
+========================================= */
+
+@media (max-width: 900px) {
+
+    .sidebar {
+        padding-bottom: 15px;
+    }
+
+    .sidebar nav {
+        max-height: calc(100vh - 100px);
+
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        overscroll-behavior: contain;
+
+        scrollbar-width: thin;
+        scrollbar-color:
+            rgba(75, 145, 245, 0.55)
+            transparent;
+    }
+
+    .sidebar nav::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .sidebar nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .sidebar nav::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+
+        background:
+            rgba(75, 145, 245, 0.55);
+    }
+
+    .nexus-sidebar-footer {
+        position: static;
+
+        width: 100%;
+        min-height: 55px;
+
+        margin: 8px 0 0;
+        padding: 9px 11px;
+
+        flex-shrink: 0;
+
+        border-radius: 12px;
+    }
+
+    .sidebar.aberta
+    .nexus-sidebar-footer {
+        display: flex;
+    }
+
+    .sidebar:not(.aberta)
+    .nexus-sidebar-footer {
+        display: none;
+    }
+
+    .sidebar.fechada
+    .nexus-sidebar-footer {
+        right: auto;
+        left: auto;
+
+        justify-content: space-between;
+    }
+
+    .sidebar.fechada
+    .nexus-version {
+        display: flex;
+    }
+}
+
+
+/* CELULARES MENORES */
+
+@media (max-width: 480px) {
+
+    .sidebar nav {
+        top: 72px;
+        right: 10px;
+        left: 10px;
+
+        max-height:
+            calc(100dvh - 88px);
+    }
+
+    .nexus-sidebar-footer {
+        position: sticky;
+        bottom: 0;
+
+        z-index: 4;
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(39, 88, 168, 0.22),
+                rgba(54, 46, 122, 0.12)
+            ),
+            rgba(17, 33, 58, 0.96);
+
+        box-shadow:
+            0 -10px 24px rgba(5, 13, 28, 0.2),
+            inset 0 1px 0
+            rgba(255, 255, 255, 0.06);
     }
 }

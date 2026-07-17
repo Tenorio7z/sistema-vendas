@@ -156,49 +156,66 @@ def registrar_rotas(app):
             # =====================================
 
             cursor.execute(
-                """
-                SELECT
-                    COUNT(*) AS quantidade_bruta,
+            """
+            SELECT
+                COUNT(*) AS quantidade_bruta,
 
-                    COALESCE(
-                        SUM(valor),
-                        0
-                    ) AS faturamento_bruto,
+                COALESCE(
+                    SUM(
+                        COALESCE(
+                            valor_bruto,
+                            valor
+                        )
+                    ),
+                    0
+                ) AS faturamento_bruto,
 
-                    COUNT(*) FILTER (
+                COUNT(*) FILTER (
+                    WHERE COALESCE(cancelada, 0) = 0
+                ) AS vendas_validas,
+
+                COALESCE(
+                    SUM(valor) FILTER (
                         WHERE COALESCE(cancelada, 0) = 0
-                    ) AS vendas_validas,
+                    ),
+                    0
+                ) AS faturamento_realizado,
 
-                    COALESCE(
-                        SUM(valor) FILTER (
-                            WHERE COALESCE(cancelada, 0) = 0
-                        ),
-                        0
-                    ) AS faturamento_realizado,
+                COALESCE(
+                    SUM(
+                        COALESCE(
+                            desconto_valor,
+                            0
+                        )
+                    ) FILTER (
+                        WHERE COALESCE(cancelada, 0) = 0
+                    ),
+                    0
+                ) AS descontos_comerciais,
 
-                    COUNT(*) FILTER (
+                COUNT(*) FILTER (
+                    WHERE COALESCE(cancelada, 0) = 1
+                ) AS vendas_canceladas,
+
+                COALESCE(
+                    SUM(valor) FILTER (
                         WHERE COALESCE(cancelada, 0) = 1
-                    ) AS vendas_canceladas,
+                    ),
+                    0
+                ) AS total_cancelado
 
-                    COALESCE(
-                        SUM(valor) FILTER (
-                            WHERE COALESCE(cancelada, 0) = 1
-                        ),
-                        0
-                    ) AS total_cancelado
+            FROM vendas
 
-                FROM vendas
-
-                WHERE empresa_id = %s
-                  AND data_venda >= %s
-                  AND data_venda < %s
-                """,
-                (
-                    empresa_id,
-                    inicio,
-                    fim,
-                ),
-            )
+            WHERE empresa_id = %s
+            AND data_venda >= %s
+            AND data_venda < %s
+            """,
+            (
+                empresa_id,
+                inicio,
+                fim,
+            ),
+        )
 
             vendas = cursor.fetchone() or {}
 
@@ -340,6 +357,14 @@ def registrar_rotas(app):
 
             faturamento_bruto = _decimal_para_float(
                 vendas.get("faturamento_bruto")
+            )
+
+            descontos_comerciais = (
+                _decimal_para_float(
+                    vendas.get(
+                        "descontos_comerciais"
+                    )
+                )
             )
 
             faturamento_realizado = _decimal_para_float(
@@ -576,51 +601,120 @@ def registrar_rotas(app):
             # ÚLTIMAS SAÍDAS
             # =====================================
 
+            # =====================================
+            # EXTRATO FINANCEIRO COMPLETO
+            # =====================================
+
             cursor.execute(
                 """
                 SELECT *
                 FROM (
+                    -- =================================
+                    -- VENDAS VÁLIDAS
+                    -- =================================
+
                     SELECT
-                        data,
-                        descricao,
-                        valor,
-                        'Caixa' AS categoria
+                        MIN(v.data_venda) AS data,
 
-                    FROM movimentacoes_caixa
+                        (
+                            'Venda'
+                            ||
+                            CASE
+                                WHEN v.venda_grupo IS NOT NULL
+                                THEN
+                                    ' #' ||
+                                    LEFT(
+                                        v.venda_grupo,
+                                        8
+                                    )
 
-                    WHERE empresa_id = %s
-                      AND tipo = 'saida'
-                      AND data >= %s
-                      AND data < %s
+                                ELSE
+                                    ' #' ||
+                                    MIN(v.id)::TEXT
+                            END
+                        ) AS descricao,
+
+                        SUM(v.valor) AS valor,
+
+                        'Vendas' AS categoria,
+
+                        'entrada' AS tipo
+
+                    FROM vendas v
+
+                    WHERE v.empresa_id = %s
+                    AND COALESCE(v.cancelada, 0) = 0
+                    AND v.data_venda >= %s
+                    AND v.data_venda < %s
+
+                    GROUP BY
+                        COALESCE(
+                            v.venda_grupo,
+                            'legado-' || v.id::TEXT
+                        ),
+                        v.venda_grupo
 
                     UNION ALL
 
+                    -- =================================
+                    -- MOVIMENTAÇÕES DO CAIXA
+                    -- =================================
+
                     SELECT
-                        data_pagamento AS data,
+                        mc.data,
+                        mc.descricao,
+                        mc.valor,
+                        'Caixa' AS categoria,
+                        mc.tipo
+
+                    FROM movimentacoes_caixa mc
+
+                    WHERE mc.empresa_id = %s
+                    AND mc.data >= %s
+                    AND mc.data < %s
+
+                    UNION ALL
+
+                    -- =================================
+                    -- FOLHAS PAGAS FORA DO CAIXA
+                    -- =================================
+
+                    SELECT
+                        fp.data_pagamento AS data,
+
                         (
                             'Folha de pagamento - '
                             || u.usuario
                         ) AS descricao,
+
                         fp.valor_total AS valor,
-                        'Funcionários' AS categoria
+
+                        'Funcionários' AS categoria,
+
+                        'saida' AS tipo
 
                     FROM folha_pagamentos fp
 
                     INNER JOIN usuarios u
                         ON u.id = fp.usuario_id
-                       AND u.empresa_id = fp.empresa_id
+                    AND u.empresa_id = fp.empresa_id
 
                     WHERE fp.empresa_id = %s
-                      AND fp.status = 'pago'
-                      AND fp.data_pagamento >= %s
-                      AND fp.data_pagamento < %s
-                      AND fp.caixa_id IS NULL
-                ) movimentacoes
+                    AND fp.status = 'pago'
+                    AND fp.data_pagamento >= %s
+                    AND fp.data_pagamento < %s
+                    AND fp.caixa_id IS NULL
+                ) extrato
 
                 ORDER BY data DESC
-                LIMIT 15
+
+                LIMIT 30
                 """,
                 (
+                    empresa_id,
+                    inicio,
+                    fim,
+
                     empresa_id,
                     inicio,
                     fim,
@@ -631,7 +725,7 @@ def registrar_rotas(app):
                 ),
             )
 
-            ultimas_saidas = (
+            movimentacoes_financeiras = (
                 cursor.fetchall()
                 or []
             )
@@ -643,8 +737,18 @@ def registrar_rotas(app):
                 filtro=filtro,
 
                 faturamento_bruto=faturamento_bruto,
-                faturamento_realizado=faturamento_realizado,
-                resultado_liquido=resultado_liquido,
+
+                descontos_comerciais=(
+                    descontos_comerciais
+                ),
+
+                faturamento_realizado=(
+                    faturamento_realizado
+                ),
+
+                resultado_liquido=(
+                    resultado_liquido
+                ),
 
                 total_cancelado=total_cancelado,
                 quantidade_cancelamentos=int(
@@ -692,7 +796,9 @@ def registrar_rotas(app):
                 valores=valores,
                 valores_saidas=valores_saidas,
 
-                ultimas_saidas=ultimas_saidas,
+                movimentacoes_financeiras=(
+                    movimentacoes_financeiras
+                ),
             )
 
         finally:

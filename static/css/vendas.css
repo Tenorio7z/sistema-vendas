@@ -1571,3 +1571,1106 @@ body:not(.dark) .produto-imagem-box {
         height: 130px;
     }
 }                                                                         
+
+/* =========================================
+   MODAIS DE PAGAMENTO E DESCONTO
+========================================= */
+
+#modalPagamento,
+#modalDesconto {
+    position: fixed;
+    z-index: 9998;
+
+    inset: 0;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 22px;
+
+    overflow-y: auto;
+
+    background:
+        rgba(2, 8, 20, 0.78);
+
+    backdrop-filter:
+        blur(11px) saturate(120%);
+    -webkit-backdrop-filter:
+        blur(11px) saturate(120%);
+}
+
+#modalDesconto {
+    z-index: 9999;
+
+    background:
+        rgba(2, 8, 20, 0.84);
+}
+
+#modalPagamento .modal-content,
+#modalDesconto .modal-content {
+    position: relative;
+    isolation: isolate;
+
+    width: min(100%, 520px);
+    max-height: calc(100vh - 44px);
+
+    margin: auto;
+    padding: 27px;
+
+    overflow: hidden auto;
+
+    border:
+        1px solid rgba(108, 159, 234, 0.28);
+    border-radius: 23px;
+
+    color: #eef6ff;
+
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(55, 137, 255, 0.2),
+            transparent 35%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(31, 50, 82, 0.98),
+            rgba(15, 29, 52, 0.99)
+        );
+
+    box-shadow:
+        0 35px 100px
+        rgba(0, 4, 16, 0.62),
+
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.09);
+
+    animation:
+        modal-venda-entrando
+        0.24s ease both;
+}
+
+#modalDesconto .modal-content {
+    width: min(100%, 465px);
+
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(133, 101, 255, 0.2),
+            transparent 38%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(31, 48, 81, 0.99),
+            rgba(14, 27, 50, 0.99)
+        );
+}
+
+@keyframes modal-venda-entrando {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(16px)
+            scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+/* =========================================
+   CABEÇALHO DOS MODAIS
+========================================= */
+
+.fechar-modal-venda {
+    position: absolute;
+    z-index: 4;
+
+    top: 17px;
+    right: 17px;
+
+    display: grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+    padding: 0;
+
+    border:
+        1px solid rgba(113, 158, 226, 0.23);
+    border-radius: 10px;
+
+    color: #dceaff;
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    font: inherit;
+    font-size: 21px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.fechar-modal-venda:hover {
+    transform: rotate(7deg);
+
+    border-color:
+        rgba(255, 99, 137, 0.4);
+
+    color: #ff7999;
+
+    background:
+        rgba(255, 99, 137, 0.09);
+}
+
+.modal-etiqueta {
+    display: inline-block;
+
+    margin-bottom: 7px;
+
+    color: #56baff;
+
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1.6px;
+}
+
+#modalDesconto .modal-etiqueta {
+    color: #aa91ff;
+}
+
+#modalPagamento h2,
+#modalDesconto h2 {
+    margin: 0 45px 6px 0;
+
+    color: #f4f8ff;
+
+    font-size: 25px;
+    font-weight: 850;
+    line-height: 1.05;
+    letter-spacing: -0.8px;
+}
+
+.modal-subtitulo {
+    max-width: 390px;
+
+    margin: 0 0 20px;
+
+    color: rgba(184, 204, 232, 0.67);
+
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+#dadosVenda {
+    display: none;
+}
+
+
+/* =========================================
+   RESUMO DA VENDA
+========================================= */
+
+.resumo-venda {
+    padding: 15px;
+
+    border:
+        1px solid rgba(106, 153, 223, 0.18);
+    border-radius: 15px;
+
+    background:
+        rgba(3, 14, 32, 0.3);
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.035);
+}
+
+.linha-resumo,
+.subtotal-resumo,
+.desconto-resumo,
+.total-resumo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.linha-resumo {
+    min-height: 32px;
+
+    color: rgba(193, 211, 237, 0.72);
+
+    font-size: 9px;
+}
+
+.linha-resumo span {
+    min-width: 0;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.linha-resumo strong {
+    flex-shrink: 0;
+
+    color: #e5efff;
+
+    font-size: 9px;
+}
+
+.divisor-resumo {
+    height: 1px;
+
+    margin: 10px 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(118, 160, 223, 0.2),
+            transparent
+        );
+}
+
+.subtotal-resumo {
+    min-height: 32px;
+
+    color: rgba(180, 201, 230, 0.68);
+
+    font-size: 10px;
+}
+
+.subtotal-resumo strong {
+    color: #e9f2ff;
+
+    font-size: 11px;
+}
+
+.desconto-resumo {
+    min-height: 39px;
+    margin: 6px 0;
+    padding: 0 10px;
+
+    border:
+        1px solid rgba(255, 99, 137, 0.18);
+    border-radius: 10px;
+
+    color: #ff8ba7;
+
+    background:
+        rgba(255, 99, 137, 0.065);
+
+    font-size: 10px;
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+}
+
+.desconto-resumo.oculto {
+    display: none;
+}
+
+.desconto-resumo span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.desconto-resumo small {
+    padding: 3px 6px;
+
+    border-radius: 999px;
+
+    color: #ffc2d0;
+    background:
+        rgba(255, 99, 137, 0.12);
+
+    font-size: 7px;
+    font-weight: 800;
+}
+
+.desconto-resumo strong {
+    color: #ff6e91;
+
+    font-size: 11px;
+}
+
+.total-resumo {
+    min-height: 52px;
+    margin-top: 9px;
+    padding: 0 12px;
+
+    border:
+        1px solid rgba(53, 214, 164, 0.22);
+    border-radius: 12px;
+
+    color: rgba(202, 220, 243, 0.78);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(53, 214, 164, 0.085),
+            rgba(67, 140, 255, 0.04)
+        );
+
+    font-size: 10px;
+}
+
+.total-resumo strong {
+    color: #35d6a4;
+
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+
+    text-shadow:
+        0 0 18px
+        rgba(53, 214, 164, 0.18);
+}
+
+
+/* =========================================
+   BOTÃO ADICIONAR DESCONTO
+========================================= */
+
+.btn-adicionar-desconto {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    min-height: 56px;
+
+    margin: 13px 0;
+    padding: 10px 12px;
+
+    border:
+        1px solid rgba(154, 125, 255, 0.25);
+    border-radius: 13px;
+
+    color: #e9e2ff;
+
+    text-align: left;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(142, 105, 255, 0.11),
+            rgba(61, 112, 235, 0.055)
+        );
+
+    font: inherit;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn-adicionar-desconto:hover {
+    transform: translateY(-2px);
+
+    border-color:
+        rgba(161, 132, 255, 0.5);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(142, 105, 255, 0.18),
+            rgba(61, 112, 235, 0.09)
+        );
+
+    box-shadow:
+        0 13px 28px
+        rgba(70, 48, 150, 0.16);
+}
+
+.btn-adicionar-desconto > span {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+
+    border:
+        1px solid rgba(164, 139, 255, 0.3);
+    border-radius: 10px;
+
+    color: #b59fff;
+    background:
+        rgba(150, 113, 255, 0.1);
+
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.btn-adicionar-desconto > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.btn-adicionar-desconto strong {
+    font-size: 10px;
+}
+
+.btn-adicionar-desconto small {
+    color:
+        rgba(194, 183, 232, 0.62);
+
+    font-size: 8px;
+}
+
+
+/* =========================================
+   FORMULÁRIO DO PAGAMENTO
+========================================= */
+
+#formFinalizarVenda {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.campo-pagamento {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.campo-pagamento > span {
+    padding-left: 3px;
+
+    color: rgba(180, 201, 230, 0.62);
+
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+}
+
+.campo-pagamento select {
+    width: 100%;
+    height: 44px;
+    padding: 0 13px;
+
+    border:
+        1px solid rgba(109, 154, 223, 0.22);
+    border-radius: 11px;
+    outline: none;
+
+    color: #eaf3ff;
+    background: #142641;
+
+    font: inherit;
+    font-size: 10px;
+
+    color-scheme: dark;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.campo-pagamento select:focus {
+    border-color: #4b9cff;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(75, 156, 255, 0.12);
+}
+
+.btn-finalizar-venda {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    width: 100%;
+    min-height: 45px;
+    margin: 0;
+
+    border-radius: 11px;
+}
+
+.btn-finalizar-venda strong {
+    font-size: inherit;
+}
+
+.btn-finalizar-venda:disabled {
+    cursor: wait;
+
+    opacity: 0.65;
+}
+
+.btn-finalizar-venda.carregando::after {
+    content: "";
+
+    width: 13px;
+    height: 13px;
+
+    margin-left: 4px;
+
+    border:
+        2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+
+    animation:
+        girar-finalizacao
+        0.7s linear infinite;
+}
+
+@keyframes girar-finalizacao {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================
+   TIPOS DE DESCONTO
+========================================= */
+
+.tipos-desconto {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 5px;
+
+    margin-bottom: 16px;
+    padding: 4px;
+
+    border:
+        1px solid rgba(112, 155, 221, 0.18);
+    border-radius: 12px;
+
+    background:
+        rgba(3, 14, 32, 0.32);
+}
+
+.tipo-desconto-btn {
+    min-height: 38px;
+    padding: 0 12px;
+
+    border: 1px solid transparent;
+    border-radius: 9px;
+
+    color:
+        rgba(190, 207, 233, 0.7);
+    background: transparent;
+
+    font: inherit;
+    font-size: 9px;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.tipo-desconto-btn:hover {
+    color: #ffffff;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+}
+
+.tipo-desconto-btn.ativo {
+    border-color:
+        rgba(161, 132, 255, 0.38);
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(148, 108, 255, 0.86),
+            rgba(69, 101, 234, 0.88)
+        );
+
+    box-shadow:
+        0 8px 20px
+        rgba(83, 61, 190, 0.24);
+}
+
+
+/* =========================================
+   CAMPO DO DESCONTO
+========================================= */
+
+.campo-desconto {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.campo-desconto > label {
+    padding-left: 3px;
+
+    color:
+        rgba(183, 202, 230, 0.65);
+
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+}
+
+.input-desconto-box {
+    display: flex;
+    align-items: center;
+
+    height: 52px;
+
+    overflow: hidden;
+
+    border:
+        1px solid rgba(137, 121, 230, 0.28);
+    border-radius: 13px;
+
+    background:
+        rgba(5, 16, 36, 0.43);
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.input-desconto-box:focus-within {
+    border-color: #9277ff;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(146, 119, 255, 0.13);
+}
+
+.input-desconto-box > span {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+
+    width: 52px;
+    height: 100%;
+
+    border-right:
+        1px solid rgba(137, 121, 230, 0.18);
+
+    color: #b29dff;
+    background:
+        rgba(146, 119, 255, 0.08);
+
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.input-desconto-box input {
+    width: 100%;
+    height: 100%;
+    padding: 0 15px;
+
+    border: 0;
+    outline: 0;
+
+    color: #ffffff;
+    background: transparent;
+
+    font: inherit;
+    font-size: 17px;
+    font-weight: 800;
+
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.input-desconto-box input::-webkit-inner-spin-button,
+.input-desconto-box input::-webkit-outer-spin-button {
+    margin: 0;
+
+    -webkit-appearance: none;
+}
+
+.input-desconto-box input::placeholder {
+    color:
+        rgba(196, 207, 230, 0.3);
+}
+
+.conversao-desconto {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 36px;
+    margin-top: 7px;
+    padding: 0 10px;
+
+    border-radius: 9px;
+
+    color:
+        rgba(179, 199, 227, 0.6);
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    font-size: 8px;
+}
+
+.conversao-desconto strong {
+    color: #bbaaff;
+
+    font-size: 10px;
+}
+
+
+/* =========================================
+   PRÉVIA DO DESCONTO
+========================================= */
+
+.preview-desconto {
+    display: flex;
+    flex-direction: column;
+
+    margin-top: 15px;
+    padding: 13px;
+
+    border:
+        1px solid rgba(108, 153, 221, 0.17);
+    border-radius: 14px;
+
+    background:
+        rgba(4, 15, 33, 0.31);
+}
+
+.preview-desconto > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    min-height: 34px;
+}
+
+.preview-desconto span {
+    color:
+        rgba(184, 203, 231, 0.64);
+
+    font-size: 9px;
+}
+
+.preview-desconto strong {
+    color: #e5efff;
+
+    font-size: 10px;
+}
+
+.preview-desconto
+.valor-negativo {
+    color: #ff718f;
+}
+
+.preview-desconto
+.preview-total {
+    min-height: 48px;
+    margin-top: 6px;
+    padding: 0 10px;
+
+    border:
+        1px solid rgba(53, 214, 164, 0.19);
+    border-radius: 10px;
+
+    background:
+        rgba(53, 214, 164, 0.065);
+}
+
+.preview-desconto
+.preview-total strong {
+    color: #35d6a4;
+
+    font-size: 16px;
+    font-weight: 900;
+}
+
+
+/* =========================================
+   AÇÕES DO DESCONTO
+========================================= */
+
+.acoes-desconto {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 0.8fr)
+        minmax(0, 1.2fr);
+    gap: 9px;
+
+    margin-top: 15px;
+}
+
+.btn-remover-desconto,
+.btn-confirmar-desconto {
+    min-height: 42px;
+    padding: 0 12px;
+
+    border-radius: 11px;
+
+    font: inherit;
+    font-size: 9px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.btn-remover-desconto {
+    border:
+        1px solid rgba(255, 99, 137, 0.2);
+
+    color: #ff8ba6;
+    background:
+        rgba(255, 99, 137, 0.055);
+}
+
+.btn-confirmar-desconto {
+    border:
+        1px solid rgba(158, 132, 255, 0.4);
+
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #956fff,
+            #4967e9
+        );
+
+    box-shadow:
+        0 12px 27px
+        rgba(79, 57, 190, 0.24);
+}
+
+.btn-remover-desconto:hover,
+.btn-confirmar-desconto:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+
+
+/* =========================================
+   TEMA CLARO
+========================================= */
+
+body:not(.dark)
+#modalPagamento,
+body:not(.dark)
+#modalDesconto {
+    background:
+        rgba(33, 49, 74, 0.48);
+}
+
+body:not(.dark)
+#modalPagamento .modal-content,
+body:not(.dark)
+#modalDesconto .modal-content {
+    border-color:
+        rgba(60, 101, 161, 0.18);
+
+    color: #14233a;
+
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(68, 143, 255, 0.14),
+            transparent 35%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.99),
+            rgba(239, 245, 253, 0.99)
+        );
+
+    box-shadow:
+        0 28px 75px
+        rgba(35, 61, 99, 0.24);
+}
+
+body:not(.dark)
+#modalPagamento h2,
+body:not(.dark)
+#modalDesconto h2 {
+    color: #14233a;
+}
+
+body:not(.dark)
+.modal-subtitulo,
+body:not(.dark)
+.linha-resumo,
+body:not(.dark)
+.subtotal-resumo,
+body:not(.dark)
+.campo-pagamento > span,
+body:not(.dark)
+.campo-desconto > label,
+body:not(.dark)
+.preview-desconto span {
+    color:
+        rgba(49, 70, 101, 0.68);
+}
+
+body:not(.dark)
+.resumo-venda,
+body:not(.dark)
+.preview-desconto,
+body:not(.dark)
+.input-desconto-box,
+body:not(.dark)
+.tipos-desconto {
+    background:
+        rgba(227, 236, 249, 0.62);
+}
+
+body:not(.dark)
+.linha-resumo strong,
+body:not(.dark)
+.subtotal-resumo strong,
+body:not(.dark)
+.preview-desconto strong {
+    color: #172945;
+}
+
+body:not(.dark)
+.input-desconto-box input {
+    color: #172945;
+}
+
+body:not(.dark)
+.campo-pagamento select {
+    color: #172945;
+    background: #edf3fb;
+
+    color-scheme: light;
+}
+
+body:not(.dark)
+.fechar-modal-venda {
+    color: #344965;
+    background:
+        rgba(255, 255, 255, 0.58);
+}
+
+
+/* =========================================
+   RESPONSIVIDADE
+========================================= */
+
+@media (max-width: 600px) {
+    #modalPagamento,
+    #modalDesconto {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    #modalPagamento .modal-content,
+    #modalDesconto .modal-content {
+        width: 100%;
+        max-height: calc(100dvh - 18px);
+
+        margin: auto 0 0;
+        padding: 23px 17px 18px;
+
+        border-right: 0;
+        border-bottom: 0;
+        border-left: 0;
+        border-radius: 22px 22px 0 0;
+
+        animation:
+            modal-mobile-entrando
+            0.25s ease both;
+    }
+
+    @keyframes modal-mobile-entrando {
+        from {
+            opacity: 0;
+
+            transform:
+                translateY(35px);
+        }
+
+        to {
+            opacity: 1;
+
+            transform:
+                translateY(0);
+        }
+    }
+
+    #modalPagamento h2,
+    #modalDesconto h2 {
+        font-size: 22px;
+    }
+
+    .resumo-venda {
+        padding: 12px;
+    }
+
+    .total-resumo strong {
+        font-size: 16px;
+    }
+
+    .acoes-desconto {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-confirmar-desconto {
+        grid-row: 1;
+    }
+
+    .btn-remover-desconto {
+        grid-row: 2;
+    }
+}
+
+
+/* =========================================
+   MOVIMENTO REDUZIDO
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    #modalPagamento .modal-content,
+    #modalDesconto .modal-content,
+    .btn-adicionar-desconto,
+    .tipo-desconto-btn,
+    .btn-remover-desconto,
+    .btn-confirmar-desconto {
+        animation: none !important;
+        transition: none !important;
+    }
+}
