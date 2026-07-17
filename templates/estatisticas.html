@@ -1,179 +1,1167 @@
 {% extends "layout.html" %}
 
 {% block css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/estatisticas.css') }}">
+
+<link
+    rel="stylesheet"
+    href="{{ url_for(
+        'static',
+        filename='css/estatisticas.css'
+    ) }}"
+>
+
 {% endblock %}
 
 {% block content %}
 
 {% if bloqueado %}
 
-<div class="premium-lock">
+<section class="premium-lock">
 
-    <div class="premium-icon">👑</div>
+    <div class="premium-icon">
+        👑
+    </div>
 
-    <h1>Recurso Premium</h1>
+    <span class="premium-label">
+        RECURSO PREMIUM
+    </span>
+
+    <h1>
+        Estatísticas avançadas
+    </h1>
 
     <p>
-        Estatísticas avançadas estão disponíveis apenas
-        para clientes Premium.
+        Tenha acesso ao resultado líquido, despesas,
+        cancelamentos, folha de pagamento e relatórios
+        financeiros completos.
     </p>
 
-
-    <a href="/planos" class="btn-upgrade">
-        Fazer Upgrade
+    <a
+        href="/planos"
+        class="btn-upgrade"
+    >
+        Fazer upgrade
     </a>
 
-</div>
+</section>
 
 {% else %}
 
-<div class="estatisticas-container">
+<main class="estatisticas-container">
 
-    <h1 class="titulo-pagina">
-        Estatísticas
-    </h1>
+    <!-- =====================================
+         CABEÇALHO
+    ====================================== -->
 
-    <p class="subtitulo-pagina">
-        Indicadores avançados do seu negócio
-    </p>
+    <section class="estatisticas-topo">
 
-    <div class="acoes-estatisticas">
+        <div class="estatisticas-titulo">
 
-        <a href="/historico_caixas" class="btn-historico">
+            <span class="pagina-etiqueta">
+                FINANCEIRO
+            </span>
 
-            📂 Histórico de Caixas
+            <h1>
+                Estatísticas
+            </h1>
 
-        </a>
+            <p>
+                Visão completa das entradas, saídas
+                e do resultado da empresa.
+            </p>
 
-    </div>
-
-    <!-- KPIs -->
-
-    <div class="stats-grid">
-
-        <div class="stat-card destaque">
-            <span>Faturamento Total</span>
-            <h2>R$ {{ "%.2f"|format(faturamento) }}</h2>
         </div>
 
-        <div class="stat-card">
-            <span>Hoje</span>
-            <h2>R$ {{ faturamento_dia }}</h2>
+        <div class="estatisticas-acoes">
+
+            <button
+                type="button"
+                class="btn-imprimir"
+                onclick="window.print()"
+            >
+                🖨️ Gerar relatório
+            </button>
+
+            <a
+                href="/historico_caixas"
+                class="btn-historico"
+            >
+                📁 Histórico de caixas
+            </a>
+
         </div>
 
-        <div class="stat-card">
-            <span>Este Mês</span>
-            <h2>R$ {{ faturamento_mes }}</h2>
-        </div>
+    </section>
 
-        <div class="stat-card">
-            <span>Este Ano</span>
-            <h2>R$ {{ faturamento_ano }}</h2>
-        </div>
+    <!-- =====================================
+         FILTROS
+    ====================================== -->
 
-        <div class="stat-card">
-            <span>Total de Vendas</span>
-            <h2>{{ total_vendas }}</h2>
-        </div>
+    <section class="filtro-card">
 
-        <div class="stat-card">
-            <span>Ticket Médio</span>
-            <h2>R$ {{ "%.2f"|format(ticket_medio) }}</h2>
-        </div>
-
-        <div class="stat-card">
-            <span>Produto Mais Vendido</span>
-            <h2>{{ produto_top }}</h2>
-        </div>
-
-    </div>
-
-    <!-- GRAFICO -->
-
-    <div class="grafico-card">
-
-        <div class="grafico-header">
+        <div class="filtro-cabecalho">
 
             <div>
-                <h2>Faturamento</h2>
-                <p>Evolução das vendas ao longo do tempo</p>
+                <span class="filtro-label">
+                    PERÍODO ANALISADO
+                </span>
+
+                <strong>
+                    {{ filtro["titulo"] }}
+                </strong>
             </div>
 
-            <span class="badge-premium">
-                PREMIUM
+            <span class="filtro-data">
+
+                {{ filtro["inicio"].strftime("%d/%m/%Y") }}
+
+                até
+
+                {{
+                    filtro["fim_exibicao"]
+                    .strftime("%d/%m/%Y")
+                }}
+
             </span>
 
         </div>
 
+        <form
+            method="GET"
+            action="/estatisticas"
+            class="filtro-form"
+        >
+
+            <div class="filtro-atalhos">
+
+                <a
+                    href="/estatisticas?periodo=hoje"
+                    class="{{
+                        'ativo'
+                        if filtro['periodo'] == 'hoje'
+                        else ''
+                    }}"
+                >
+                    Hoje
+                </a>
+
+                <a
+                    href="/estatisticas?periodo=mes"
+                    class="{{
+                        'ativo'
+                        if filtro['periodo'] == 'mes'
+                        else ''
+                    }}"
+                >
+                    Este mês
+                </a>
+
+                <a
+                    href="/estatisticas?periodo=ano"
+                    class="{{
+                        'ativo'
+                        if filtro['periodo'] == 'ano'
+                        else ''
+                    }}"
+                >
+                    Este ano
+                </a>
+
+            </div>
+
+            <input
+                type="hidden"
+                name="periodo"
+                value="personalizado"
+            >
+
+            <label>
+
+                <span>
+                    Data inicial
+                </span>
+
+                <input
+                    type="date"
+                    name="inicio"
+                    value="{{
+                        filtro['inicio']
+                        .strftime('%Y-%m-%d')
+                    }}"
+                    required
+                >
+
+            </label>
+
+            <label>
+
+                <span>
+                    Data final
+                </span>
+
+                <input
+                    type="date"
+                    name="fim"
+                    value="{{
+                        filtro['fim_exibicao']
+                        .strftime('%Y-%m-%d')
+                    }}"
+                    required
+                >
+
+            </label>
+
+            <button
+                type="submit"
+                class="btn-filtrar"
+            >
+                Aplicar período
+            </button>
+
+        </form>
+
+    </section>
+
+    <!-- =====================================
+         KPIs PRINCIPAIS
+    ====================================== -->
+
+    <section class="financeiro-grid principal">
+
+        <article class="financeiro-card azul">
+
+            <div class="card-topo">
+
+                <span>
+                    Faturamento bruto
+                </span>
+
+                <span class="card-icone">
+                    💰
+                </span>
+
+            </div>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"
+                    |format(faturamento_bruto)
+                }}
+            </strong>
+
+            <small>
+                Valor total antes dos cancelamentos
+            </small>
+
+        </article>
+
+        <article class="financeiro-card verde">
+
+            <div class="card-topo">
+
+                <span>
+                    Faturamento realizado
+                </span>
+
+                <span class="card-icone">
+                    📈
+                </span>
+
+            </div>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"
+                    |format(faturamento_realizado)
+                }}
+            </strong>
+
+            <small>
+                Somente vendas válidas
+            </small>
+
+        </article>
+
+        <article class="financeiro-card vermelho">
+
+            <div class="card-topo">
+
+                <span>
+                    Total de saídas
+                </span>
+
+                <span class="card-icone">
+                    📉
+                </span>
+
+            </div>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"
+                    |format(total_saidas)
+                }}
+            </strong>
+
+            <small>
+                Folha e demais retiradas
+            </small>
+
+        </article>
+
+        <article class="
+            financeiro-card
+            resultado
+            {{
+                'positivo'
+                if resultado_liquido >= 0
+                else 'negativo'
+            }}
+        ">
+
+            <div class="card-topo">
+
+                <span>
+                    Resultado líquido
+                </span>
+
+                <span class="card-icone">
+
+                    {{
+                        "✨"
+                        if resultado_liquido >= 0
+                        else "⚠️"
+                    }}
+
+                </span>
+
+            </div>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"
+                    |format(resultado_liquido)
+                }}
+            </strong>
+
+            <small>
+                Receitas menos todas as saídas
+            </small>
+
+        </article>
+
+    </section>
+
+    <!-- =====================================
+         INDICADORES SECUNDÁRIOS
+    ====================================== -->
+
+    <section class="financeiro-grid secundario">
+
+        <article class="indicador-card">
+
+            <span>
+                Vendas válidas
+            </span>
+
+            <strong>
+                {{ total_vendas }}
+            </strong>
+
+            <small>
+                operações concluídas
+            </small>
+
+        </article>
+
+        <article class="indicador-card">
+
+            <span>
+                Ticket médio
+            </span>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"
+                    |format(ticket_medio)
+                }}
+            </strong>
+
+            <small>
+                valor médio por venda
+            </small>
+
+        </article>
+
+        <article class="indicador-card cancelamento">
+
+            <span>
+                Vendas canceladas
+            </span>
+
+            <strong>
+                {{ quantidade_cancelamentos }}
+            </strong>
+
+            <small>
+                R$
+                {{
+                    "%.2f"
+                    |format(total_cancelado)
+                }}
+                cancelados
+            </small>
+
+        </article>
+
+        <article class="indicador-card">
+
+            <span>
+                Margem líquida
+            </span>
+
+            <strong>
+                {{
+                    "%.1f"
+                    |format(margem_liquida)
+                }}%
+            </strong>
+
+            <small>
+                sobre o faturamento realizado
+            </small>
+
+        </article>
+
+        <article class="indicador-card">
+
+            <span>
+                Produto mais vendido
+            </span>
+
+            <strong class="produto-top">
+                {{ produto_top }}
+            </strong>
+
+            <small>
+                {{ produto_top_quantidade }}
+                unidades vendidas
+            </small>
+
+        </article>
+
+        <article class="indicador-card">
+
+            <span>
+                Entradas adicionais
+            </span>
+
+            <strong>
+                R$
+                {{
+                    "%.2f"
+                    |format(outras_entradas)
+                }}
+            </strong>
+
+            <small>
+                entradas manuais no caixa
+            </small>
+
+        </article>
+
+    </section>
+
+    <!-- =====================================
+         GRÁFICO
+    ====================================== -->
+
+    <section class="grafico-card">
+
+        <div class="secao-cabecalho">
+
+            <div>
+
+                <span class="secao-etiqueta">
+                    FLUXO FINANCEIRO
+                </span>
+
+                <h2>
+                    Entradas e saídas
+                </h2>
+
+                <p>
+                    Acompanhe a movimentação financeira
+                    ao longo do período.
+                </p>
+
+            </div>
+
+            <div class="grafico-legenda">
+
+                <span class="legenda entradas">
+                    Entradas
+                </span>
+
+                <span class="legenda saidas">
+                    Saídas
+                </span>
+
+            </div>
+
+        </div>
+
         <div class="grafico-container">
-            <canvas id="graficoVendas"></canvas>
+
+            <canvas id="graficoFinanceiro"></canvas>
+
         </div>
 
-    </div>
+    </section>
 
-    <!-- RESUMOS -->
+    <!-- =====================================
+         FOLHA E DESPESAS
+    ====================================== -->
 
-    <div class="resumo-grid">
+    <section class="detalhes-grid">
 
-        <div class="resumo-card">
-            <h3>Meta Mensal</h3>
-            <p>
-                Acompanhe seu desempenho mensal
-                e compare com metas futuras.
+        <article class="detalhes-card folha-card">
+
+            <div class="secao-cabecalho compacto">
+
+                <div>
+
+                    <span class="secao-etiqueta">
+                        EQUIPE
+                    </span>
+
+                    <h2>
+                        Folha de pagamento
+                    </h2>
+
+                </div>
+
+                <span class="quantidade-badge">
+                    {{ folhas_pagas }} pagas
+                </span>
+
+            </div>
+
+            <div class="detalhes-lista">
+
+                <div>
+
+                    <span>
+                        Salários
+                    </span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"
+                            |format(salarios)
+                        }}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Comissões
+                    </span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"
+                            |format(comissoes)
+                        }}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Bônus
+                    </span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"
+                            |format(bonus)
+                        }}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Descontos aplicados
+                    </span>
+
+                    <strong class="valor-desconto">
+                        - R$
+                        {{
+                            "%.2f"
+                            |format(descontos_folha)
+                        }}
+                    </strong>
+
+                </div>
+
+                <div class="detalhe-total">
+
+                    <span>
+                        Total efetivamente pago
+                    </span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"
+                            |format(total_folha)
+                        }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <a
+                href="/folha/historico"
+                class="btn-detalhes"
+            >
+                Ver histórico da folha
+            </a>
+
+        </article>
+
+        <article class="detalhes-card despesas-card">
+
+            <div class="secao-cabecalho compacto">
+
+                <div>
+
+                    <span class="secao-etiqueta">
+                        DESPESAS
+                    </span>
+
+                    <h2>
+                        Resumo das saídas
+                    </h2>
+
+                </div>
+
+                <span class="quantidade-badge vermelho">
+                    Financeiro
+                </span>
+
+            </div>
+
+            <div class="detalhes-lista">
+
+                <div>
+
+                    <span>
+                        Folha de pagamento
+                    </span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"
+                            |format(total_folha)
+                        }}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Sangrias e outras saídas
+                    </span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"
+                            |format(outras_saidas)
+                        }}
+                    </strong>
+
+                </div>
+
+                <div>
+
+                    <span>
+                        Vendas canceladas
+                    </span>
+
+                    <strong class="valor-desconto">
+                        R$
+                        {{
+                            "%.2f"
+                            |format(total_cancelado)
+                        }}
+                    </strong>
+
+                </div>
+
+                <div class="detalhe-total">
+
+                    <span>
+                        Saída efetiva de caixa
+                    </span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"
+                            |format(total_saidas)
+                        }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <p class="aviso-contabil">
+
+                Cancelamentos aparecem separadamente,
+                mas não são descontados duas vezes do
+                resultado líquido.
+
             </p>
+
+        </article>
+
+    </section>
+
+    <!-- =====================================
+         ÚLTIMAS SAÍDAS
+    ====================================== -->
+
+    <section class="movimentacoes-card">
+
+        <div class="secao-cabecalho">
+
+            <div>
+
+                <span class="secao-etiqueta">
+                    RELATÓRIO AVANÇADO
+                </span>
+
+                <h2>
+                    Últimas saídas registradas
+                </h2>
+
+                <p>
+                    Pagamentos, retiradas e cancelamentos
+                    identificados no período.
+                </p>
+
+            </div>
+
         </div>
 
-        <div class="resumo-card">
-            <h3>Tendência</h3>
+        {% if ultimas_saidas %}
+
+        <div class="tabela-container">
+
+            <table class="tabela-movimentacoes">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Data
+                        </th>
+
+                        <th>
+                            Categoria
+                        </th>
+
+                        <th>
+                            Descrição
+                        </th>
+
+                        <th class="coluna-valor">
+                            Valor
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for item in ultimas_saidas %}
+
+                    <tr>
+
+                        <td>
+
+                            {% if item["data"] %}
+
+                            {{
+                                item["data"]
+                                .strftime("%d/%m/%Y %H:%M")
+                            }}
+
+                            {% else %}
+
+                            —
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <span class="categoria-badge">
+
+                                {{ item["categoria"] }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+                            {{ item["descricao"] }}
+                        </td>
+
+                        <td class="coluna-valor saida-valor">
+
+                            - R$
+                            {{
+                                "%.2f"
+                                |format(item["valor"])
+                            }}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="movimentacoes-vazio">
+
+            <span>
+                ✅
+            </span>
+
+            <strong>
+                Nenhuma saída encontrada
+            </strong>
+
             <p>
-                Identifique períodos de crescimento
-                ou queda nas vendas.
+                Não existem despesas registradas
+                no período selecionado.
             </p>
+
         </div>
 
-        <div class="resumo-card">
-            <h3>Performance</h3>
-            <p>
-                Analise os produtos mais vendidos
-                e os horários de maior movimento.
-            </p>
-        </div>
+        {% endif %}
 
-    </div>
+    </section>
 
-</div>
+</main>
 
 {% endif %}
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 {% if not bloqueado %}
+
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+></script>
+
+<script
+    id="dadosLabelsFinanceiro"
+    type="application/json"
+>
+    {{ labels | tojson }}
+</script>
+
+<script
+    id="dadosEntradasFinanceiro"
+    type="application/json"
+>
+    {{ valores | tojson }}
+</script>
+
+<script
+    id="dadosSaidasFinanceiro"
+    type="application/json"
+>
+    {{ valores_saidas | tojson }}
+</script>
 
 <script>
 
-    const labels = JSON.parse('{{ labels|tojson|safe }}');
-    const valores = JSON.parse('{{ valores|tojson|safe }}');
+(function () {
 
-    const ctx = document.getElementById('graficoVendas');
+    "use strict";
 
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Faturamento',
-                data: valores,
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
+    function lerDadosJson(id) {
+
+        const elemento =
+            document.getElementById(id);
+
+        if (!elemento) {
+            return [];
         }
-    });
+
+        try {
+            return JSON.parse(
+                elemento.textContent.trim()
+                || "[]"
+            );
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao carregar dados do gráfico:",
+                erro
+            );
+
+            return [];
+        }
+    }
+
+    function criarGraficoFinanceiro() {
+
+        const elementoGrafico =
+            document.getElementById(
+                "graficoFinanceiro"
+            );
+
+        if (
+            !elementoGrafico
+            || typeof Chart === "undefined"
+        ) {
+            return;
+        }
+
+        const diasFinanceiro =
+            lerDadosJson(
+                "dadosLabelsFinanceiro"
+            );
+
+        const entradasFinanceiro =
+            lerDadosJson(
+                "dadosEntradasFinanceiro"
+            );
+
+        const saidasFinanceiro =
+            lerDadosJson(
+                "dadosSaidasFinanceiro"
+            );
+
+        const temaEscuro =
+            document.body.classList.contains(
+                "dark"
+            );
+
+        const corTexto = temaEscuro
+            ? "rgba(219, 232, 250, 0.72)"
+            : "rgba(31, 52, 82, 0.72)";
+
+        const corGrade = temaEscuro
+            ? "rgba(130, 165, 215, 0.09)"
+            : "rgba(55, 91, 140, 0.09)";
+
+        new Chart(
+            elementoGrafico,
+            {
+                type: "line",
+
+                data: {
+                    labels: diasFinanceiro,
+
+                    datasets: [
+                        {
+                            label: "Entradas",
+
+                            data:
+                                entradasFinanceiro,
+
+                            borderColor:
+                                "#35d6a4",
+
+                            backgroundColor:
+                                "rgba(53, 214, 164, 0.11)",
+
+                            pointBackgroundColor:
+                                "#35d6a4",
+
+                            pointBorderColor:
+                                "#ffffff",
+
+                            pointRadius: 4,
+
+                            pointHoverRadius: 6,
+
+                            borderWidth: 3,
+
+                            tension: 0.36,
+
+                            fill: true
+                        },
+                        {
+                            label: "Saídas",
+
+                            data:
+                                saidasFinanceiro,
+
+                            borderColor:
+                                "#ff6389",
+
+                            backgroundColor:
+                                "rgba(255, 99, 137, 0.08)",
+
+                            pointBackgroundColor:
+                                "#ff6389",
+
+                            pointBorderColor:
+                                "#ffffff",
+
+                            pointRadius: 4,
+
+                            pointHoverRadius: 6,
+
+                            borderWidth: 3,
+
+                            tension: 0.36,
+
+                            fill: true
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: "index",
+                        intersect: false
+                    },
+
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+
+                        tooltip: {
+                            padding: 12,
+
+                            callbacks: {
+                                label: function (
+                                    contexto
+                                ) {
+
+                                    const valor =
+                                        Number(
+                                            contexto.raw
+                                            || 0
+                                        );
+
+                                    return (
+                                        contexto
+                                            .dataset
+                                            .label
+                                        + ": "
+                                        + valor
+                                            .toLocaleString(
+                                                "pt-BR",
+                                                {
+                                                    style:
+                                                        "currency",
+
+                                                    currency:
+                                                        "BRL"
+                                                }
+                                            )
+                                    );
+                                }
+                            }
+                        }
+                    },
+
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: corTexto
+                            },
+
+                            grid: {
+                                color: corGrade
+                            }
+                        },
+
+                        y: {
+                            beginAtZero: true,
+
+                            ticks: {
+                                color: corTexto,
+
+                                callback: function (
+                                    valor
+                                ) {
+                                    return (
+                                        "R$ "
+                                        + Number(valor)
+                                            .toLocaleString(
+                                                "pt-BR"
+                                            )
+                                    );
+                                }
+                            },
+
+                            grid: {
+                                color: corGrade
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    if (
+        document.readyState
+        === "loading"
+    ) {
+        document.addEventListener(
+            "DOMContentLoaded",
+            criarGraficoFinanceiro
+        );
+
+    } else {
+        criarGraficoFinanceiro();
+    }
+
+})();
 
 </script>
 

@@ -627,7 +627,9 @@ def registrar_rotas(app):
                 """
                 UPDATE vendas
 
-                SET cancelada = 1
+                SET
+                    cancelada = 1,
+                    cancelada_em = CURRENT_TIMESTAMP
 
                 WHERE id = %s
                   AND empresa_id = %s
