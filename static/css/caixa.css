@@ -1144,3 +1144,138 @@ body:not(.dark) .caixa-input {
     font-size: 0.68rem;
     font-weight: 700;
 }
+
+/* =========================================
+   CORES DAS MOVIMENTAÇÕES
+========================================= */
+
+.caixa-item {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    min-height: 57px;
+    padding: 10px 12px;
+
+    border-bottom:
+        1px solid rgba(119, 159, 219, 0.14);
+
+    border-radius: 10px;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.caixa-item:hover {
+    transform: translateX(3px);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.caixa-item::before {
+    content: "";
+
+    position: absolute;
+
+    top: 12px;
+    bottom: 12px;
+    left: 0;
+
+    width: 2px;
+
+    border-radius: 999px;
+
+    opacity: 0;
+
+    transition: opacity 0.2s ease;
+}
+
+.caixa-item:hover::before {
+    opacity: 1;
+}
+
+.caixa-item-descricao {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.caixa-item-descricao strong {
+    color: var(--caixa-texto, #f3f7ff);
+
+    font-size: 10px;
+}
+
+.caixa-item-descricao small {
+    color: rgba(177, 197, 226, 0.52);
+
+    font-size: 8px;
+}
+
+.caixa-item-valor {
+    flex-shrink: 0;
+
+    padding: 6px 9px;
+
+    border: 1px solid transparent;
+    border-radius: 8px;
+
+    font-size: 10px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+
+/* ENTRADA */
+
+.caixa-item.entrada::before {
+    background: #35d6a4;
+}
+
+.caixa-item.entrada .caixa-item-valor {
+    border-color:
+        rgba(53, 214, 164, 0.2);
+
+    color: #35d6a4;
+
+    background:
+        rgba(53, 214, 164, 0.075);
+}
+
+
+/* SAÍDA E CANCELAMENTO */
+
+.caixa-item.saida::before {
+    background: #ff6389;
+}
+
+.caixa-item.saida .caixa-item-valor {
+    border-color:
+        rgba(255, 99, 137, 0.22);
+
+    color: #ff6389;
+
+    background:
+        rgba(255, 99, 137, 0.08);
+
+    text-shadow:
+        0 0 14px rgba(255, 99, 137, 0.24);
+}
+
+
+/* TEMA CLARO */
+
+body:not(.dark)
+.caixa-item-descricao strong {
+    color: #17243a;
+}
+
+body:not(.dark)
+.caixa-item-descricao small {
+    color: rgba(42, 63, 94, 0.58);
+}

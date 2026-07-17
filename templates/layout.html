@@ -110,7 +110,7 @@
             </a>
             {% endif %}
 
-          
+
             <a href="/produtos" class="{% if request.path.startswith('/produtos') %}active{% endif %}">
                 <img src="{{ url_for(
                         'static',
@@ -119,7 +119,7 @@
 
                 <span class="link-text">Produtos</span>
             </a>
-            
+
 
             <a href="/vendas" class="{% if request.path.startswith('/vendas') %}active{% endif %}">
                 <img src="{{ url_for(
@@ -148,7 +148,7 @@
 
                 <span class="link-text">Estatísticas</span>
             </a>
-            
+
             {% endif %}
 
             <!-- NOVO ITEM: EMPRÉSTIMOS -->
@@ -168,7 +168,7 @@
             </a>
 
             {% endif %}
-          
+
 
             <a href="/planos" class="{% if request.path.startswith('/planos') %}active{% endif %}">
                 <img src="{{ url_for(
@@ -199,6 +199,41 @@
 
         </nav>
 
+        <div class="nexus-sidebar-footer">
+
+            <div class="nexus-version">
+
+                <span class="version-dot"></span>
+
+                <div class="version-info">
+
+                    <small>
+                        VERSÃO ATUAL
+                    </small>
+
+                    <strong>
+                        Nexus v1.6.0
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <button type="button" id="abrirAtualizacoes" class="btn-atualizacoes" aria-label="Ver atualizações do Nexus"
+                title="Atualizações">
+
+                <span class="icone-sino" aria-hidden="true">
+                    🔔
+                </span>
+
+                <span id="badgeAtualizacoes" class="badge-atualizacoes">
+                    1
+                </span>
+
+            </button>
+
+        </div>
+
     </aside>
 
 
@@ -221,6 +256,191 @@
     </main>
 
     <div id="toast-notificacao"></div>
+
+    <div id="modalAtualizacoes" class="modal-atualizacoes" aria-hidden="true">
+
+        <div class="modal-atualizacoes-fundo" data-fechar-atualizacoes></div>
+
+        <section class="atualizacoes-painel" role="dialog" aria-modal="true" aria-labelledby="tituloAtualizacoes">
+
+            <header class="atualizacoes-header">
+
+                <div>
+
+                    <span class="atualizacoes-etiqueta">
+                        NOVIDADES DO NEXUS
+                    </span>
+
+                    <h2 id="tituloAtualizacoes">
+                        Atualizações
+                    </h2>
+
+                    <p>
+                        Acompanhe as melhorias e correções
+                        mais recentes do sistema.
+                    </p>
+
+                </div>
+
+                <button type="button" id="fecharAtualizacoes" class="fechar-atualizacoes"
+                    aria-label="Fechar atualizações">
+                    ×
+                </button>
+
+            </header>
+
+            <div class="atualizacoes-versao">
+
+                <div class="versao-identificacao">
+
+                    <span class="versao-icone">
+                        ✨
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Nexus PDV v1.6.0
+                        </strong>
+
+                        <small>
+                            Publicada em 17/07/2026
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <span class="versao-badge">
+                    ATUAL
+                </span>
+
+            </div>
+
+            <div class="atualizacoes-conteudo">
+
+                <article class="atualizacao-grupo novidade">
+
+                    <div class="atualizacao-grupo-titulo">
+
+                        <span>
+                            ✨
+                        </span>
+
+                        <h3>
+                            Novidades
+                        </h3>
+
+                    </div>
+
+                    <ul>
+
+                        <li>
+                            Novo painel financeiro na página
+                            de Estatísticas.
+                        </li>
+
+                        <li>
+                            Relatório de entradas, saídas,
+                            salários e comissões.
+                        </li>
+
+                        <li>
+                            Filtros por dia, mês, ano ou
+                            período personalizado.
+                        </li>
+
+                    </ul>
+
+                </article>
+
+                <article class="atualizacao-grupo melhoria">
+
+                    <div class="atualizacao-grupo-titulo">
+
+                        <span>
+                            ⚡
+                        </span>
+
+                        <h3>
+                            Melhorias
+                        </h3>
+
+                    </div>
+
+                    <ul>
+
+                        <li>
+                            Imagens dos produtos carregam
+                            com mais velocidade.
+                        </li>
+
+                        <li>
+                            Funcionários podem cadastrar e
+                            editar produtos.
+                        </li>
+
+                        <li>
+                            Funcionários agora podem
+                            cancelar vendas.
+                        </li>
+
+                    </ul>
+
+                </article>
+
+                <article class="atualizacao-grupo correcao">
+
+                    <div class="atualizacao-grupo-titulo">
+
+                        <span>
+                            🛠️
+                        </span>
+
+                        <h3>
+                            Correções
+                        </h3>
+
+                    </div>
+
+                    <ul>
+
+                        <li>
+                            Cancelamentos aparecem como
+                            saídas negativas no caixa.
+                        </li>
+
+                        <li>
+                            Corrigida a responsividade da
+                            página de Estatísticas.
+                        </li>
+
+                        <li>
+                            Ajustadas permissões dos perfis
+                            de funcionários.
+                        </li>
+
+                    </ul>
+
+                </article>
+
+            </div>
+
+            <footer class="atualizacoes-footer">
+
+                <span>
+                    Você está usando a versão mais recente.
+                </span>
+
+                <button type="button" id="entendiAtualizacoes" class="btn-entendi-atualizacoes">
+                    Entendi
+                </button>
+
+            </footer>
+
+        </section>
+
+    </div>
 
 
     <!-- MENU E TEMA -->
@@ -513,6 +733,163 @@
         });
 
         iniciarNotificacoes();
+    </script>
+
+    <script>
+
+        (function () {
+
+            "use strict";
+
+            const VERSAO_ATUALIZACOES =
+                "nexus-atualizacoes-v1.6.0";
+
+            const botaoAbrir =
+                document.getElementById(
+                    "abrirAtualizacoes"
+                );
+
+            const botaoFechar =
+                document.getElementById(
+                    "fecharAtualizacoes"
+                );
+
+            const botaoEntendi =
+                document.getElementById(
+                    "entendiAtualizacoes"
+                );
+
+            const modal =
+                document.getElementById(
+                    "modalAtualizacoes"
+                );
+
+            const badge =
+                document.getElementById(
+                    "badgeAtualizacoes"
+                );
+
+            if (
+                !botaoAbrir
+                || !modal
+            ) {
+                return;
+            }
+
+            function atualizacaoFoiLida() {
+
+                return (
+                    localStorage.getItem(
+                        VERSAO_ATUALIZACOES
+                    ) === "lida"
+                );
+            }
+
+            function atualizarBadge() {
+
+                if (!badge) {
+                    return;
+                }
+
+                badge.classList.toggle(
+                    "oculto",
+                    atualizacaoFoiLida()
+                );
+            }
+
+            function abrirModal() {
+
+                modal.classList.add(
+                    "aberto"
+                );
+
+                modal.setAttribute(
+                    "aria-hidden",
+                    "false"
+                );
+
+                document.body.classList.add(
+                    "modal-atualizacoes-aberto"
+                );
+
+                localStorage.setItem(
+                    VERSAO_ATUALIZACOES,
+                    "lida"
+                );
+
+                atualizarBadge();
+            }
+
+            function fecharModal() {
+
+                modal.classList.remove(
+                    "aberto"
+                );
+
+                modal.setAttribute(
+                    "aria-hidden",
+                    "true"
+                );
+
+                document.body.classList.remove(
+                    "modal-atualizacoes-aberto"
+                );
+
+                botaoAbrir.focus();
+            }
+
+            botaoAbrir.addEventListener(
+                "click",
+                abrirModal
+            );
+
+            if (botaoFechar) {
+
+                botaoFechar.addEventListener(
+                    "click",
+                    fecharModal
+                );
+            }
+
+            if (botaoEntendi) {
+
+                botaoEntendi.addEventListener(
+                    "click",
+                    fecharModal
+                );
+            }
+
+            modal
+                .querySelectorAll(
+                    "[data-fechar-atualizacoes]"
+                )
+                .forEach(function (elemento) {
+
+                    elemento.addEventListener(
+                        "click",
+                        fecharModal
+                    );
+                });
+
+            document.addEventListener(
+                "keydown",
+                function (evento) {
+
+                    if (
+                        evento.key === "Escape"
+                        && modal.classList.contains(
+                            "aberto"
+                        )
+                    ) {
+                        fecharModal();
+                    }
+                }
+            );
+
+            atualizarBadge();
+
+        })();
+
     </script>
 
 </body>

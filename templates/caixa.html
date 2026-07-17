@@ -135,21 +135,41 @@
 
         {% for mov in movimentacoes %}
 
-        <div class="caixa-item">
+        <div class="caixa-item {{ mov['tipo'] }}">
 
-            <div>
+            <div class="caixa-item-descricao">
 
                 <strong>
-
                     {{ mov["descricao"] }}
-
                 </strong>
+
+                <small>
+
+                    {% if mov["tipo"] == "saida" %}
+
+                    Saída do caixa
+
+                    {% else %}
+
+                    Entrada no caixa
+
+                    {% endif %}
+
+                </small>
 
             </div>
 
-            <div>
+            <div class="caixa-item-valor">
 
-                R$ {{ mov["valor"] }}
+                {% if mov["tipo"] == "saida" %}
+
+                - R$ {{ "%.2f"|format(mov["valor"]) }}
+
+                {% else %}
+
+                + R$ {{ "%.2f"|format(mov["valor"]) }}
+
+                {% endif %}
 
             </div>
 
