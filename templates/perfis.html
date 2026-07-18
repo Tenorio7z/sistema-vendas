@@ -428,6 +428,14 @@
                     data-salario="{{ funcionario['salario_base'] }}"
                     data-dia="{{ funcionario['dia_pagamento'] }}"
                     data-admissao="{{ funcionario['data_admissao'] or '' }}"
+                    data-foto="{%
+                        if funcionario['possui_foto']
+                    %}{{
+                        url_for(
+                            'foto_funcionario',
+                            id=funcionario['id']
+                        )
+                    }}{% endif %}"
                 >
                     Configurar
                 </button>
@@ -893,13 +901,58 @@
             <form
                 method="POST"
                 id="formConfiguracao"
-            >
+                enctype="multipart/form-data"
+                >
 
                 <input
                     type="hidden"
                     name="competencia"
                     value="{{ competencia }}"
                 >
+
+                <div class="foto-funcionario-upload">
+
+                <label
+                    for="configFotoFuncionario"
+                    class="foto-upload-preview"
+                >
+
+                    <img
+                        id="configFotoPreviewImagem"
+                        alt="Prévia da foto do funcionário"
+                    >
+
+                    <span id="configFotoPreviewIcone">
+                        📷
+                    </span>
+
+                    <small>
+                        Alterar foto
+                    </small>
+
+                </label>
+
+                <div class="foto-upload-texto">
+
+                    <strong>
+                        Foto do funcionário
+                    </strong>
+
+                    <p>
+                        Selecione uma nova imagem para substituir
+                        a foto atual. JPG, PNG ou WEBP de até 5 MB.
+                    </p>
+
+                    <input
+                        type="file"
+                        id="configFotoFuncionario"
+                        name="foto"
+                        accept="image/jpeg,image/png,image/webp"
+                    >
+
+                </div>
+
+            </div>
 
                 <div class="modal-form-grid">
 
@@ -1259,44 +1312,179 @@
         document.body.style.overflow = "";
     }
 
+    const campoConfigFoto =
+    document.getElementById(
+        "configFotoFuncionario"
+    );
+
+if (campoConfigFoto) {
+
+    campoConfigFoto.addEventListener(
+        "change",
+        function () {
+
+            const arquivo =
+                campoConfigFoto.files[0];
+
+            const preview =
+                document.getElementById(
+                    "configFotoPreviewImagem"
+                );
+
+            const icone =
+                document.getElementById(
+                    "configFotoPreviewIcone"
+                );
+
+            if (!arquivo) {
+                return;
+            }
+
+            if (
+                !arquivo.type.startsWith(
+                    "image/"
+                )
+            ) {
+                campoConfigFoto.value = "";
+
+                alert(
+                    "Selecione uma imagem válida."
+                );
+
+                return;
+            }
+
+            const limite =
+                5 * 1024 * 1024;
+
+            if (arquivo.size > limite) {
+
+                campoConfigFoto.value = "";
+
+                alert(
+                    "A foto deve ter no máximo 5 MB."
+                );
+
+                return;
+            }
+
+            const urlTemporaria =
+                URL.createObjectURL(
+                    arquivo
+                );
+
+            preview.src =
+                urlTemporaria;
+
+            preview.style.display =
+                "block";
+
+            icone.style.display =
+                "none";
+
+            preview.onload =
+                function () {
+
+                    URL.revokeObjectURL(
+                        urlTemporaria
+                    );
+                };
+        }
+    );
+}
 
     function abrirConfiguracao(botao) {
-        const id = botao.dataset.id;
 
+    const id =
+        botao.dataset.id;
+
+    const fotoAtual =
+        botao.dataset.foto || "";
+
+    document.getElementById(
+        "configuracaoTitulo"
+    ).textContent =
+        botao.dataset.usuario;
+
+    document.getElementById(
+        "configCargo"
+    ).value =
+        botao.dataset.cargo || "";
+
+    document.getElementById(
+        "configSalario"
+    ).value =
+        botao.dataset.salario || 0;
+
+    document.getElementById(
+        "configDia"
+    ).value =
+        botao.dataset.dia || 5;
+
+    document.getElementById(
+        "configAdmissao"
+    ).value =
+        botao.dataset.admissao || "";
+
+    document.getElementById(
+        "formConfiguracao"
+    ).action =
+        `/funcionario/configurar/${id}`;
+
+    const campoFoto =
         document.getElementById(
-            "configuracaoTitulo"
-        ).textContent =
-            botao.dataset.usuario;
-
-        document.getElementById(
-            "configCargo"
-        ).value =
-            botao.dataset.cargo || "";
-
-        document.getElementById(
-            "configSalario"
-        ).value =
-            botao.dataset.salario || 0;
-
-        document.getElementById(
-            "configDia"
-        ).value =
-            botao.dataset.dia || 5;
-
-        document.getElementById(
-            "configAdmissao"
-        ).value =
-            botao.dataset.admissao || "";
-
-        document.getElementById(
-            "formConfiguracao"
-        ).action =
-            `/funcionario/configurar/${id}`;
-
-        abrirModal(
-            "modalConfiguracao"
+            "configFotoFuncionario"
         );
+
+    const preview =
+        document.getElementById(
+            "configFotoPreviewImagem"
+        );
+
+    const icone =
+        document.getElementById(
+            "configFotoPreviewIcone"
+        );
+
+    if (campoFoto) {
+        campoFoto.value = "";
     }
+
+    if (
+        fotoAtual
+        && preview
+        && icone
+    ) {
+        preview.src =
+            fotoAtual
+            + "?v="
+            + Date.now();
+
+        preview.style.display =
+            "block";
+
+        icone.style.display =
+            "none";
+
+    } else if (
+        preview
+        && icone
+    ) {
+        preview.removeAttribute(
+            "src"
+        );
+
+        preview.style.display =
+            "none";
+
+        icone.style.display =
+            "block";
+    }
+
+    abrirModal(
+        "modalConfiguracao"
+    );
+}
 
 
     function abrirGerarFolha(botao) {

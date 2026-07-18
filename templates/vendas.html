@@ -338,6 +338,103 @@
 
             <input type="hidden" name="desconto_valor" id="descontoValorFinal" value="0">
 
+            <div class="venda-cliente-box">
+
+                <div class="venda-cliente-cabecalho">
+
+                    <div class="venda-cliente-icone">
+                        👤
+                    </div>
+
+                    <div>
+                        <strong>
+                            Vincular cliente
+                        </strong>
+
+                        <small>
+                            Opcional — a venda também pode ser anônima
+                        </small>
+                    </div>
+
+                </div>
+
+                <div class="venda-cliente-pesquisa">
+
+                    <input type="search" id="pesquisaClienteVenda" placeholder="Pesquisar cliente..."
+                        autocomplete="off">
+
+                </div>
+
+                <label class="campo-cliente-venda">
+
+                    <span>
+                        Cliente da venda
+                    </span>
+
+                    <select name="cliente_id" id="clienteVenda">
+
+                        <option value="">
+                            Venda sem cliente
+                        </option>
+
+                        {% for cliente in clientes %}
+
+                        <option value="{{ cliente['id'] }}" data-nome="{{ cliente['nome']|lower|e }}"
+                            data-telefone="{{ (cliente['telefone'] or '')|e }}"
+                            data-documento="{{ (cliente['cpf_cnpj'] or '')|e }}">
+                            {{ cliente["nome"] }}
+
+                            {% if cliente["telefone"] %}
+                            — {{ cliente["telefone"] }}
+                            {% endif %}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </label>
+
+                <div id="clienteSelecionadoResumo" class="cliente-selecionado-resumo oculto">
+
+                    <span class="cliente-resumo-avatar">
+                        C
+                    </span>
+
+                    <div>
+
+                        <strong id="clienteSelecionadoNome">
+                            Cliente
+                        </strong>
+
+                        <small id="clienteSelecionadoContato">
+                            Cliente vinculado à venda
+                        </small>
+
+                    </div>
+
+                    <button type="button" id="removerClienteVenda" title="Remover cliente">
+                        ×
+                    </button>
+
+                </div>
+
+                {% if not clientes %}
+
+                <p class="nenhum-cliente-venda">
+
+                    Nenhum cliente ativo cadastrado.
+
+                    <a href="{{ url_for('clientes') }}" target="_blank">
+                        Cadastrar cliente
+                    </a>
+
+                </p>
+
+                {% endif %}
+
+            </div>
+
             <label class="campo-pagamento">
 
                 <span>
@@ -992,6 +1089,216 @@
                         total:
                             calculo.total
                     };
+
+                    const pesquisaClienteVenda =
+                        document.getElementById(
+                            "pesquisaClienteVenda"
+                        );
+
+                    const clienteVenda =
+                        document.getElementById(
+                            "clienteVenda"
+                        );
+
+                    const clienteSelecionadoResumo =
+                        document.getElementById(
+                            "clienteSelecionadoResumo"
+                        );
+
+                    const clienteSelecionadoNome =
+                        document.getElementById(
+                            "clienteSelecionadoNome"
+                        );
+
+                    const clienteSelecionadoContato =
+                        document.getElementById(
+                            "clienteSelecionadoContato"
+                        );
+
+                    const removerClienteVenda =
+                        document.getElementById(
+                            "removerClienteVenda"
+                        );
+
+
+                    function normalizarTextoCliente(texto) {
+                        return String(texto || "")
+                            .normalize("NFD")
+                            .replace(
+                                /[\u0300-\u036f]/g,
+                                ""
+                            )
+                            .toLowerCase()
+                            .trim();
+                    }
+
+
+                    function atualizarClienteSelecionado() {
+
+                        if (
+                            !clienteVenda
+                            || !clienteSelecionadoResumo
+                        ) {
+                            return;
+                        }
+
+                        const opcao =
+                            clienteVenda.options[
+                            clienteVenda.selectedIndex
+                            ];
+
+                        const possuiCliente = Boolean(
+                            opcao
+                            && opcao.value
+                        );
+
+                        clienteSelecionadoResumo
+                            .classList.toggle(
+                                "oculto",
+                                !possuiCliente
+                            );
+
+                        if (!possuiCliente) {
+                            return;
+                        }
+
+                        const nome = (
+                            opcao.textContent
+                            || "Cliente"
+                        )
+                            .split("—")[0]
+                            .trim();
+
+                        const telefone = (
+                            opcao.dataset.telefone
+                            || ""
+                        );
+
+                        const documento = (
+                            opcao.dataset.documento
+                            || ""
+                        );
+
+                        if (clienteSelecionadoNome) {
+                            clienteSelecionadoNome.textContent =
+                                nome;
+                        }
+
+                        if (clienteSelecionadoContato) {
+
+                            clienteSelecionadoContato.textContent =
+                                telefone
+                                || documento
+                                || "Cliente vinculado à venda";
+                        }
+
+                        const avatar =
+                            clienteSelecionadoResumo
+                                .querySelector(
+                                    ".cliente-resumo-avatar"
+                                );
+
+                        if (avatar) {
+                            avatar.textContent = (
+                                nome.charAt(0).toUpperCase()
+                                || "C"
+                            );
+                        }
+                    }
+
+
+                    if (
+                        pesquisaClienteVenda
+                        && clienteVenda
+                    ) {
+
+                        pesquisaClienteVenda.addEventListener(
+                            "input",
+                            function () {
+
+                                const pesquisa =
+                                    normalizarTextoCliente(
+                                        pesquisaClienteVenda.value
+                                    );
+
+                                Array.from(
+                                    clienteVenda.options
+                                ).forEach(
+                                    function (opcao, indice) {
+
+                                        if (indice === 0) {
+                                            opcao.hidden = false;
+                                            return;
+                                        }
+
+                                        const conteudo =
+                                            normalizarTextoCliente(
+                                                (
+                                                    opcao.textContent
+                                                    || ""
+                                                )
+                                                + " "
+                                                + (
+                                                    opcao.dataset.telefone
+                                                    || ""
+                                                )
+                                                + " "
+                                                + (
+                                                    opcao.dataset.documento
+                                                    || ""
+                                                )
+                                            );
+
+                                        opcao.hidden = (
+                                            pesquisa !== ""
+                                            && !conteudo.includes(
+                                                pesquisa
+                                            )
+                                        );
+                                    }
+                                );
+                            }
+                        );
+                    }
+
+
+                    if (clienteVenda) {
+
+                        clienteVenda.addEventListener(
+                            "change",
+                            atualizarClienteSelecionado
+                        );
+                    }
+
+
+                    if (
+                        removerClienteVenda
+                        && clienteVenda
+                    ) {
+
+                        removerClienteVenda.addEventListener(
+                            "click",
+                            function () {
+
+                                clienteVenda.value = "";
+
+                                if (pesquisaClienteVenda) {
+                                    pesquisaClienteVenda.value = "";
+                                }
+
+                                Array.from(
+                                    clienteVenda.options
+                                ).forEach(function (opcao) {
+                                    opcao.hidden = false;
+                                });
+
+                                atualizarClienteSelecionado();
+                            }
+                        );
+                    }
+
+
+                    atualizarClienteSelecionado();
 
                     atualizarResumoPagamento();
 

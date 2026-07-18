@@ -120,6 +120,19 @@
                 <span class="link-text">Produtos</span>
             </a>
 
+            <a href="{{ url_for('clientes') }}" class="{% if request.path.startswith('/clientes') %}active{% endif %}">
+                <svg class="nav-icon nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+
+                <span class="link-text">
+                    Clientes
+                </span>
+            </a>
 
             <a href="/vendas" class="{% if request.path.startswith('/vendas') %}active{% endif %}">
                 <img src="{{ url_for(
@@ -210,7 +223,7 @@
                         </small>
 
                         <strong>
-                            Nexus v1.6.0
+                            Nexus v1.7.0
                         </strong>
 
                     </div>
@@ -302,11 +315,11 @@
                     <div>
 
                         <strong>
-                            Nexus PDV v1.6.0
+                            Nexus PDV v1.7.0
                         </strong>
 
                         <small>
-                            Publicada em 17/07/2026
+                            Publicada em 18/07/2026
                         </small>
 
                     </div>
@@ -318,6 +331,7 @@
                 </span>
 
             </div>
+
 
             <div class="atualizacoes-conteudo">
 
@@ -338,23 +352,24 @@
                     <ul>
 
                         <li>
-                            Novo painel financeiro na página
-                            de Estatísticas.
+                            Nova página para cadastro e gerenciamento
+                            de clientes.
                         </li>
 
                         <li>
-                            Relatório de entradas, saídas,
-                            salários e comissões.
+                            Agora as vendas podem ser vinculadas
+                            opcionalmente a um cliente.
                         </li>
 
                         <li>
-                            Filtros por dia, mês, ano ou
-                            período personalizado.
+                            Novo perfil individual com histórico,
+                            métricas e produtos favoritos do cliente.
                         </li>
 
                     </ul>
 
                 </article>
+
 
                 <article class="atualizacao-grupo melhoria">
 
@@ -373,23 +388,25 @@
                     <ul>
 
                         <li>
-                            Imagens dos produtos carregam
-                            com mais velocidade.
+                            Pesquisa de clientes por nome, telefone,
+                            e-mail, CPF ou CNPJ.
                         </li>
 
                         <li>
-                            Funcionários podem cadastrar e
-                            editar produtos.
+                            Total gasto, ticket médio, descontos e
+                            frequência de compras calculados
+                            automaticamente.
                         </li>
 
                         <li>
-                            Funcionários agora podem
-                            cancelar vendas.
+                            Seletor de clientes integrado à confirmação
+                            de pagamento no PDV.
                         </li>
 
                     </ul>
 
                 </article>
+
 
                 <article class="atualizacao-grupo correcao">
 
@@ -408,18 +425,18 @@
                     <ul>
 
                         <li>
-                            Cancelamentos aparecem como
-                            saídas negativas no caixa.
+                            Ajustado o posicionamento dos botões nos
+                            cards de clientes.
                         </li>
 
                         <li>
-                            Corrigida a responsividade da
-                            página de Estatísticas.
+                            Melhorada a responsividade das páginas e
+                            dos modais de clientes.
                         </li>
 
                         <li>
-                            Ajustadas permissões dos perfis
-                            de funcionários.
+                            Adicionada validação para impedir vínculos
+                            com clientes de outra empresa.
                         </li>
 
                     </ul>

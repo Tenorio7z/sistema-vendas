@@ -219,6 +219,32 @@ def registrar_rotas(app, socketio):
             )
         )
         produtos = cursor.fetchall()
+        
+        # ==========================================
+        # CLIENTES ATIVOS DA EMPRESA
+        # ==========================================
+
+        cursor.execute(
+            """
+            SELECT
+                id,
+                nome,
+                telefone,
+                cpf_cnpj
+
+            FROM clientes
+
+            WHERE empresa_id = %s
+            AND ativo = TRUE
+
+            ORDER BY nome ASC
+            """,
+            (
+                empresa_id,
+            ),
+        )
+
+        clientes = cursor.fetchall()
 
         # ==========================================
         # CARRINHO DA SESSÃO
@@ -239,6 +265,7 @@ def registrar_rotas(app, socketio):
             produtos=produtos,
             carrinho=carrinho,
             total=total,
+            clientes=clientes,
             caixa_fechado=False,
             abrir_cupom=abrir_cupom
         )
@@ -444,6 +471,33 @@ def registrar_rotas(app, socketio):
             "0",
         )
 
+        cliente_id_recebido = str(
+            request.form.get(
+                "cliente_id",
+                "",
+            )
+            or ""
+        ).strip()
+
+        cliente_id = None
+
+        if cliente_id_recebido:
+            try:
+                cliente_id = int(
+                    cliente_id_recebido
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+                flash(
+                    "Cliente selecionado inválido.",
+                    "erro",
+                )
+
+                return redirect("/vendas")
+        
         conn = conectar()
         cursor = criar_cursor(conn)
 
@@ -482,6 +536,47 @@ def registrar_rotas(app, socketio):
                     "Nenhum caixa aberto."
                 )
 
+            # =====================================
+            # VALIDAR CLIENTE OPCIONAL
+            # =====================================
+
+            cliente_venda = None
+
+            if cliente_id is not None:
+
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        nome,
+                        telefone,
+                        cpf_cnpj
+
+                    FROM clientes
+
+                    WHERE id = %s
+                    AND empresa_id = %s
+                    AND ativo = TRUE
+
+                    LIMIT 1
+                    """,
+                    (
+                        cliente_id,
+                        empresa_id,
+                    ),
+                )
+
+                cliente_venda = cursor.fetchone()
+
+                if not cliente_venda:
+                    raise ValueError(
+                        (
+                            "O cliente selecionado não existe, "
+                            "está inativo ou pertence a outra empresa."
+                        )
+                    )
+            
+            
             # =====================================
             # PRODUTOS E VALORES REAIS
             # =====================================
@@ -703,9 +798,11 @@ def registrar_rotas(app, socketio):
                         empresa_id,
                         caixa_id,
                         usuario_id,
+                        cliente_id,
                         data_venda
                     )
                     VALUES (
+                        %s,
                         %s,
                         %s,
                         %s,
@@ -732,6 +829,7 @@ def registrar_rotas(app, socketio):
                         empresa_id,
                         caixa["id"],
                         usuario_id,
+                        cliente_id,
                     ),
                 )
 
@@ -759,6 +857,23 @@ def registrar_rotas(app, socketio):
                         ),
                         "venda_grupo": (
                             venda_grupo
+                        ),
+                        
+                        "cliente_id": cliente_id,
+                        "cliente_nome": (
+                            cliente_venda["nome"]
+                            if cliente_venda
+                            else None
+                        ),
+                        "cliente_telefone": (
+                            cliente_venda["telefone"]
+                            if cliente_venda
+                            else None
+                        ),
+                        "cliente_cpf_cnpj": (
+                            cliente_venda["cpf_cnpj"]
+                            if cliente_venda
+                            else None
                         ),
                     }
                 )
@@ -844,6 +959,12 @@ def registrar_rotas(app, socketio):
 
         session["carrinho"] = []
         session["ultimo_cupom"] = pdf
+        
+        cliente_mensagem = (
+            f" | Cliente: {cliente_venda['nome']}"
+            if cliente_venda
+            else " | Venda sem cliente"
+        )
 
         flash(
             (
@@ -851,6 +972,7 @@ def registrar_rotas(app, socketio):
                 f"Total bruto: R$ {total_bruto:.2f} | "
                 f"Desconto: R$ {desconto_total:.2f} | "
                 f"Total pago: R$ {total_liquido:.2f}"
+                f"{cliente_mensagem}"
             ),
             "sucesso",
         )

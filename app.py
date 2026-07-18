@@ -89,6 +89,10 @@ from routes.api_mobile import (
 from routes import planos
 from routes import estatisticas
 
+from routes.clientes import (
+    registrar_rotas as clientes_rotas
+)
+
 
 # ==========================================
 # REGISTRO DAS ROTAS
@@ -117,9 +121,13 @@ dashboard(app)
 
 produtos(app)
 
+clientes_rotas(app)
+
 admin(app)
 
 caixa(app)
+
+
 
 app.register_blueprint(
     ia_bp

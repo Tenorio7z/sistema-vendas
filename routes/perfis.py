@@ -748,8 +748,8 @@ def registrar_rotas(app):
     # ==========================================
 
     @app.route(
-        "/funcionario/configurar/<int:id>",
-        methods=["POST"],
+    "/funcionario/configurar/<int:id>",
+    methods=["POST"],
     )
     def configurar_funcionario(id):
 
@@ -759,13 +759,38 @@ def registrar_rotas(app):
         if not _gerente_logado():
             return redirect("/dashboard")
 
+        empresa_id = session.get(
+            "empresa_id"
+        )
+
         competencia = (
             _competencia_formulario()
         )
 
+        arquivo_foto = request.files.get(
+            "foto"
+        )
+
+        foto_enviada = bool(
+            arquivo_foto
+            and arquivo_foto.filename
+        )
+
+        foto = None
+        foto_mime = None
+
         try:
+
+            if foto_enviada:
+
+                foto, foto_mime = (
+                    _processar_foto_funcionario(
+                        arquivo_foto
+                    )
+                )
+
             GestaoEquipeService.salvar_configuracao(
-                empresa_id=session["empresa_id"],
+                empresa_id=empresa_id,
                 usuario_id=id,
                 cargo=request.form.get(
                     "cargo",
@@ -790,18 +815,70 @@ def registrar_rotas(app):
                 ),
             )
 
+            if foto_enviada:
+
+                conn = conectar()
+                cursor = criar_cursor(conn)
+
+                try:
+                    cursor.execute(
+                        """
+                        UPDATE usuarios
+
+                        SET
+                            foto = %s,
+                            foto_mime = %s
+
+                        WHERE id = %s
+                        AND empresa_id = %s
+                        AND nivel = 'funcionario'
+                        """,
+                        (
+                            psycopg2.Binary(foto),
+                            foto_mime,
+                            id,
+                            empresa_id,
+                        ),
+                    )
+
+                    if cursor.rowcount != 1:
+
+                        raise ValueError(
+                            (
+                                "Funcionário não encontrado "
+                                "nesta empresa."
+                            )
+                        )
+
+                    conn.commit()
+
+                except Exception:
+
+                    conn.rollback()
+                    raise
+
+                finally:
+                    cursor.close()
+                    conn.close()
+
             flash(
-                "Dados profissionais atualizados.",
+                (
+                    "Funcionário atualizado com sucesso."
+                    if foto_enviada
+                    else "Dados profissionais atualizados."
+                ),
                 "sucesso",
             )
 
         except ValueError as erro:
+
             flash(
                 str(erro),
                 "erro",
             )
 
         except Exception:
+
             app.logger.exception(
                 "Erro ao configurar funcionário."
             )

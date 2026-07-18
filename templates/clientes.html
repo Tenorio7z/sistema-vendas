@@ -1,77 +1,1206 @@
 {% extends "layout.html" %}
 
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/clientes.css') }}">
+{% endblock %}
+
 {% block content %}
 
-<h1>
-    Clientes
-</h1>
+<div class="clientes-container">
 
-<div class="card">
+    <header class="clientes-header">
 
-    <h2>
-        Novo Cliente
-    </h2>
+        <div class="clientes-header-texto">
 
-    <form method="POST">
+            <span class="clientes-kicker">
+                RELACIONAMENTO
+            </span>
 
-        <input
-            type="text"
-            name="nome"
-            placeholder="Nome"
-            required
-        >
+            <h1>
+                Clientes
+            </h1>
 
-        <input
-            type="text"
-            name="telefone"
-            placeholder="Telefone"
-        >
+            <p>
+                Cadastre clientes e acompanhe o histórico de compras.
+            </p>
 
-        <button type="submit">
+        </div>
 
-            Cadastrar Cliente
-
+        <button type="button" class="btn-novo-cliente" onclick="abrirModalNovoCliente()">
+            <span>+</span>
+            Novo cliente
         </button>
 
-    </form>
+    </header>
 
-</div>
+    <section class="clientes-resumo">
 
-<br>
+        <article class="resumo-card resumo-total">
 
-<div class="grid">
+            <div class="resumo-icone">
+                👥
+            </div>
 
-{% for cliente in clientes %}
+            <div>
+                <span>Total de clientes</span>
 
-    <div class="card">
+                <strong>
+                    {{ resumo["total"] or 0 }}
+                </strong>
+            </div>
+
+        </article>
+
+        <article class="resumo-card resumo-ativos">
+
+            <div class="resumo-icone">
+                ✓
+            </div>
+
+            <div>
+                <span>Clientes ativos</span>
+
+                <strong>
+                    {{ resumo["ativos"] or 0 }}
+                </strong>
+            </div>
+
+        </article>
+
+        <article class="resumo-card resumo-inativos">
+
+            <div class="resumo-icone">
+                ⏸
+            </div>
+
+            <div>
+                <span>Clientes inativos</span>
+
+                <strong>
+                    {{ resumo["inativos"] or 0 }}
+                </strong>
+            </div>
+
+        </article>
+
+    </section>
+
+    <section class="clientes-filtros">
+
+        <form method="GET" action="{{ url_for('clientes') }}" class="clientes-busca">
+
+            <div class="campo-busca">
+
+                <span class="busca-icone">
+                    ⌕
+                </span>
+
+                <input type="search" name="q" value="{{ pesquisa }}"
+                    placeholder="Buscar por nome, telefone, e-mail ou CPF/CNPJ..." autocomplete="off">
+
+            </div>
+
+            <select name="status">
+
+                <option value="ativos" {% if status=="ativos" %}selected{% endif %}>
+                    Clientes ativos
+                </option>
+
+                <option value="inativos" {% if status=="inativos" %}selected{% endif %}>
+                    Clientes inativos
+                </option>
+
+                <option value="todos" {% if status=="todos" %}selected{% endif %}>
+                    Todos os clientes
+                </option>
+
+            </select>
+
+            <button type="submit">
+                Buscar
+            </button>
+
+            {% if pesquisa or status != "ativos" %}
+
+            <a href="{{ url_for('clientes') }}" class="btn-limpar-busca">
+                Limpar
+            </a>
+
+            {% endif %}
+
+        </form>
+
+    </section>
+
+    {% if clientes %}
+
+    <section class="clientes-grid">
+
+        {% for cliente in clientes %}
+
+        <article class="cliente-card
+            {% if not cliente['ativo'] %}cliente-inativo{% endif %}
+            {% if request.args.get('destaque')|int == cliente['id'] %}
+                cliente-destaque
+            {% endif %}">
+
+            <div class="cliente-card-topo">
+
+                <div class="cliente-identidade">
+
+                    <div class="cliente-avatar">
+
+                        {{
+                        cliente["nome"][0]|upper
+                        if cliente["nome"]
+                        else "C"
+                        }}
+
+                    </div>
+
+                    <div class="cliente-nome">
+
+                        <span class="cliente-label">
+                            CLIENTE
+                        </span>
+
+                        <h2>
+                            {{ cliente["nome"] }}
+                        </h2>
+
+                        <span class="cliente-status
+                            {% if cliente['ativo'] %}
+                                status-ativo
+                            {% else %}
+                                status-inativo
+                            {% endif %}">
+                            {% if cliente["ativo"] %}
+                            Ativo
+                            {% else %}
+                            Inativo
+                            {% endif %}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="cliente-contatos">
+
+                <div class="cliente-informacao">
+
+                    <span>Telefone</span>
+
+                    {% if cliente["telefone"] %}
+
+                    <a href="https://wa.me/55{{ cliente['telefone'] }}" target="_blank" rel="noopener noreferrer">
+                        {{ cliente["telefone"] }}
+                    </a>
+
+                    {% else %}
+
+                    <strong>Não informado</strong>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="cliente-informacao">
+
+                    <span>E-mail</span>
+
+                    {% if cliente["email"] %}
+
+                    <a href="mailto:{{ cliente['email'] }}">
+                        {{ cliente["email"] }}
+                    </a>
+
+                    {% else %}
+
+                    <strong>Não informado</strong>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="cliente-informacao">
+
+                    <span>CPF/CNPJ</span>
+
+                    <strong>
+                        {{ cliente["cpf_cnpj"] or "Não informado" }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <div class="cliente-metricas">
+
+                <div class="cliente-metrica">
+
+                    <span>Compras</span>
+
+                    <strong>
+                        {{ cliente["total_compras"] or 0 }}
+                    </strong>
+
+                </div>
+
+                <div class="cliente-metrica destaque-verde">
+
+                    <span>Total gasto</span>
+
+                    <strong>
+                        R$
+                        {{
+                        "%.2f"|format(
+                        cliente["total_gasto"]|float
+                        )
+                        }}
+                    </strong>
+
+                </div>
+
+                <div class="cliente-metrica">
+
+                    <span>Última compra</span>
+
+                    <strong>
+                        {% if cliente["ultima_compra"] %}
+                        {{
+                        cliente["ultima_compra"].strftime(
+                        "%d/%m/%Y"
+                        )
+                        }}
+                        {% else %}
+                        Nenhuma
+                        {% endif %}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            {% if
+            cliente["cidade"]
+            or cliente["estado"]
+            or cliente["endereco"]
+            %}
+
+            <div class="cliente-localizacao">
+
+                <span>⌖</span>
+
+                <p>
+                    {% if cliente["endereco"] %}
+                    {{ cliente["endereco"] }}
+
+                    {% if cliente["numero"] %}
+                    , {{ cliente["numero"] }}
+                    {% endif %}
+                    {% endif %}
+
+                    {% if cliente["cidade"] %}
+                    —
+                    {{ cliente["cidade"] }}
+                    {% endif %}
+
+                    {% if cliente["estado"] %}
+                    /{{ cliente["estado"] }}
+                    {% endif %}
+                </p>
+
+            </div>
+
+            {% endif %}
+
+            <div class="cliente-acoes">
+
+                <!-- VER HISTÓRICO -->
+                <a href="{{
+            url_for(
+                'detalhes_cliente',
+                cliente_id=cliente['id']
+            )
+        }}" class="btn-historico-cliente">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 3v18h18"></path>
+                        <path d="m7 16 4-4 3 3 5-7"></path>
+                    </svg>
+
+                    <span>
+                        Ver histórico
+                    </span>
+                </a>
+
+
+                <!-- EDITAR DADOS -->
+                <button type="button" class="btn-editar-cliente" data-id="{{ cliente['id'] }}"
+                    data-nome="{{ cliente['nome']|e }}" data-telefone="{{ (cliente['telefone'] or '')|e }}"
+                    data-email="{{ (cliente['email'] or '')|e }}" data-cpf-cnpj="{{ (cliente['cpf_cnpj'] or '')|e }}"
+                    data-nascimento="{{ cliente['data_nascimento'] or '' }}"
+                    data-endereco="{{ (cliente['endereco'] or '')|e }}" data-numero="{{ (cliente['numero'] or '')|e }}"
+                    data-complemento="{{ (cliente['complemento'] or '')|e }}"
+                    data-bairro="{{ (cliente['bairro'] or '')|e }}" data-cidade="{{ (cliente['cidade'] or '')|e }}"
+                    data-estado="{{ (cliente['estado'] or '')|e }}" data-cep="{{ (cliente['cep'] or '')|e }}"
+                    data-observacoes="{{ (cliente['observacoes'] or '')|e }}" onclick="abrirModalEditarCliente(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                    </svg>
+
+                    <span>
+                        Editar dados
+                    </span>
+                </button>
+
+
+                <!-- ATIVAR OU DESATIVAR -->
+                <form method="POST" action="{{
+            url_for(
+                'alterar_status_cliente',
+                cliente_id=cliente['id']
+            )
+        }}" class="form-status-cliente" data-nome="{{ cliente['nome']|e }}" data-ativo="{{
+            'true'
+            if cliente['ativo']
+            else 'false'
+        }}">
+                    <button type="submit" class="btn-status-cliente
+            {% if cliente['ativo'] %}
+                btn-desativar
+            {% else %}
+                btn-ativar
+            {% endif %}">
+
+                        {% if cliente["ativo"] %}
+
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"></circle>
+
+                            <path d="M8 12h8"></path>
+                        </svg>
+
+                        <span>
+                            Desativar
+                        </span>
+
+                        {% else %}
+
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+
+                        <span>
+                            Ativar
+                        </span>
+
+                        {% endif %}
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </article>
+
+        {% endfor %}
+
+    </section>
+
+    {% else %}
+
+    <section class="clientes-vazio">
+
+        <div class="clientes-vazio-icone">
+            👤
+        </div>
 
         <h2>
-
-            {{ cliente["nome"] }}
-
+            Nenhum cliente encontrado
         </h2>
 
         <p>
-
-            {{ cliente["telefone"] }}
-
+            {% if pesquisa %}
+            Nenhum resultado foi encontrado para
+            “{{ pesquisa }}”.
+            {% else %}
+            Cadastre o primeiro cliente da sua empresa.
+            {% endif %}
         </p>
 
-        <br>
+        {% if pesquisa %}
 
-        <a
-            href="/excluir_cliente/{{ cliente['id'] }}"
-            class="btn btn-danger"
-        >
-
-            Excluir
-
+        <a href="{{ url_for('clientes') }}">
+            Limpar pesquisa
         </a>
+
+        {% else %}
+
+        <button type="button" onclick="abrirModalNovoCliente()">
+            + Cadastrar cliente
+        </button>
+
+        {% endif %}
+
+    </section>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ========================================
+     MODAL DE CADASTRO
+========================================= -->
+
+<div class="cliente-modal-overlay" id="modalNovoCliente" aria-hidden="true">
+
+    <div class="cliente-modal" role="dialog" aria-modal="true" aria-labelledby="tituloNovoCliente">
+
+        <header class="cliente-modal-header">
+
+            <div>
+
+                <span class="modal-kicker">
+                    NOVO CADASTRO
+                </span>
+
+                <h2 id="tituloNovoCliente">
+                    Cadastrar cliente
+                </h2>
+
+                <p>
+                    Preencha os dados principais do cliente.
+                </p>
+
+            </div>
+
+            <button type="button" class="modal-fechar" onclick="fecharModalCliente('modalNovoCliente')"
+                aria-label="Fechar">
+                ×
+            </button>
+
+        </header>
+
+        <form method="POST" action="{{ url_for('clientes') }}" class="cliente-formulario">
+
+            {% include "partials/form_cliente.html" ignore missing %}
+
+            <div class="form-cliente-conteudo">
+
+                <div class="form-secao">
+
+                    <div class="form-secao-titulo">
+                        <span>01</span>
+
+                        <div>
+                            <h3>Informações principais</h3>
+                            <p>Identificação e contato do cliente.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <label class="campo campo-grande">
+                            <span>Nome completo *</span>
+
+                            <input type="text" name="nome" maxlength="150" placeholder="Nome do cliente" required>
+                        </label>
+
+                        <label class="campo">
+                            <span>Telefone</span>
+
+                            <input type="tel" name="telefone" maxlength="20" placeholder="(11) 99999-9999"
+                                data-mascara="telefone">
+                        </label>
+
+                        <label class="campo">
+                            <span>CPF ou CNPJ</span>
+
+                            <input type="text" name="cpf_cnpj" maxlength="18" placeholder="CPF ou CNPJ"
+                                data-mascara="cpf-cnpj">
+                        </label>
+
+                        <label class="campo campo-grande">
+                            <span>E-mail</span>
+
+                            <input type="email" name="email" maxlength="180" placeholder="cliente@email.com">
+                        </label>
+
+                        <label class="campo">
+                            <span>Data de nascimento</span>
+
+                            <input type="date" name="data_nascimento">
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="form-secao">
+
+                    <div class="form-secao-titulo">
+                        <span>02</span>
+
+                        <div>
+                            <h3>Endereço</h3>
+                            <p>Informações opcionais de localização.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <label class="campo">
+                            <span>CEP</span>
+
+                            <input type="text" name="cep" maxlength="9" placeholder="00000-000" data-mascara="cep">
+                        </label>
+
+                        <label class="campo campo-grande">
+                            <span>Endereço</span>
+
+                            <input type="text" name="endereco" maxlength="255" placeholder="Rua, avenida...">
+                        </label>
+
+                        <label class="campo campo-pequeno">
+                            <span>Número</span>
+
+                            <input type="text" name="numero" maxlength="30" placeholder="123">
+                        </label>
+
+                        <label class="campo">
+                            <span>Complemento</span>
+
+                            <input type="text" name="complemento" maxlength="120" placeholder="Apto, bloco...">
+                        </label>
+
+                        <label class="campo">
+                            <span>Bairro</span>
+
+                            <input type="text" name="bairro" maxlength="120" placeholder="Bairro">
+                        </label>
+
+                        <label class="campo">
+                            <span>Cidade</span>
+
+                            <input type="text" name="cidade" maxlength="120" placeholder="Cidade">
+                        </label>
+
+                        <label class="campo campo-pequeno">
+                            <span>UF</span>
+
+                            <input type="text" name="estado" maxlength="2" placeholder="SP" class="campo-estado">
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="form-secao">
+
+                    <div class="form-secao-titulo">
+                        <span>03</span>
+
+                        <div>
+                            <h3>Observações</h3>
+                            <p>Anotações internas sobre o cliente.</p>
+                        </div>
+                    </div>
+
+                    <label class="campo">
+                        <span>Observações</span>
+
+                        <textarea name="observacoes" maxlength="2000" rows="4"
+                            placeholder="Preferências, informações adicionais..."></textarea>
+                    </label>
+
+                </div>
+
+            </div>
+
+            <footer class="cliente-modal-footer">
+
+                <button type="button" class="btn-modal-cancelar" onclick="fecharModalCliente('modalNovoCliente')">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn-modal-salvar">
+                    Cadastrar cliente
+                </button>
+
+            </footer>
+
+        </form>
 
     </div>
 
-{% endfor %}
+</div>
+
+
+<!-- ========================================
+     MODAL DE EDIÇÃO
+========================================= -->
+
+<div class="cliente-modal-overlay" id="modalEditarCliente" aria-hidden="true">
+
+    <div class="cliente-modal" role="dialog" aria-modal="true" aria-labelledby="tituloEditarCliente">
+
+        <header class="cliente-modal-header">
+
+            <div>
+
+                <span class="modal-kicker">
+                    EDITAR CADASTRO
+                </span>
+
+                <h2 id="tituloEditarCliente">
+                    Editar cliente
+                </h2>
+
+                <p>
+                    Atualize os dados do cliente selecionado.
+                </p>
+
+            </div>
+
+            <button type="button" class="modal-fechar" onclick="fecharModalCliente('modalEditarCliente')"
+                aria-label="Fechar">
+                ×
+            </button>
+
+        </header>
+
+        <form method="POST" action="" class="cliente-formulario" id="formEditarCliente">
+
+            <div class="form-cliente-conteudo">
+
+                <div class="form-secao">
+
+                    <div class="form-secao-titulo">
+                        <span>01</span>
+
+                        <div>
+                            <h3>Informações principais</h3>
+                            <p>Identificação e contato do cliente.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <label class="campo campo-grande">
+                            <span>Nome completo *</span>
+
+                            <input type="text" name="nome" id="editarClienteNome" maxlength="150" required>
+                        </label>
+
+                        <label class="campo">
+                            <span>Telefone</span>
+
+                            <input type="tel" name="telefone" id="editarClienteTelefone" maxlength="20"
+                                data-mascara="telefone">
+                        </label>
+
+                        <label class="campo">
+                            <span>CPF ou CNPJ</span>
+
+                            <input type="text" name="cpf_cnpj" id="editarClienteCpfCnpj" maxlength="18"
+                                data-mascara="cpf-cnpj">
+                        </label>
+
+                        <label class="campo campo-grande">
+                            <span>E-mail</span>
+
+                            <input type="email" name="email" id="editarClienteEmail" maxlength="180">
+                        </label>
+
+                        <label class="campo">
+                            <span>Data de nascimento</span>
+
+                            <input type="date" name="data_nascimento" id="editarClienteNascimento">
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="form-secao">
+
+                    <div class="form-secao-titulo">
+                        <span>02</span>
+
+                        <div>
+                            <h3>Endereço</h3>
+                            <p>Localização e dados complementares.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <label class="campo">
+                            <span>CEP</span>
+
+                            <input type="text" name="cep" id="editarClienteCep" maxlength="9" data-mascara="cep">
+                        </label>
+
+                        <label class="campo campo-grande">
+                            <span>Endereço</span>
+
+                            <input type="text" name="endereco" id="editarClienteEndereco" maxlength="255">
+                        </label>
+
+                        <label class="campo campo-pequeno">
+                            <span>Número</span>
+
+                            <input type="text" name="numero" id="editarClienteNumero" maxlength="30">
+                        </label>
+
+                        <label class="campo">
+                            <span>Complemento</span>
+
+                            <input type="text" name="complemento" id="editarClienteComplemento" maxlength="120">
+                        </label>
+
+                        <label class="campo">
+                            <span>Bairro</span>
+
+                            <input type="text" name="bairro" id="editarClienteBairro" maxlength="120">
+                        </label>
+
+                        <label class="campo">
+                            <span>Cidade</span>
+
+                            <input type="text" name="cidade" id="editarClienteCidade" maxlength="120">
+                        </label>
+
+                        <label class="campo campo-pequeno">
+                            <span>UF</span>
+
+                            <input type="text" name="estado" id="editarClienteEstado" maxlength="2"
+                                class="campo-estado">
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="form-secao">
+
+                    <div class="form-secao-titulo">
+                        <span>03</span>
+
+                        <div>
+                            <h3>Observações</h3>
+                            <p>Anotações internas sobre o cliente.</p>
+                        </div>
+                    </div>
+
+                    <label class="campo">
+                        <span>Observações</span>
+
+                        <textarea name="observacoes" id="editarClienteObservacoes" maxlength="2000" rows="4"></textarea>
+                    </label>
+
+                </div>
+
+            </div>
+
+            <footer class="cliente-modal-footer">
+
+                <button type="button" class="btn-modal-cancelar" onclick="fecharModalCliente('modalEditarCliente')">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn-modal-salvar">
+                    Salvar alterações
+                </button>
+
+            </footer>
+
+        </form>
+
+    </div>
 
 </div>
+
+
+<script>
+    function abrirModalCliente(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add("aberto");
+        modal.setAttribute("aria-hidden", "false");
+
+        document.body.classList.add(
+            "modal-cliente-aberto"
+        );
+
+        window.setTimeout(function () {
+            const primeiroCampo = modal.querySelector(
+                "input:not([type='hidden'])"
+            );
+
+            if (primeiroCampo) {
+                primeiroCampo.focus();
+            }
+        }, 100);
+    }
+
+
+    function fecharModalCliente(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("aberto");
+        modal.setAttribute("aria-hidden", "true");
+
+        const algumAberto = document.querySelector(
+            ".cliente-modal-overlay.aberto"
+        );
+
+        if (!algumAberto) {
+            document.body.classList.remove(
+                "modal-cliente-aberto"
+            );
+        }
+    }
+
+
+    function abrirModalNovoCliente() {
+        const modal = document.getElementById(
+            "modalNovoCliente"
+        );
+
+        const formulario = modal.querySelector("form");
+
+        formulario.reset();
+
+        abrirModalCliente("modalNovoCliente");
+    }
+
+
+    function definirValor(id, valor) {
+        const elemento = document.getElementById(id);
+
+        if (elemento) {
+            elemento.value = valor || "";
+        }
+    }
+
+
+    function abrirModalEditarCliente(botao) {
+        const clienteId = botao.dataset.id;
+
+        const formulario = document.getElementById(
+            "formEditarCliente"
+        );
+
+        formulario.action = (
+            "/clientes/" +
+            encodeURIComponent(clienteId) +
+            "/editar"
+        );
+
+        definirValor(
+            "editarClienteNome",
+            botao.dataset.nome
+        );
+
+        definirValor(
+            "editarClienteTelefone",
+            formatarTelefone(
+                botao.dataset.telefone
+            )
+        );
+
+        definirValor(
+            "editarClienteEmail",
+            botao.dataset.email
+        );
+
+        definirValor(
+            "editarClienteCpfCnpj",
+            formatarCpfCnpj(
+                botao.dataset.cpfCnpj
+            )
+        );
+
+        definirValor(
+            "editarClienteNascimento",
+            botao.dataset.nascimento
+        );
+
+        definirValor(
+            "editarClienteEndereco",
+            botao.dataset.endereco
+        );
+
+        definirValor(
+            "editarClienteNumero",
+            botao.dataset.numero
+        );
+
+        definirValor(
+            "editarClienteComplemento",
+            botao.dataset.complemento
+        );
+
+        definirValor(
+            "editarClienteBairro",
+            botao.dataset.bairro
+        );
+
+        definirValor(
+            "editarClienteCidade",
+            botao.dataset.cidade
+        );
+
+        definirValor(
+            "editarClienteEstado",
+            botao.dataset.estado
+        );
+
+        definirValor(
+            "editarClienteCep",
+            formatarCep(
+                botao.dataset.cep
+            )
+        );
+
+        definirValor(
+            "editarClienteObservacoes",
+            botao.dataset.observacoes
+        );
+
+        abrirModalCliente("modalEditarCliente");
+    }
+
+
+    function somenteNumeros(valor) {
+        return String(valor || "").replace(/\D/g, "");
+    }
+
+
+    function formatarTelefone(valor) {
+        const numeros = somenteNumeros(valor).slice(0, 11);
+
+        if (numeros.length <= 2) {
+            return numeros;
+        }
+
+        if (numeros.length <= 6) {
+            return (
+                "(" +
+                numeros.slice(0, 2) +
+                ") " +
+                numeros.slice(2)
+            );
+        }
+
+        if (numeros.length <= 10) {
+            return (
+                "(" +
+                numeros.slice(0, 2) +
+                ") " +
+                numeros.slice(2, 6) +
+                "-" +
+                numeros.slice(6)
+            );
+        }
+
+        return (
+            "(" +
+            numeros.slice(0, 2) +
+            ") " +
+            numeros.slice(2, 7) +
+            "-" +
+            numeros.slice(7)
+        );
+    }
+
+
+    function formatarCpfCnpj(valor) {
+        const numeros = somenteNumeros(valor).slice(0, 14);
+
+        if (numeros.length <= 11) {
+            return numeros
+                .replace(/(\d{3})(\d)/, "$1.$2")
+                .replace(/(\d{3})(\d)/, "$1.$2")
+                .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        }
+
+        return numeros
+            .replace(/^(\d{2})(\d)/, "$1.$2")
+            .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+            .replace(/\.(\d{3})(\d)/, ".$1/$2")
+            .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+    }
+
+
+    function formatarCep(valor) {
+        const numeros = somenteNumeros(valor).slice(0, 8);
+
+        return numeros.replace(
+            /(\d{5})(\d{1,3})$/,
+            "$1-$2"
+        );
+    }
+
+
+    function aplicarMascaras() {
+        document
+            .querySelectorAll(
+                "[data-mascara='telefone']"
+            )
+            .forEach(function (campo) {
+                campo.addEventListener(
+                    "input",
+                    function () {
+                        campo.value = formatarTelefone(
+                            campo.value
+                        );
+                    }
+                );
+            });
+
+        document
+            .querySelectorAll(
+                "[data-mascara='cpf-cnpj']"
+            )
+            .forEach(function (campo) {
+                campo.addEventListener(
+                    "input",
+                    function () {
+                        campo.value = formatarCpfCnpj(
+                            campo.value
+                        );
+                    }
+                );
+            });
+
+        document
+            .querySelectorAll(
+                "[data-mascara='cep']"
+            )
+            .forEach(function (campo) {
+                campo.addEventListener(
+                    "input",
+                    function () {
+                        campo.value = formatarCep(
+                            campo.value
+                        );
+                    }
+                );
+            });
+
+        document
+            .querySelectorAll(".campo-estado")
+            .forEach(function (campo) {
+                campo.addEventListener(
+                    "input",
+                    function () {
+                        campo.value = campo.value
+                            .replace(/[^a-zA-Z]/g, "")
+                            .toUpperCase()
+                            .slice(0, 2);
+                    }
+                );
+            });
+    }
+
+
+    function confirmarAlteracaoStatus(nome, ativo) {
+        const acao = ativo
+            ? "desativar"
+            : "ativar";
+
+        return window.confirm(
+            "Deseja realmente " +
+            acao +
+            ' o cliente "' +
+            nome +
+            '"?'
+        );
+    }
+
+
+    document
+        .querySelectorAll(".cliente-modal-overlay")
+        .forEach(function (modal) {
+            modal.addEventListener(
+                "mousedown",
+                function (evento) {
+                    if (evento.target === modal) {
+                        fecharModalCliente(modal.id);
+                    }
+                }
+            );
+        });
+
+
+    document.addEventListener(
+        "keydown",
+        function (evento) {
+            if (evento.key !== "Escape") {
+                return;
+            }
+
+            const modalAberto = document.querySelector(
+                ".cliente-modal-overlay.aberto"
+            );
+
+            if (modalAberto) {
+                fecharModalCliente(modalAberto.id);
+            }
+        }
+    );
+
+
+    document
+        .querySelectorAll(".form-status-cliente")
+        .forEach(function (formulario) {
+            formulario.addEventListener(
+                "submit",
+                function (evento) {
+                    const nome = (
+                        formulario.dataset.nome ||
+                        "cliente"
+                    );
+
+                    const ativo = (
+                        formulario.dataset.ativo ===
+                        "true"
+                    );
+
+                    const confirmado =
+                        confirmarAlteracaoStatus(
+                            nome,
+                            ativo
+                        );
+
+                    if (!confirmado) {
+                        evento.preventDefault();
+                    }
+                }
+            );
+        });
+
+    aplicarMascaras();
+</script>
 
 {% endblock %}

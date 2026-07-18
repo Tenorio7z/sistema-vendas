@@ -1556,3 +1556,103 @@ body:not(.dark)
             rgba(255, 255, 255, 0.06);
     }
 }
+
+/* Modal de atualizações — tipografia maior */
+.atualizacoes-modal {
+    width: min(680px, calc(100vw - 32px));
+}
+
+.atualizacoes-modal h2 {
+    font-size: 2rem;
+    line-height: 1.15;
+}
+
+.atualizacoes-modal .modal-subtitulo {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.atualizacoes-modal .versao-nome {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.atualizacoes-modal .versao-data,
+.atualizacoes-modal .versao-status {
+    font-size: 0.75rem;
+}
+
+.atualizacoes-modal h3 {
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.atualizacoes-modal li {
+    font-size: 0.82rem;
+    line-height: 1.65;
+}
+
+.atualizacoes-modal .modal-rodape,
+.atualizacoes-modal .modal-rodape p {
+    font-size: 0.8rem;
+}
+
+.atualizacoes-modal button {
+    font-size: 0.82rem;
+}
+
+/* Celular */
+@media (max-width: 700px) {
+    .atualizacoes-modal h2 {
+        font-size: 1.65rem;
+    }
+
+    .atualizacoes-modal .modal-subtitulo {
+        font-size: 0.85rem;
+    }
+
+    .atualizacoes-modal h3 {
+        font-size: 0.95rem;
+    }
+
+    .atualizacoes-modal li {
+        font-size: 0.8rem;
+    }
+}
+#modalAtualizacoes {
+    font-size: 16px;
+}
+
+#modalAtualizacoes h2 {
+    font-size: 2rem;
+}
+
+#modalAtualizacoes h3 {
+    font-size: 1rem;
+}
+
+#modalAtualizacoes p,
+#modalAtualizacoes li {
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.nav-icon-svg {
+    width: 20px;
+    height: 20px;
+
+    flex: 0 0 20px;
+
+    color: var(--text);
+    filter: none !important;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.sidebar nav a:hover .nav-icon-svg,
+.sidebar nav a.active .nav-icon-svg {
+    color: var(--text);
+    transform: scale(1.06);
+}
