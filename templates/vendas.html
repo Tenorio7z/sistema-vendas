@@ -1,9 +1,10 @@
 {% extends "layout.html" %}
 
 {% block css %}
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/vendas.css') }}">
-
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/vendas.css') }}"
+>
 {% endblock %}
 
 {% block content %}
@@ -11,44 +12,49 @@
 <div class="topo-vendas">
 
     <div>
-
-        <h1>
-            PDV
-        </h1>
+        <h1>PDV</h1>
 
         <p class="subtitulo-pagina">
             Sistema de vendas e atendimento
         </p>
-
     </div>
 
 </div>
+
 
 {% if caixa_fechado %}
 
 <div class="caixa-fechado">
 
-    <h2>
-        Caixa fechado
-    </h2>
+    <h2>Caixa fechado</h2>
 
     <p>
         Abra o caixa antes de iniciar vendas.
     </p>
 
     <a href="/caixa" class="btn">
-        Abrir Caixa
+        Abrir caixa
     </a>
 
 </div>
 
 {% else %}
 
-<input type="text" id="scanner" class="campo-busca" placeholder="Buscar produtos ou ler código de barras" autofocus>
+<input
+    type="text"
+    id="scanner"
+    class="campo-busca"
+    placeholder="Buscar produtos ou ler código de barras"
+    autocomplete="off"
+    autofocus
+>
+
 
 <div class="pdv-layout">
 
-    <!-- PRODUTOS -->
+    <!-- =====================================
+         PRODUTOS
+    ====================================== -->
 
     <div class="produtos-grid">
 
@@ -60,11 +66,20 @@
 
                 {% if produto["possui_imagem"] %}
 
-                <img src="{{ url_for(
-                'produto_imagem',
-                id=produto['id']
-            ) }}" alt="{{ produto['nome'] }}" class="produto-imagem" loading="lazy" decoding="async" width="480"
-                    height="320">
+                <img
+                    src="{{
+                        url_for(
+                            'produto_imagem',
+                            id=produto['id']
+                        )
+                    }}"
+                    alt="{{ produto['nome'] }}"
+                    class="produto-imagem"
+                    loading="lazy"
+                    decoding="async"
+                    width="480"
+                    height="320"
+                >
 
                 {% else %}
 
@@ -89,16 +104,28 @@
                     </span>
 
                     <span class="estoque">
-                        Estoque: {{ produto["estoque"] }}
+                        Estoque:
+                        {{ produto["estoque"] }}
                     </span>
 
                 </div>
 
             </div>
 
-            <a href="/adicionar_carrinho/{{ produto['id'] }}" class="btn-add">
-                Adicionar
-            </a>
+            <button
+                type="button"
+                class="btn-add adicionar-produto-ajax"
+                data-produto-id="{{ produto['id'] }}"
+                {% if produto["estoque"]|int <= 0 %}
+                    disabled
+                {% endif %}
+            >
+                {% if produto["estoque"]|int <= 0 %}
+                    Sem estoque
+                {% else %}
+                    Adicionar
+                {% endif %}
+            </button>
 
         </div>
 
@@ -106,7 +133,10 @@
 
     </div>
 
-    <!-- CARRINHO -->
+
+    <!-- =====================================
+         CARRINHO
+    ====================================== -->
 
     <div class="carrinho-box">
 
@@ -114,21 +144,27 @@
 
             <div class="titulo-carrinho">
 
-                <h2>
-                    Carrinho
-                </h2>
+                <h2>Carrinho</h2>
 
-                <span class="contador">
-                    {{ carrinho|length }}
+                <span
+                    class="contador"
+                    id="contadorCarrinho"
+                >
+                    {{
+                        carrinho
+                        |sum(attribute="quantidade")
+                    }}
                 </span>
 
             </div>
 
         </div>
 
-        {% if carrinho %}
 
-        <div class="lista-carrinho">
+        <div
+            class="lista-carrinho"
+            id="listaCarrinho"
+        >
 
             {% for item in carrinho %}
 
@@ -149,12 +185,30 @@
                 <div class="lado-item">
 
                     <span>
-                        R$ {{ item["preco"] * item["quantidade"] }}
+                        R$
+                        {{
+                            "%.2f"|format(
+                                (
+                                    item["preco"]|float
+                                )
+                                *
+                                (
+                                    item[
+                                        "quantidade"
+                                    ]|int
+                                )
+                            )
+                        }}
                     </span>
 
-                    <a href="/remover_carrinho/{{ item['id'] }}" class="remover-item">
-                        ✕
-                    </a>
+                    <button
+                        type="button"
+                        class="remover-item remover-produto-ajax"
+                        data-produto-id="{{ item['id'] }}"
+                        aria-label="Remover uma unidade"
+                    >
+                        ×
+                    </button>
 
                 </div>
 
@@ -164,34 +218,42 @@
 
         </div>
 
-        {% else %}
 
-        <div class="carrinho-vazio">
-
+        <div
+            class="carrinho-vazio
+            {% if carrinho %}oculto{% endif %}"
+            id="carrinhoVazio"
+        >
             <p>
                 Nenhum item no pedido
             </p>
-
         </div>
 
-        {% endif %}
 
         <div class="rodape-carrinho">
 
             <div class="total-box">
 
-                <span>
-                    Total
-                </span>
+                <span>Total</span>
 
-                <h3>
-                    R$ {{ total }}
+                <h3 id="totalCarrinho">
+                    R$ {{ "%.2f"|format(total) }}
                 </h3>
 
             </div>
 
-            <button class="btn" onclick="abrirModal()">
-                Pagar • R$ {{ total }}
+            <button
+                type="button"
+                class="btn"
+                id="botaoPagar"
+                onclick="abrirModal()"
+                {% if not carrinho %}disabled{% endif %}
+            >
+                Pagar •
+
+                <span id="totalBotaoPagar">
+                    R$ {{ "%.2f"|format(total) }}
+                </span>
             </button>
 
         </div>
@@ -200,7 +262,6 @@
 
 </div>
 
-<!-- MODAL PAGAMENTO -->
 
 <!-- =====================================
      MODAL DE PAGAMENTO
@@ -210,7 +271,12 @@
 
     <div class="modal-content modal-pagamento-content">
 
-        <button type="button" class="fechar-modal-venda" onclick="fecharModalPagamento()" aria-label="Fechar">
+        <button
+            type="button"
+            class="fechar-modal-venda"
+            onclick="fecharModalPagamento()"
+            aria-label="Fechar"
+        >
             ×
         </button>
 
@@ -227,65 +293,74 @@
             de pagamento.
         </p>
 
-        <div id="dadosVenda" data-total="{{ '%.2f'|format(total) }}"></div>
+        <div
+            id="dadosVenda"
+            data-total="{{ '%.2f'|format(total) }}"
+        ></div>
+
 
         <div class="resumo-venda">
 
-            {% for item in carrinho %}
+            <div id="itensResumoPagamento">
 
-            <div class="linha-resumo">
+                {% for item in carrinho %}
 
-                <span>
+                <div class="linha-resumo">
 
-                    {{ item["quantidade"] }}x
-                    {{ item["nome"] }}
+                    <span>
+                        {{ item["quantidade"] }}x
+                        {{ item["nome"] }}
+                    </span>
 
-                </span>
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"|format(
+                                (
+                                    item["preco"]|float
+                                )
+                                *
+                                (
+                                    item[
+                                        "quantidade"
+                                    ]|int
+                                )
+                            )
+                        }}
+                    </strong>
 
-                <strong>
+                </div>
 
-                    R$
-                    {{
-                    "%.2f"|format(
-                    (item["preco"]|float)
-                    *
-                    (item["quantidade"]|int)
-                    )
-                    }}
-
-                </strong>
+                {% endfor %}
 
             </div>
 
-            {% endfor %}
 
             <div class="divisor-resumo"></div>
 
+
             <div class="subtotal-resumo">
 
-                <span>
-                    Subtotal
-                </span>
+                <span>Subtotal</span>
 
                 <strong id="subtotalPagamento">
-
-                    R$
-                    {{ "%.2f"|format(total) }}
-
+                    R$ {{ "%.2f"|format(total) }}
                 </strong>
 
             </div>
 
-            <div id="linhaDescontoPagamento" class="desconto-resumo oculto">
+
+            <div
+                id="linhaDescontoPagamento"
+                class="desconto-resumo oculto"
+            >
 
                 <span>
-
                     Desconto
 
                     <small id="percentualResumo">
                         0%
                     </small>
-
                 </span>
 
                 <strong id="valorDescontoResumo">
@@ -294,6 +369,7 @@
 
             </div>
 
+
             <div class="total-resumo">
 
                 <span>
@@ -301,17 +377,19 @@
                 </span>
 
                 <strong id="totalFinalPagamento">
-
-                    R$
-                    {{ "%.2f"|format(total) }}
-
+                    R$ {{ "%.2f"|format(total) }}
                 </strong>
 
             </div>
 
         </div>
 
-        <button type="button" id="abrirModalDesconto" class="btn-adicionar-desconto">
+
+        <button
+            type="button"
+            id="abrirModalDesconto"
+            class="btn-adicionar-desconto"
+        >
 
             <span aria-hidden="true">
                 %
@@ -332,11 +410,29 @@
 
         </button>
 
-        <form method="POST" action="/finalizar_venda" id="formFinalizarVenda">
 
-            <input type="hidden" name="desconto_tipo" id="descontoTipoFinal" value="nenhum">
+        <form
+            method="POST"
+            action="/finalizar_venda"
+            id="formFinalizarVenda"
+        >
 
-            <input type="hidden" name="desconto_valor" id="descontoValorFinal" value="0">
+            <input
+                type="hidden"
+                name="desconto_tipo"
+                id="descontoTipoFinal"
+                value="nenhum"
+            >
+
+            <input
+                type="hidden"
+                name="desconto_valor"
+                id="descontoValorFinal"
+                value="0"
+            >
+
+
+            <!-- CLIENTE OPCIONAL -->
 
             <div class="venda-cliente-box">
 
@@ -347,23 +443,32 @@
                     </div>
 
                     <div>
+
                         <strong>
                             Vincular cliente
                         </strong>
 
                         <small>
-                            Opcional — a venda também pode ser anônima
+                            Opcional — a venda também pode
+                            ser anônima
                         </small>
+
                     </div>
 
                 </div>
 
+
                 <div class="venda-cliente-pesquisa">
 
-                    <input type="search" id="pesquisaClienteVenda" placeholder="Pesquisar cliente..."
-                        autocomplete="off">
+                    <input
+                        type="search"
+                        id="pesquisaClienteVenda"
+                        placeholder="Pesquisar cliente..."
+                        autocomplete="off"
+                    >
 
                 </div>
+
 
                 <label class="campo-cliente-venda">
 
@@ -371,7 +476,10 @@
                         Cliente da venda
                     </span>
 
-                    <select name="cliente_id" id="clienteVenda">
+                    <select
+                        name="cliente_id"
+                        id="clienteVenda"
+                    >
 
                         <option value="">
                             Venda sem cliente
@@ -379,13 +487,19 @@
 
                         {% for cliente in clientes %}
 
-                        <option value="{{ cliente['id'] }}" data-nome="{{ cliente['nome']|lower|e }}"
-                            data-telefone="{{ (cliente['telefone'] or '')|e }}"
-                            data-documento="{{ (cliente['cpf_cnpj'] or '')|e }}">
+                        <option
+                            value="{{ cliente['id'] }}"
+                            data-telefone="{{
+                                (cliente['telefone'] or '')|e
+                            }}"
+                            data-documento="{{
+                                (cliente['cpf_cnpj'] or '')|e
+                            }}"
+                        >
                             {{ cliente["nome"] }}
 
                             {% if cliente["telefone"] %}
-                            — {{ cliente["telefone"] }}
+                                — {{ cliente["telefone"] }}
                             {% endif %}
                         </option>
 
@@ -395,7 +509,11 @@
 
                 </label>
 
-                <div id="clienteSelecionadoResumo" class="cliente-selecionado-resumo oculto">
+
+                <div
+                    id="clienteSelecionadoResumo"
+                    class="cliente-selecionado-resumo oculto"
+                >
 
                     <span class="cliente-resumo-avatar">
                         C
@@ -413,11 +531,16 @@
 
                     </div>
 
-                    <button type="button" id="removerClienteVenda" title="Remover cliente">
+                    <button
+                        type="button"
+                        id="removerClienteVenda"
+                        title="Remover cliente"
+                    >
                         ×
                     </button>
 
                 </div>
+
 
                 {% if not clientes %}
 
@@ -425,7 +548,10 @@
 
                     Nenhum cliente ativo cadastrado.
 
-                    <a href="{{ url_for('clientes') }}" target="_blank">
+                    <a
+                        href="{{ url_for('clientes') }}"
+                        target="_blank"
+                    >
                         Cadastrar cliente
                     </a>
 
@@ -435,13 +561,17 @@
 
             </div>
 
+
             <label class="campo-pagamento">
 
                 <span>
                     Forma de pagamento
                 </span>
 
-                <select name="pagamento" required>
+                <select
+                    name="pagamento"
+                    required
+                >
 
                     <option value="Dinheiro">
                         Dinheiro
@@ -459,15 +589,16 @@
 
             </label>
 
-            <button type="submit" class="btn btn-finalizar-venda">
+
+            <button
+                type="submit"
+                class="btn btn-finalizar-venda"
+            >
 
                 Finalizar por
 
                 <strong id="valorBotaoFinalizar">
-
-                    R$
-                    {{ "%.2f"|format(total) }}
-
+                    R$ {{ "%.2f"|format(total) }}
                 </strong>
 
             </button>
@@ -483,11 +614,19 @@
      MODAL DE DESCONTO
 ====================================== -->
 
-<div id="modalDesconto" class="modal modal-desconto">
+<div
+    id="modalDesconto"
+    class="modal modal-desconto"
+>
 
     <div class="modal-content desconto-content">
 
-        <button type="button" class="fechar-modal-venda" onclick="fecharModalDesconto()" aria-label="Fechar">
+        <button
+            type="button"
+            class="fechar-modal-venda"
+            onclick="fecharModalDesconto()"
+            aria-label="Fechar"
+        >
             ×
         </button>
 
@@ -504,17 +643,27 @@
             o desconto da venda.
         </p>
 
+
         <div class="tipos-desconto">
 
-            <button type="button" class="tipo-desconto-btn ativo" data-tipo="percentual">
+            <button
+                type="button"
+                class="tipo-desconto-btn ativo"
+                data-tipo="percentual"
+            >
                 Porcentagem
             </button>
 
-            <button type="button" class="tipo-desconto-btn" data-tipo="valor">
+            <button
+                type="button"
+                class="tipo-desconto-btn"
+                data-tipo="valor"
+            >
                 Valor em reais
             </button>
 
         </div>
+
 
         <div class="campo-desconto">
 
@@ -528,24 +677,31 @@
                     %
                 </span>
 
-                <input type="number" id="entradaDesconto" min="0" max="100" step="0.01" inputmode="decimal"
-                    placeholder="0,00">
+                <input
+                    type="number"
+                    id="entradaDesconto"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    inputmode="decimal"
+                    placeholder="0,00"
+                >
 
             </div>
 
         </div>
 
+
         <div class="conversao-desconto">
 
-            <span>
-                Equivale a
-            </span>
+            <span>Equivale a</span>
 
             <strong id="equivalenciaDesconto">
                 R$ 0,00
             </strong>
 
         </div>
+
 
         <div class="preview-desconto">
 
@@ -563,11 +719,12 @@
 
             <div>
 
-                <span>
-                    Desconto
-                </span>
+                <span>Desconto</span>
 
-                <strong id="previewValorDesconto" class="valor-negativo">
+                <strong
+                    id="previewValorDesconto"
+                    class="valor-negativo"
+                >
                     - R$ 0,00
                 </strong>
 
@@ -575,9 +732,7 @@
 
             <div class="preview-total">
 
-                <span>
-                    Novo total
-                </span>
+                <span>Novo total</span>
 
                 <strong id="previewNovoTotal">
                     R$ 0,00
@@ -587,13 +742,22 @@
 
         </div>
 
+
         <div class="acoes-desconto">
 
-            <button type="button" id="removerDesconto" class="btn-remover-desconto">
+            <button
+                type="button"
+                id="removerDesconto"
+                class="btn-remover-desconto"
+            >
                 Remover desconto
             </button>
 
-            <button type="button" id="confirmarDesconto" class="btn-confirmar-desconto">
+            <button
+                type="button"
+                id="confirmarDesconto"
+                class="btn-confirmar-desconto"
+            >
                 Aplicar desconto
             </button>
 
@@ -604,423 +768,342 @@
 </div>
 
 
-
 <script>
+(function () {
 
-    (function () {
+    "use strict";
 
-        "use strict";
 
-        const dadosVenda =
-            document.getElementById(
-                "dadosVenda"
-            );
+    /* =====================================
+       ELEMENTOS DA VENDA
+    ====================================== */
 
-        const totalBruto = Number(
-            dadosVenda
-                ? dadosVenda.dataset.total
-                : 0
+    const dadosVenda =
+        document.getElementById(
+            "dadosVenda"
         );
 
-        const modalPagamento =
-            document.getElementById(
-                "modalPagamento"
+    let totalBruto = Number(
+        dadosVenda
+            ? dadosVenda.dataset.total
+            : 0
+    );
+
+
+    const modalPagamento =
+        document.getElementById(
+            "modalPagamento"
+        );
+
+    const modalDesconto =
+        document.getElementById(
+            "modalDesconto"
+        );
+
+    const entradaDesconto =
+        document.getElementById(
+            "entradaDesconto"
+        );
+
+    const prefixoDesconto =
+        document.getElementById(
+            "prefixoDesconto"
+        );
+
+    const equivalenciaDesconto =
+        document.getElementById(
+            "equivalenciaDesconto"
+        );
+
+    const previewValorOriginal =
+        document.getElementById(
+            "previewValorOriginal"
+        );
+
+    const previewValorDesconto =
+        document.getElementById(
+            "previewValorDesconto"
+        );
+
+    const previewNovoTotal =
+        document.getElementById(
+            "previewNovoTotal"
+        );
+
+    const subtotalPagamento =
+        document.getElementById(
+            "subtotalPagamento"
+        );
+
+    const linhaDescontoPagamento =
+        document.getElementById(
+            "linhaDescontoPagamento"
+        );
+
+    const percentualResumo =
+        document.getElementById(
+            "percentualResumo"
+        );
+
+    const valorDescontoResumo =
+        document.getElementById(
+            "valorDescontoResumo"
+        );
+
+    const totalFinalPagamento =
+        document.getElementById(
+            "totalFinalPagamento"
+        );
+
+    const valorBotaoFinalizar =
+        document.getElementById(
+            "valorBotaoFinalizar"
+        );
+
+    const descontoTipoFinal =
+        document.getElementById(
+            "descontoTipoFinal"
+        );
+
+    const descontoValorFinal =
+        document.getElementById(
+            "descontoValorFinal"
+        );
+
+
+    let tipoDescontoAtual =
+        "percentual";
+
+    let descontoAplicado = {
+        tipo: "nenhum",
+        informado: 0,
+        valor: 0,
+        percentual: 0,
+        total: totalBruto
+    };
+
+
+    /* =====================================
+       FORMATAÇÃO
+    ====================================== */
+
+    function moeda(valor) {
+
+        return Number(
+            valor || 0
+        ).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+    }
+
+
+    function escaparHtml(texto) {
+
+        const elemento =
+            document.createElement(
+                "div"
             );
 
-        const modalDesconto =
-            document.getElementById(
-                "modalDesconto"
+        elemento.textContent =
+            String(texto || "");
+
+        return elemento.innerHTML;
+    }
+
+
+    function numeroEntrada(valor) {
+
+        const numero = Number(
+            String(valor || 0)
+                .replace(",", ".")
+        );
+
+        return Number.isFinite(numero)
+            ? numero
+            : 0;
+    }
+
+
+    function limitar(
+        valor,
+        minimo,
+        maximo
+    ) {
+
+        return Math.min(
+            Math.max(
+                valor,
+                minimo
+            ),
+            maximo
+        );
+    }
+
+
+    /* =====================================
+       DESCONTO
+    ====================================== */
+
+    function calcularDescontoPreview() {
+
+        const informado =
+            numeroEntrada(
+                entradaDesconto
+                    ? entradaDesconto.value
+                    : 0
             );
 
-        const entradaDesconto =
-            document.getElementById(
-                "entradaDesconto"
+        let valorDesconto = 0;
+        let percentual = 0;
+
+        if (
+            tipoDescontoAtual
+            === "percentual"
+        ) {
+
+            percentual = limitar(
+                informado,
+                0,
+                100
             );
 
-        const prefixoDesconto =
-            document.getElementById(
-                "prefixoDesconto"
+            valorDesconto =
+                totalBruto
+                * percentual
+                / 100;
+
+        } else {
+
+            valorDesconto = limitar(
+                informado,
+                0,
+                totalBruto
             );
 
-        const equivalenciaDesconto =
-            document.getElementById(
-                "equivalenciaDesconto"
-            );
-
-        const previewValorOriginal =
-            document.getElementById(
-                "previewValorOriginal"
-            );
-
-        const previewValorDesconto =
-            document.getElementById(
-                "previewValorDesconto"
-            );
-
-        const previewNovoTotal =
-            document.getElementById(
-                "previewNovoTotal"
-            );
-
-        const linhaDescontoPagamento =
-            document.getElementById(
-                "linhaDescontoPagamento"
-            );
-
-        const percentualResumo =
-            document.getElementById(
-                "percentualResumo"
-            );
-
-        const valorDescontoResumo =
-            document.getElementById(
-                "valorDescontoResumo"
-            );
-
-        const totalFinalPagamento =
-            document.getElementById(
-                "totalFinalPagamento"
-            );
-
-        const valorBotaoFinalizar =
-            document.getElementById(
-                "valorBotaoFinalizar"
-            );
-
-        const descontoTipoFinal =
-            document.getElementById(
-                "descontoTipoFinal"
-            );
-
-        const descontoValorFinal =
-            document.getElementById(
-                "descontoValorFinal"
-            );
-
-        let tipoDescontoAtual =
-            "percentual";
-
-        let descontoAplicado = {
-            tipo: "nenhum",
-            informado: 0,
-            valor: 0,
-            percentual: 0,
-            total: totalBruto
-        };
-
-
-        function moeda(valor) {
-
-            return Number(
-                valor || 0
-            ).toLocaleString(
-                "pt-BR",
-                {
-                    style: "currency",
-                    currency: "BRL"
-                }
-            );
-        }
-
-
-        function numeroEntrada(valor) {
-
-            const numero = Number(
-                String(
-                    valor || 0
-                ).replace(
-                    ",",
-                    "."
+            percentual = totalBruto > 0
+                ? (
+                    valorDesconto
+                    / totalBruto
+                    * 100
                 )
-            );
-
-            return Number.isFinite(numero)
-                ? numero
                 : 0;
         }
 
+        valorDesconto =
+            Math.round(
+                valorDesconto * 100
+            ) / 100;
 
-        function limitar(
-            valor,
-            minimo,
-            maximo
-        ) {
-
-            return Math.min(
-                Math.max(
-                    valor,
-                    minimo
-                ),
-                maximo
+        const novoTotal =
+            Math.max(
+                0,
+                totalBruto
+                - valorDesconto
             );
-        }
 
+        if (equivalenciaDesconto) {
 
-        function calcularDescontoPreview() {
-
-            const informado =
-                numeroEntrada(
-                    entradaDesconto
-                        ? entradaDesconto.value
-                        : 0
-                );
-
-            let valorDesconto = 0;
-            let percentual = 0;
-
-            if (
+            equivalenciaDesconto.textContent =
                 tipoDescontoAtual
-                === "percentual"
-            ) {
-
-                percentual = limitar(
-                    informado,
-                    0,
-                    100
-                );
-
-                valorDesconto =
-                    totalBruto
-                    * percentual
-                    / 100;
-
-            } else {
-
-                valorDesconto = limitar(
-                    informado,
-                    0,
-                    totalBruto
-                );
-
-                percentual = totalBruto > 0
-                    ? (
-                        valorDesconto
-                        / totalBruto
-                        * 100
-                    )
-                    : 0;
-            }
-
-            valorDesconto =
-                Math.round(
-                    valorDesconto * 100
-                ) / 100;
-
-            const novoTotal =
-                Math.max(
-                    0,
-                    totalBruto
-                    - valorDesconto
-                );
-
-            if (equivalenciaDesconto) {
-
-                equivalenciaDesconto.textContent =
-                    tipoDescontoAtual
-                        === "percentual"
-                        ? moeda(valorDesconto)
-                        : (
-                            percentual
-                                .toFixed(2)
-                            + "%"
-                        );
-            }
-
-            if (previewValorOriginal) {
-                previewValorOriginal.textContent =
-                    moeda(totalBruto);
-            }
-
-            if (previewValorDesconto) {
-                previewValorDesconto.textContent =
-                    "- " + moeda(valorDesconto);
-            }
-
-            if (previewNovoTotal) {
-                previewNovoTotal.textContent =
-                    moeda(novoTotal);
-            }
-
-            return {
-                informado: informado,
-                valor: valorDesconto,
-                percentual: percentual,
-                total: novoTotal
-            };
+                    === "percentual"
+                    ? moeda(valorDesconto)
+                    : percentual.toFixed(2) + "%";
         }
 
-
-        function atualizarResumoPagamento() {
-
-            const possuiDesconto =
-                descontoAplicado.valor > 0;
-
-            if (linhaDescontoPagamento) {
-
-                linhaDescontoPagamento
-                    .classList.toggle(
-                        "oculto",
-                        !possuiDesconto
-                    );
-            }
-
-            if (percentualResumo) {
-
-                percentualResumo.textContent =
-                    descontoAplicado
-                        .percentual
-                        .toFixed(2)
-                    + "%";
-            }
-
-            if (valorDescontoResumo) {
-
-                valorDescontoResumo.textContent =
-                    "- "
-                    + moeda(
-                        descontoAplicado.valor
-                    );
-            }
-
-            if (totalFinalPagamento) {
-
-                totalFinalPagamento.textContent =
-                    moeda(
-                        descontoAplicado.total
-                    );
-            }
-
-            if (valorBotaoFinalizar) {
-
-                valorBotaoFinalizar.textContent =
-                    moeda(
-                        descontoAplicado.total
-                    );
-            }
-
-            if (descontoTipoFinal) {
-
-                descontoTipoFinal.value =
-                    descontoAplicado.tipo;
-            }
-
-            if (descontoValorFinal) {
-
-                descontoValorFinal.value =
-                    descontoAplicado.informado
-                        .toFixed(2);
-            }
+        if (previewValorOriginal) {
+            previewValorOriginal.textContent =
+                moeda(totalBruto);
         }
 
-
-        function selecionarTipo(tipo) {
-
-            tipoDescontoAtual = tipo;
-
-            document
-                .querySelectorAll(
-                    ".tipo-desconto-btn"
-                )
-                .forEach(function (botao) {
-
-                    botao.classList.toggle(
-                        "ativo",
-                        botao.dataset.tipo === tipo
-                    );
-                });
-
-            if (entradaDesconto) {
-
-                entradaDesconto.value = "";
-
-                entradaDesconto.max =
-                    tipo === "percentual"
-                        ? "100"
-                        : totalBruto.toFixed(2);
-
-                entradaDesconto.placeholder =
-                    tipo === "percentual"
-                        ? "Ex: 30"
-                        : "Ex: 50,00";
-            }
-
-            if (prefixoDesconto) {
-
-                prefixoDesconto.textContent =
-                    tipo === "percentual"
-                        ? "%"
-                        : "R$";
-            }
-
-            calcularDescontoPreview();
-
-            if (entradaDesconto) {
-                entradaDesconto.focus();
-            }
+        if (previewValorDesconto) {
+            previewValorDesconto.textContent =
+                "- " + moeda(valorDesconto);
         }
 
+        if (previewNovoTotal) {
+            previewNovoTotal.textContent =
+                moeda(novoTotal);
+        }
 
-        window.abrirModal = function () {
-
-            if (!modalPagamento) {
-                return;
-            }
-
-            modalPagamento.style.display =
-                "flex";
+        return {
+            informado: informado,
+            valor: valorDesconto,
+            percentual: percentual,
+            total: novoTotal
         };
+    }
 
 
-        window.fecharModalPagamento =
-            function () {
+    function atualizarResumoPagamento() {
 
-                if (modalPagamento) {
+        const possuiDesconto =
+            descontoAplicado.valor > 0;
 
-                    modalPagamento.style.display =
-                        "none";
-                }
-            };
+        if (linhaDescontoPagamento) {
 
-
-        window.fecharModalDesconto =
-            function () {
-
-                if (modalDesconto) {
-
-                    modalDesconto.style.display =
-                        "none";
-                }
-            };
-
-
-        const botaoAbrirDesconto =
-            document.getElementById(
-                "abrirModalDesconto"
-            );
-
-        if (botaoAbrirDesconto) {
-
-            botaoAbrirDesconto.addEventListener(
-                "click",
-                function () {
-
-                    if (!modalDesconto) {
-                        return;
-                    }
-
-                    modalDesconto.style.display =
-                        "flex";
-
-                    selecionarTipo(
-                        descontoAplicado.tipo
-                            === "valor"
-                            ? "valor"
-                            : "percentual"
-                    );
-                }
-            );
+            linhaDescontoPagamento
+                .classList.toggle(
+                    "oculto",
+                    !possuiDesconto
+                );
         }
 
+        if (percentualResumo) {
+
+            percentualResumo.textContent =
+                descontoAplicado
+                    .percentual
+                    .toFixed(2)
+                + "%";
+        }
+
+        if (valorDescontoResumo) {
+
+            valorDescontoResumo.textContent =
+                "- "
+                + moeda(
+                    descontoAplicado.valor
+                );
+        }
+
+        if (totalFinalPagamento) {
+
+            totalFinalPagamento.textContent =
+                moeda(
+                    descontoAplicado.total
+                );
+        }
+
+        if (valorBotaoFinalizar) {
+
+            valorBotaoFinalizar.textContent =
+                moeda(
+                    descontoAplicado.total
+                );
+        }
+
+        if (descontoTipoFinal) {
+
+            descontoTipoFinal.value =
+                descontoAplicado.tipo;
+        }
+
+        if (descontoValorFinal) {
+
+            descontoValorFinal.value =
+                descontoAplicado.informado
+                    .toFixed(2);
+        }
+    }
+
+
+    function selecionarTipo(tipo) {
+
+        tipoDescontoAtual = tipo;
 
         document
             .querySelectorAll(
@@ -1028,453 +1111,871 @@
             )
             .forEach(function (botao) {
 
-                botao.addEventListener(
-                    "click",
-                    function () {
-
-                        selecionarTipo(
-                            botao.dataset.tipo
-                        );
-                    }
+                botao.classList.toggle(
+                    "ativo",
+                    botao.dataset.tipo === tipo
                 );
             });
 
-
         if (entradaDesconto) {
 
-            entradaDesconto.addEventListener(
-                "input",
-                calcularDescontoPreview
-            );
+            entradaDesconto.value = "";
+
+            entradaDesconto.max =
+                tipo === "percentual"
+                    ? "100"
+                    : totalBruto.toFixed(2);
+
+            entradaDesconto.placeholder =
+                tipo === "percentual"
+                    ? "Ex: 30"
+                    : "Ex: 50,00";
+
+            entradaDesconto.focus();
         }
 
+        if (prefixoDesconto) {
 
-        const confirmarDesconto =
-            document.getElementById(
-                "confirmarDesconto"
-            );
-
-        if (confirmarDesconto) {
-
-            confirmarDesconto.addEventListener(
-                "click",
-                function () {
-
-                    const calculo =
-                        calcularDescontoPreview();
-
-                    if (
-                        calculo.informado < 0
-                        || calculo.valor < 0
-                    ) {
-                        return;
-                    }
-
-                    descontoAplicado = {
-                        tipo: (
-                            calculo.valor > 0
-                                ? tipoDescontoAtual
-                                : "nenhum"
-                        ),
-
-                        informado:
-                            calculo.informado,
-
-                        valor:
-                            calculo.valor,
-
-                        percentual:
-                            calculo.percentual,
-
-                        total:
-                            calculo.total
-                    };
-
-                    const pesquisaClienteVenda =
-                        document.getElementById(
-                            "pesquisaClienteVenda"
-                        );
-
-                    const clienteVenda =
-                        document.getElementById(
-                            "clienteVenda"
-                        );
-
-                    const clienteSelecionadoResumo =
-                        document.getElementById(
-                            "clienteSelecionadoResumo"
-                        );
-
-                    const clienteSelecionadoNome =
-                        document.getElementById(
-                            "clienteSelecionadoNome"
-                        );
-
-                    const clienteSelecionadoContato =
-                        document.getElementById(
-                            "clienteSelecionadoContato"
-                        );
-
-                    const removerClienteVenda =
-                        document.getElementById(
-                            "removerClienteVenda"
-                        );
-
-
-                    function normalizarTextoCliente(texto) {
-                        return String(texto || "")
-                            .normalize("NFD")
-                            .replace(
-                                /[\u0300-\u036f]/g,
-                                ""
-                            )
-                            .toLowerCase()
-                            .trim();
-                    }
-
-
-                    function atualizarClienteSelecionado() {
-
-                        if (
-                            !clienteVenda
-                            || !clienteSelecionadoResumo
-                        ) {
-                            return;
-                        }
-
-                        const opcao =
-                            clienteVenda.options[
-                            clienteVenda.selectedIndex
-                            ];
-
-                        const possuiCliente = Boolean(
-                            opcao
-                            && opcao.value
-                        );
-
-                        clienteSelecionadoResumo
-                            .classList.toggle(
-                                "oculto",
-                                !possuiCliente
-                            );
-
-                        if (!possuiCliente) {
-                            return;
-                        }
-
-                        const nome = (
-                            opcao.textContent
-                            || "Cliente"
-                        )
-                            .split("—")[0]
-                            .trim();
-
-                        const telefone = (
-                            opcao.dataset.telefone
-                            || ""
-                        );
-
-                        const documento = (
-                            opcao.dataset.documento
-                            || ""
-                        );
-
-                        if (clienteSelecionadoNome) {
-                            clienteSelecionadoNome.textContent =
-                                nome;
-                        }
-
-                        if (clienteSelecionadoContato) {
-
-                            clienteSelecionadoContato.textContent =
-                                telefone
-                                || documento
-                                || "Cliente vinculado à venda";
-                        }
-
-                        const avatar =
-                            clienteSelecionadoResumo
-                                .querySelector(
-                                    ".cliente-resumo-avatar"
-                                );
-
-                        if (avatar) {
-                            avatar.textContent = (
-                                nome.charAt(0).toUpperCase()
-                                || "C"
-                            );
-                        }
-                    }
-
-
-                    if (
-                        pesquisaClienteVenda
-                        && clienteVenda
-                    ) {
-
-                        pesquisaClienteVenda.addEventListener(
-                            "input",
-                            function () {
-
-                                const pesquisa =
-                                    normalizarTextoCliente(
-                                        pesquisaClienteVenda.value
-                                    );
-
-                                Array.from(
-                                    clienteVenda.options
-                                ).forEach(
-                                    function (opcao, indice) {
-
-                                        if (indice === 0) {
-                                            opcao.hidden = false;
-                                            return;
-                                        }
-
-                                        const conteudo =
-                                            normalizarTextoCliente(
-                                                (
-                                                    opcao.textContent
-                                                    || ""
-                                                )
-                                                + " "
-                                                + (
-                                                    opcao.dataset.telefone
-                                                    || ""
-                                                )
-                                                + " "
-                                                + (
-                                                    opcao.dataset.documento
-                                                    || ""
-                                                )
-                                            );
-
-                                        opcao.hidden = (
-                                            pesquisa !== ""
-                                            && !conteudo.includes(
-                                                pesquisa
-                                            )
-                                        );
-                                    }
-                                );
-                            }
-                        );
-                    }
-
-
-                    if (clienteVenda) {
-
-                        clienteVenda.addEventListener(
-                            "change",
-                            atualizarClienteSelecionado
-                        );
-                    }
-
-
-                    if (
-                        removerClienteVenda
-                        && clienteVenda
-                    ) {
-
-                        removerClienteVenda.addEventListener(
-                            "click",
-                            function () {
-
-                                clienteVenda.value = "";
-
-                                if (pesquisaClienteVenda) {
-                                    pesquisaClienteVenda.value = "";
-                                }
-
-                                Array.from(
-                                    clienteVenda.options
-                                ).forEach(function (opcao) {
-                                    opcao.hidden = false;
-                                });
-
-                                atualizarClienteSelecionado();
-                            }
-                        );
-                    }
-
-
-                    atualizarClienteSelecionado();
-
-                    atualizarResumoPagamento();
-
-                    window
-                        .fecharModalDesconto();
-                }
-            );
+            prefixoDesconto.textContent =
+                tipo === "percentual"
+                    ? "%"
+                    : "R$";
         }
 
+        calcularDescontoPreview();
+    }
 
-        const removerDesconto =
-            document.getElementById(
-                "removerDesconto"
-            );
 
-        if (removerDesconto) {
+    /* =====================================
+       MODAIS
+    ====================================== */
 
-            removerDesconto.addEventListener(
-                "click",
-                function () {
+    window.abrirModal = function () {
 
-                    descontoAplicado = {
-                        tipo: "nenhum",
-                        informado: 0,
-                        valor: 0,
-                        percentual: 0,
-                        total: totalBruto
-                    };
-
-                    atualizarResumoPagamento();
-
-                    window
-                        .fecharModalDesconto();
-                }
-            );
+        if (
+            !modalPagamento
+            || totalBruto <= 0
+        ) {
+            return;
         }
 
+        modalPagamento.style.display =
+            "flex";
+    };
 
-        window.addEventListener(
-            "click",
-            function (evento) {
 
-                if (
-                    evento.target
-                    === modalPagamento
-                ) {
-                    window
-                        .fecharModalPagamento();
-                }
+    window.fecharModalPagamento =
+        function () {
 
-                if (
-                    evento.target
-                    === modalDesconto
-                ) {
-                    window
-                        .fecharModalDesconto();
-                }
+            if (modalPagamento) {
+                modalPagamento.style.display =
+                    "none";
             }
+        };
+
+
+    window.fecharModalDesconto =
+        function () {
+
+            if (modalDesconto) {
+                modalDesconto.style.display =
+                    "none";
+            }
+        };
+
+
+    const botaoAbrirDesconto =
+        document.getElementById(
+            "abrirModalDesconto"
         );
 
+    if (botaoAbrirDesconto) {
 
-        document.addEventListener(
-            "keydown",
-            function (evento) {
+        botaoAbrirDesconto.addEventListener(
+            "click",
+            function () {
 
-                if (evento.key !== "Escape") {
+                if (!modalDesconto) {
                     return;
                 }
 
+                modalDesconto.style.display =
+                    "flex";
+
+                selecionarTipo(
+                    descontoAplicado.tipo
+                        === "valor"
+                        ? "valor"
+                        : "percentual"
+                );
+            }
+        );
+    }
+
+
+    document
+        .querySelectorAll(
+            ".tipo-desconto-btn"
+        )
+        .forEach(function (botao) {
+
+            botao.addEventListener(
+                "click",
+                function () {
+
+                    selecionarTipo(
+                        botao.dataset.tipo
+                    );
+                }
+            );
+        });
+
+
+    if (entradaDesconto) {
+
+        entradaDesconto.addEventListener(
+            "input",
+            calcularDescontoPreview
+        );
+    }
+
+
+    const confirmarDesconto =
+        document.getElementById(
+            "confirmarDesconto"
+        );
+
+    if (confirmarDesconto) {
+
+        confirmarDesconto.addEventListener(
+            "click",
+            function () {
+
+                const calculo =
+                    calcularDescontoPreview();
+
+                descontoAplicado = {
+                    tipo: (
+                        calculo.valor > 0
+                            ? tipoDescontoAtual
+                            : "nenhum"
+                    ),
+                    informado:
+                        calculo.informado,
+                    valor:
+                        calculo.valor,
+                    percentual:
+                        calculo.percentual,
+                    total:
+                        calculo.total
+                };
+
+                atualizarResumoPagamento();
                 window.fecharModalDesconto();
-                window.fecharModalPagamento();
+            }
+        );
+    }
+
+
+    const removerDesconto =
+        document.getElementById(
+            "removerDesconto"
+        );
+
+    if (removerDesconto) {
+
+        removerDesconto.addEventListener(
+            "click",
+            function () {
+
+                descontoAplicado = {
+                    tipo: "nenhum",
+                    informado: 0,
+                    valor: 0,
+                    percentual: 0,
+                    total: totalBruto
+                };
+
+                if (entradaDesconto) {
+                    entradaDesconto.value = "";
+                }
+
+                atualizarResumoPagamento();
+                window.fecharModalDesconto();
+            }
+        );
+    }
+
+
+    /* =====================================
+       CLIENTE
+    ====================================== */
+
+    const pesquisaClienteVenda =
+        document.getElementById(
+            "pesquisaClienteVenda"
+        );
+
+    const clienteVenda =
+        document.getElementById(
+            "clienteVenda"
+        );
+
+    const clienteSelecionadoResumo =
+        document.getElementById(
+            "clienteSelecionadoResumo"
+        );
+
+    const clienteSelecionadoNome =
+        document.getElementById(
+            "clienteSelecionadoNome"
+        );
+
+    const clienteSelecionadoContato =
+        document.getElementById(
+            "clienteSelecionadoContato"
+        );
+
+    const removerClienteVenda =
+        document.getElementById(
+            "removerClienteVenda"
+        );
+
+
+    function normalizarTextoCliente(texto) {
+
+        return String(texto || "")
+            .normalize("NFD")
+            .replace(
+                /[\u0300-\u036f]/g,
+                ""
+            )
+            .toLowerCase()
+            .trim();
+    }
+
+
+    function atualizarClienteSelecionado() {
+
+        if (
+            !clienteVenda
+            || !clienteSelecionadoResumo
+        ) {
+            return;
+        }
+
+        const opcao =
+            clienteVenda.options[
+                clienteVenda.selectedIndex
+            ];
+
+        const possuiCliente = Boolean(
+            opcao
+            && opcao.value
+        );
+
+        clienteSelecionadoResumo
+            .classList.toggle(
+                "oculto",
+                !possuiCliente
+            );
+
+        if (!possuiCliente) {
+            return;
+        }
+
+        const nome = (
+            opcao.textContent
+            || "Cliente"
+        )
+            .split("—")[0]
+            .trim();
+
+        const contato = (
+            opcao.dataset.telefone
+            || opcao.dataset.documento
+            || "Cliente vinculado à venda"
+        );
+
+        if (clienteSelecionadoNome) {
+            clienteSelecionadoNome.textContent =
+                nome;
+        }
+
+        if (clienteSelecionadoContato) {
+            clienteSelecionadoContato.textContent =
+                contato;
+        }
+
+        const avatar =
+            clienteSelecionadoResumo
+                .querySelector(
+                    ".cliente-resumo-avatar"
+                );
+
+        if (avatar) {
+            avatar.textContent =
+                nome.charAt(0).toUpperCase()
+                || "C";
+        }
+    }
+
+
+    if (
+        pesquisaClienteVenda
+        && clienteVenda
+    ) {
+
+        pesquisaClienteVenda.addEventListener(
+            "input",
+            function () {
+
+                const pesquisa =
+                    normalizarTextoCliente(
+                        pesquisaClienteVenda.value
+                    );
+
+                Array.from(
+                    clienteVenda.options
+                ).forEach(
+                    function (opcao, indice) {
+
+                        if (indice === 0) {
+                            opcao.hidden = false;
+                            return;
+                        }
+
+                        const conteudo =
+                            normalizarTextoCliente(
+                                (
+                                    opcao.textContent
+                                    || ""
+                                )
+                                + " "
+                                + (
+                                    opcao.dataset.telefone
+                                    || ""
+                                )
+                                + " "
+                                + (
+                                    opcao.dataset.documento
+                                    || ""
+                                )
+                            );
+
+                        opcao.hidden = (
+                            pesquisa !== ""
+                            && !conteudo.includes(
+                                pesquisa
+                            )
+                        );
+                    }
+                );
+            }
+        );
+    }
+
+
+    if (clienteVenda) {
+
+        clienteVenda.addEventListener(
+            "change",
+            atualizarClienteSelecionado
+        );
+    }
+
+
+    if (
+        removerClienteVenda
+        && clienteVenda
+    ) {
+
+        removerClienteVenda.addEventListener(
+            "click",
+            function () {
+
+                clienteVenda.value = "";
+
+                if (pesquisaClienteVenda) {
+                    pesquisaClienteVenda.value = "";
+                }
+
+                Array.from(
+                    clienteVenda.options
+                ).forEach(function (opcao) {
+                    opcao.hidden = false;
+                });
+
+                atualizarClienteSelecionado();
+            }
+        );
+    }
+
+
+    /* =====================================
+       CARRINHO AJAX
+    ====================================== */
+
+    function bloquearBotao(
+        botao,
+        bloquear
+    ) {
+
+        if (!botao) {
+            return;
+        }
+
+        botao.disabled = bloquear;
+
+        botao.classList.toggle(
+            "carregando",
+            bloquear
+        );
+    }
+
+
+    function montarResumoPagamento(
+        itens
+    ) {
+
+        const container =
+            document.getElementById(
+                "itensResumoPagamento"
+            );
+
+        if (!container) {
+            return;
+        }
+
+        container.innerHTML = itens
+            .map(function (item) {
+
+                return `
+                    <div class="linha-resumo">
+
+                        <span>
+                            ${item.quantidade}x
+                            ${escaparHtml(item.nome)}
+                        </span>
+
+                        <strong>
+                            ${moeda(item.subtotal)}
+                        </strong>
+
+                    </div>
+                `;
+            })
+            .join("");
+    }
+
+
+    function atualizarCarrinhoTela(
+        dados
+    ) {
+
+        const lista =
+            document.getElementById(
+                "listaCarrinho"
+            );
+
+        const vazio =
+            document.getElementById(
+                "carrinhoVazio"
+            );
+
+        const contador =
+            document.getElementById(
+                "contadorCarrinho"
+            );
+
+        const totalCarrinho =
+            document.getElementById(
+                "totalCarrinho"
+            );
+
+        const totalBotao =
+            document.getElementById(
+                "totalBotaoPagar"
+            );
+
+        const botaoPagar =
+            document.getElementById(
+                "botaoPagar"
+            );
+
+
+        if (lista) {
+
+            lista.innerHTML = dados.itens
+                .map(function (item) {
+
+                    return `
+                        <div class="item-carrinho">
+
+                            <div>
+
+                                <strong>
+                                    ${escaparHtml(item.nome)}
+                                </strong>
+
+                                <p>
+                                    x${item.quantidade}
+                                </p>
+
+                            </div>
+
+                            <div class="lado-item">
+
+                                <span>
+                                    ${moeda(item.subtotal)}
+                                </span>
+
+                                <button
+                                    type="button"
+                                    class="remover-item remover-produto-ajax"
+                                    data-produto-id="${item.id}"
+                                    aria-label="Remover uma unidade"
+                                >
+                                    ×
+                                </button>
+
+                            </div>
+
+                        </div>
+                    `;
+                })
+                .join("");
+        }
+
+
+        const possuiItens =
+            dados.itens.length > 0;
+
+        if (vazio) {
+            vazio.classList.toggle(
+                "oculto",
+                possuiItens
+            );
+        }
+
+        if (contador) {
+            contador.textContent =
+                dados.quantidade;
+        }
+
+        if (totalCarrinho) {
+            totalCarrinho.textContent =
+                moeda(dados.total);
+        }
+
+        if (totalBotao) {
+            totalBotao.textContent =
+                moeda(dados.total);
+        }
+
+        if (botaoPagar) {
+            botaoPagar.disabled =
+                !possuiItens;
+        }
+
+
+        totalBruto = Number(
+            dados.total || 0
+        );
+
+        if (dadosVenda) {
+            dadosVenda.dataset.total =
+                totalBruto.toFixed(2);
+        }
+
+        if (subtotalPagamento) {
+            subtotalPagamento.textContent =
+                moeda(totalBruto);
+        }
+
+
+        descontoAplicado = {
+            tipo: "nenhum",
+            informado: 0,
+            valor: 0,
+            percentual: 0,
+            total: totalBruto
+        };
+
+        montarResumoPagamento(
+            dados.itens
+        );
+
+        atualizarResumoPagamento();
+    }
+
+
+    async function alterarCarrinho(
+        url,
+        botao
+    ) {
+
+        bloquearBotao(
+            botao,
+            true
+        );
+
+        try {
+
+            const resposta = await fetch(
+                url,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest",
+
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+            const dados =
+                await resposta.json();
+
+            if (dados.redirecionar) {
+                window.location.href =
+                    dados.redirecionar;
+
+                return;
+            }
+
+            if (!dados.sucesso) {
+
+                window.alert(
+                    dados.mensagem
+                    || "Não foi possível atualizar o carrinho."
+                );
+
+                return;
+            }
+
+            atualizarCarrinhoTela(
+                dados
+            );
+
+        } catch (erro) {
+
+            console.error(
+                "Erro no carrinho:",
+                erro
+            );
+
+            window.alert(
+                "Não foi possível atualizar o carrinho."
+            );
+
+        } finally {
+
+            bloquearBotao(
+                botao,
+                false
+            );
+        }
+    }
+
+
+    document.addEventListener(
+        "click",
+        function (evento) {
+
+            const adicionar =
+                evento.target.closest(
+                    ".adicionar-produto-ajax"
+                );
+
+            if (adicionar) {
+
+                evento.preventDefault();
+
+                alterarCarrinho(
+                    (
+                        "/adicionar_carrinho/"
+                        + encodeURIComponent(
+                            adicionar.dataset
+                                .produtoId
+                        )
+                    ),
+                    adicionar
+                );
+
+                return;
+            }
+
+
+            const remover =
+                evento.target.closest(
+                    ".remover-produto-ajax"
+                );
+
+            if (remover) {
+
+                evento.preventDefault();
+
+                alterarCarrinho(
+                    (
+                        "/remover_carrinho/"
+                        + encodeURIComponent(
+                            remover.dataset
+                                .produtoId
+                        )
+                    ),
+                    remover
+                );
+            }
+        }
+    );
+
+
+    /* =====================================
+       BUSCA E CÓDIGO DE BARRAS
+    ====================================== */
+
+    const busca =
+        document.getElementById(
+            "scanner"
+        );
+
+    if (busca) {
+
+        busca.addEventListener(
+            "input",
+            function () {
+
+                const texto =
+                    busca.value
+                        .toLowerCase();
+
+                document
+                    .querySelectorAll(
+                        ".produto-card"
+                    )
+                    .forEach(function (card) {
+
+                        const nome =
+                            card.innerText
+                                .toLowerCase();
+
+                        card.style.display =
+                            nome.includes(texto)
+                                ? "flex"
+                                : "none";
+                    });
             }
         );
 
 
-        const busca =
-            document.getElementById(
-                "scanner"
-            );
+        busca.addEventListener(
+            "keypress",
+            function (evento) {
 
-        if (busca) {
+                if (evento.key !== "Enter") {
+                    return;
+                }
 
-            busca.addEventListener(
-                "keyup",
-                function () {
+                evento.preventDefault();
 
-                    const texto =
-                        busca.value
-                            .toLowerCase();
+                const codigo =
+                    busca.value.trim();
 
-                    document
-                        .querySelectorAll(
-                            ".produto-card"
-                        )
-                        .forEach(
-                            function (card) {
-
-                                const nome =
-                                    card.innerText
-                                        .toLowerCase();
-
-                                card.style.display =
-                                    nome.includes(texto)
-                                        ? "flex"
-                                        : "none";
-                            }
+                if (codigo) {
+                    window.location.href =
+                        "/codigo/"
+                        + encodeURIComponent(
+                            codigo
                         );
                 }
-            );
+            }
+        );
+    }
 
-            busca.addEventListener(
-                "keypress",
-                function (evento) {
 
-                    if (
-                        evento.key
-                        !== "Enter"
-                    ) {
-                        return;
-                    }
+    /* =====================================
+       FECHAMENTO DOS MODAIS
+    ====================================== */
 
-                    evento.preventDefault();
+    window.addEventListener(
+        "click",
+        function (evento) {
 
-                    const codigo =
-                        busca.value.trim();
+            if (
+                evento.target
+                === modalPagamento
+            ) {
+                window
+                    .fecharModalPagamento();
+            }
 
-                    if (codigo) {
-
-                        window.location.href =
-                            "/codigo/"
-                            + encodeURIComponent(
-                                codigo
-                            );
-                    }
-                }
-            );
-
-            busca.value = "";
-            busca.focus();
+            if (
+                evento.target
+                === modalDesconto
+            ) {
+                window
+                    .fecharModalDesconto();
+            }
         }
+    );
 
 
-        const formFinalizar =
-            document.getElementById(
-                "formFinalizarVenda"
-            );
+    document.addEventListener(
+        "keydown",
+        function (evento) {
 
-        if (formFinalizar) {
+            if (evento.key !== "Escape") {
+                return;
+            }
 
-            formFinalizar.addEventListener(
-                "submit",
-                function () {
+            window.fecharModalDesconto();
+            window.fecharModalPagamento();
+        }
+    );
 
-                    const botao =
-                        formFinalizar
-                            .querySelector(
-                                "button[type='submit']"
-                            );
 
-                    if (botao) {
+    /* =====================================
+       EVITAR VENDA DUPLICADA
+    ====================================== */
 
-                        botao.disabled = true;
+    const formFinalizar =
+        document.getElementById(
+            "formFinalizarVenda"
+        );
 
-                        botao.classList.add(
-                            "carregando"
+    if (formFinalizar) {
+
+        formFinalizar.addEventListener(
+            "submit",
+            function () {
+
+                const botao =
+                    formFinalizar
+                        .querySelector(
+                            "button[type='submit']"
                         );
-                    }
+
+                if (botao) {
+
+                    botao.disabled = true;
+
+                    botao.classList.add(
+                        "carregando"
+                    );
                 }
-            );
-        }
+            }
+        );
+    }
 
 
-        atualizarResumoPagamento();
+    atualizarClienteSelecionado();
+    atualizarResumoPagamento();
 
-    })();
-
+})();
 </script>
 
 {% endif %}
@@ -1483,12 +1984,10 @@
 {% if abrir_cupom %}
 
 <script>
-
     window.open(
         "/abrir_cupom",
         "_blank"
-    )
-
+    );
 </script>
 
 {% endif %}

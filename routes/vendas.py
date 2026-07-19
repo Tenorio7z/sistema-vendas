@@ -10,6 +10,7 @@ from decimal import (
 )
 
 from uuid import uuid4
+from psycopg2.extras import execute_values
 
 CENTAVOS = Decimal("0.01")
 
@@ -148,6 +149,96 @@ def _calcular_desconto(
         desconto,
         percentual,
     )
+    
+    
+def _carrinho_serializado():
+
+    carrinho = session.get(
+        "carrinho",
+        [],
+    )
+
+    itens = []
+    total = Decimal("0.00")
+
+    for item in carrinho:
+
+        preco = _decimal_monetario(
+            item.get("preco", 0)
+        )
+
+        quantidade = int(
+            item.get("quantidade", 0)
+        )
+
+        subtotal = (
+            preco * quantidade
+        ).quantize(
+            CENTAVOS,
+            rounding=ROUND_HALF_UP,
+        )
+
+        total += subtotal
+
+        itens.append(
+            {
+                "id": int(item["id"]),
+                "nome": str(item["nome"]),
+                "preco": float(preco),
+                "quantidade": quantidade,
+                "subtotal": float(subtotal),
+            }
+        )
+
+    return {
+        "sucesso": True,
+        "itens": itens,
+        "quantidade": sum(
+            item["quantidade"]
+            for item in itens
+        ),
+        "tipos_itens": len(itens),
+        "total": float(
+            total.quantize(
+                CENTAVOS,
+                rounding=ROUND_HALF_UP,
+            )
+        ),
+    }
+
+
+def _requisicao_ajax():
+
+    return (
+        request.headers.get(
+            "X-Requested-With"
+        )
+        == "XMLHttpRequest"
+    )
+
+
+def _erro_carrinho(
+    mensagem,
+    status=400,
+):
+
+    if _requisicao_ajax():
+
+        resposta = _carrinho_serializado()
+
+        resposta["sucesso"] = False
+        resposta["mensagem"] = mensagem
+
+        return jsonify(
+            resposta
+        ), status
+
+    flash(
+        mensagem,
+        "erro",
+    )
+
+    return redirect("/vendas")
 
 def registrar_rotas(app, socketio):
 
@@ -270,117 +361,264 @@ def registrar_rotas(app, socketio):
             abrir_cupom=abrir_cupom
         )
 
-    # ==========================================
-    # ADICIONAR CARRINHO
+        # ==========================================
+    # ADICIONAR AO CARRINHO
     # ==========================================
 
-    @app.route("/adicionar_carrinho/<int:id>")
+    @app.route(
+        "/adicionar_carrinho/<int:id>",
+        methods=["GET", "POST"],
+    )
+    
+    
     def adicionar_carrinho(id):
 
         if not session.get("logado"):
+
+            if _requisicao_ajax():
+                return jsonify(
+                    {
+                        "sucesso": False,
+                        "mensagem": (
+                            "Sua sessão expirou."
+                        ),
+                        "redirecionar": "/",
+                    }
+                ), 401
+
             return redirect("/")
 
-        conn = conectar()
-        cursor = criar_cursor(conn)
-        conn.autocommit = False
-        
-        empresa_id = session.get("empresa_id")
-        usuario_id = session.get("usuario_id") or None
-
-        if not empresa_id:
-            conn.close()
-            return redirect("/")
-        
-        cursor.execute(
-            """
-        SELECT *
-        FROM produtos
-        WHERE id = %s
-        AND empresa_id = %s
-        """,
-            (id, empresa_id),
+        empresa_id = session.get(
+            "empresa_id"
         )
 
-        produto = cursor.fetchone()
-
-        conn.close()
-
-        if not produto:
-            return redirect("/vendas")
-
-        if produto["estoque"] <= 0:
-            flash(f'{produto["nome"]} sem estoque', "erro")
-            return redirect("/vendas")
-
-        carrinho = session.get("carrinho", [])
-
-        encontrado = False
-
-        for item in carrinho:
-
-            if item["id"] == produto["id"]:
-
-                if item["quantidade"] >= produto["estoque"]:
-
-                    flash("Limite de estoque atingido", "erro")
-
-                    return redirect("/vendas")
-
-                item["quantidade"] += 1
-                encontrado = True
-
-        if not encontrado:
-
-            carrinho.append(
-                {
-                    "id": produto["id"],
-                    "nome": produto["nome"],
-                    "preco": produto["preco"],
-                    "quantidade": 1,
-                }
+        if not empresa_id:
+            return _erro_carrinho(
+                "Empresa não identificada.",
+                401,
             )
 
-        session["carrinho"] = carrinho
+        conexao = conectar()
+        cursor = criar_cursor(conexao)
 
-        return redirect("/vendas")
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    nome,
+                    preco,
+                    estoque
 
+                FROM produtos
+
+                WHERE id = %s
+                  AND empresa_id = %s
+
+                LIMIT 1
+                """,
+                (
+                    id,
+                    empresa_id,
+                ),
+            )
+
+            produto = cursor.fetchone()
+
+            if not produto:
+                return _erro_carrinho(
+                    "Produto não encontrado.",
+                    404,
+                )
+
+            estoque = int(
+                produto["estoque"] or 0
+            )
+
+            if estoque <= 0:
+                return _erro_carrinho(
+                    (
+                        f"{produto['nome']} "
+                        "está sem estoque."
+                    )
+                )
+
+            carrinho = session.get(
+                "carrinho",
+                [],
+            )
+
+            encontrado = False
+
+            for item in carrinho:
+
+                if int(item["id"]) != id:
+                    continue
+
+                quantidade_atual = int(
+                    item["quantidade"]
+                )
+
+                if quantidade_atual >= estoque:
+                    return _erro_carrinho(
+                        (
+                            "Limite de estoque "
+                            "atingido."
+                        )
+                    )
+
+                item["quantidade"] = (
+                    quantidade_atual + 1
+                )
+
+                encontrado = True
+                break
+
+            if not encontrado:
+
+                carrinho.append(
+                    {
+                        "id": int(
+                            produto["id"]
+                        ),
+                        "nome": str(
+                            produto["nome"]
+                        ),
+                        "preco": float(
+                            produto["preco"]
+                        ),
+                        "quantidade": 1,
+                    }
+                )
+
+            session["carrinho"] = carrinho
+            session.modified = True
+
+            if _requisicao_ajax():
+
+                resposta = (
+                    _carrinho_serializado()
+                )
+
+                resposta["mensagem"] = (
+                    f"{produto['nome']} "
+                    "adicionado."
+                )
+
+                return jsonify(resposta)
+
+            return redirect("/vendas")
+
+        finally:
+            cursor.close()
+            conexao.close()
+
+        # ==========================================
+    # REMOVER DO CARRINHO
     # ==========================================
-    # REMOVER ITEM
-    # ==========================================
 
-    @app.route("/remover_carrinho/<int:id>")
+    @app.route(
+        "/remover_carrinho/<int:id>",
+        methods=["GET", "POST"],
+    )
     def remover_carrinho(id):
 
-        carrinho = session.get("carrinho", [])
+        if not session.get("logado"):
+
+            if _requisicao_ajax():
+                return jsonify(
+                    {
+                        "sucesso": False,
+                        "mensagem": (
+                            "Sua sessão expirou."
+                        ),
+                        "redirecionar": "/",
+                    }
+                ), 401
+
+            return redirect("/")
+
+        carrinho = session.get(
+            "carrinho",
+            [],
+        )
 
         novo_carrinho = []
 
         for item in carrinho:
 
-            if item["id"] == id:
+            if int(item["id"]) == id:
 
-                item["quantidade"] -= 1
+                quantidade = (
+                    int(item["quantidade"])
+                    - 1
+                )
 
-                if item["quantidade"] > 0:
-                    novo_carrinho.append(item)
+                if quantidade > 0:
+
+                    item["quantidade"] = (
+                        quantidade
+                    )
+
+                    novo_carrinho.append(
+                        item
+                    )
 
             else:
-                novo_carrinho.append(item)
+                novo_carrinho.append(
+                    item
+                )
 
-        session["carrinho"] = novo_carrinho
+        session["carrinho"] = (
+            novo_carrinho
+        )
+
+        session.modified = True
+
+        if _requisicao_ajax():
+            return jsonify(
+                _carrinho_serializado()
+            )
 
         return redirect("/vendas")
-
-    # ==========================================
+    
+        # ==========================================
     # LIMPAR CARRINHO
     # ==========================================
 
-    @app.route("/limpar_carrinho")
+    @app.route(
+        "/limpar_carrinho",
+        methods=["GET", "POST"],
+    )
     def limpar_carrinho():
 
-        session["carrinho"] = []
+        if not session.get("logado"):
 
-        flash("Carrinho limpo", "sucesso")
+            if _requisicao_ajax():
+                return jsonify(
+                    {
+                        "sucesso": False,
+                        "mensagem": (
+                            "Sua sessão expirou."
+                        ),
+                        "redirecionar": "/",
+                    }
+                ), 401
+
+            return redirect("/")
+
+        session["carrinho"] = []
+        session.modified = True
+
+        if _requisicao_ajax():
+            return jsonify(
+                _carrinho_serializado()
+            )
+
+        flash(
+            "Carrinho limpo.",
+            "sucesso",
+        )
 
         return redirect("/vendas")
 
@@ -390,32 +628,24 @@ def registrar_rotas(app, socketio):
 
 
     @app.route(
-    "/finalizar_venda",
-    methods=["POST"],
-)
+        "/finalizar_venda",
+        methods=["POST"],
+    
+    )
+    
     def finalizar_venda():
 
         if not session.get("logado"):
             return redirect("/")
 
-        usuario_id = session.get(
-            "usuario_id"
-        )
-
-        empresa_id = session.get(
-            "empresa_id"
-        )
+        usuario_id = session.get("usuario_id")
+        empresa_id = session.get("empresa_id")
 
         if not usuario_id or not empresa_id:
-
             flash(
-                (
-                    "Sessão inválida. "
-                    "Faça login novamente."
-                ),
+                "Sessão inválida. Faça login novamente.",
                 "erro",
             )
-
             return redirect("/vendas")
 
         pagamentos_permitidos = {
@@ -426,39 +656,24 @@ def registrar_rotas(app, socketio):
         }
 
         pagamento_recebido = str(
-            request.form.get(
-                "pagamento",
-                "",
-            )
+            request.form.get("pagamento", "")
         ).strip().lower()
 
-        forma_pagamento = (
-            pagamentos_permitidos.get(
-                pagamento_recebido
-            )
+        forma_pagamento = pagamentos_permitidos.get(
+            pagamento_recebido
         )
 
         if not forma_pagamento:
-
             flash(
                 "Forma de pagamento inválida.",
                 "erro",
             )
-
             return redirect("/vendas")
 
-        carrinho = session.get(
-            "carrinho",
-            [],
-        )
+        carrinho = session.get("carrinho", [])
 
         if not carrinho:
-
-            flash(
-                "Carrinho vazio.",
-                "erro",
-            )
-
+            flash("Carrinho vazio.", "erro")
             return redirect("/vendas")
 
         tipo_desconto = request.form.get(
@@ -472,61 +687,80 @@ def registrar_rotas(app, socketio):
         )
 
         cliente_id_recebido = str(
-            request.form.get(
-                "cliente_id",
-                "",
-            )
-            or ""
+            request.form.get("cliente_id", "") or ""
         ).strip()
 
         cliente_id = None
 
         if cliente_id_recebido:
             try:
-                cliente_id = int(
-                    cliente_id_recebido
-                )
+                cliente_id = int(cliente_id_recebido)
 
-            except (
-                TypeError,
-                ValueError,
-            ):
+            except (TypeError, ValueError):
                 flash(
                     "Cliente selecionado inválido.",
                     "erro",
                 )
-
                 return redirect("/vendas")
-        
-        conn = conectar()
-        cursor = criar_cursor(conn)
 
-        conn.autocommit = False
+        # Une produtos repetidos no carrinho antes de consultar o banco.
+        quantidades_por_produto = {}
 
         try:
+            for item in carrinho:
+                produto_id = int(item["id"])
+                quantidade = int(item["quantidade"])
 
-            # =====================================
-            # CAIXA ABERTO
-            # =====================================
+                if quantidade <= 0:
+                    raise ValueError(
+                        "Quantidade inválida no carrinho."
+                    )
 
+                quantidades_por_produto[produto_id] = (
+                    quantidades_por_produto.get(
+                        produto_id,
+                        0,
+                    )
+                    + quantidade
+                )
+
+        except (KeyError, TypeError, ValueError):
+            flash(
+                "O carrinho contém dados inválidos.",
+                "erro",
+            )
+            return redirect("/vendas")
+
+        produtos_ids = list(
+            quantidades_por_produto.keys()
+        )
+
+        conn = conectar()
+        cursor = criar_cursor(conn)
+        conn.autocommit = False
+
+        cliente_venda = None
+        vendas_cupom = []
+
+        total_bruto = Decimal("0.00")
+        desconto_total = Decimal("0.00")
+        total_liquido = Decimal("0.00")
+
+        try:
+            # Bloqueia o caixa durante a finalização.
             cursor.execute(
                 """
-                SELECT *
-
+                SELECT
+                    id,
+                    valor_final
                 FROM caixa
-
                 WHERE empresa_id = %s
-                AND status = 'aberto'
-
+                  AND status = 'aberto'
                 ORDER BY id DESC
-
                 LIMIT 1
-
                 FOR UPDATE
                 """,
-                (
-                    empresa_id,
-                ),
+                (empresa_id,),
             )
 
             caixa = cursor.fetchone()
@@ -536,14 +770,8 @@ def registrar_rotas(app, socketio):
                     "Nenhum caixa aberto."
                 )
 
-            # =====================================
-            # VALIDAR CLIENTE OPCIONAL
-            # =====================================
-
-            cliente_venda = None
-
+            # Valida o cliente opcional.
             if cliente_id is not None:
-
                 cursor.execute(
                     """
                     SELECT
@@ -551,13 +779,10 @@ def registrar_rotas(app, socketio):
                         nome,
                         telefone,
                         cpf_cnpj
-
                     FROM clientes
-
                     WHERE id = %s
-                    AND empresa_id = %s
-                    AND ativo = TRUE
-
+                      AND empresa_id = %s
+                      AND ativo = TRUE
                     LIMIT 1
                     """,
                     (
@@ -570,78 +795,78 @@ def registrar_rotas(app, socketio):
 
                 if not cliente_venda:
                     raise ValueError(
-                        (
-                            "O cliente selecionado não existe, "
-                            "está inativo ou pertence a outra empresa."
-                        )
+                        "O cliente selecionado não existe, "
+                        "está inativo ou pertence a outra empresa."
                     )
-            
-            
-            # =====================================
-            # PRODUTOS E VALORES REAIS
-            # =====================================
+
+            # Busca todos os produtos em uma única consulta.
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    nome,
+                    preco,
+                    estoque
+                FROM produtos
+                WHERE empresa_id = %s
+                  AND id = ANY(%s)
+                ORDER BY id
+                FOR UPDATE
+                """,
+                (
+                    empresa_id,
+                    produtos_ids,
+                ),
+            )
+
+            produtos_encontrados = cursor.fetchall()
+
+            produtos_por_id = {
+                int(produto["id"]): produto
+                for produto in produtos_encontrados
+            }
+
+            if len(produtos_por_id) != len(produtos_ids):
+                ids_encontrados = set(
+                    produtos_por_id.keys()
+                )
+
+                ids_ausentes = [
+                    produto_id
+                    for produto_id in produtos_ids
+                    if produto_id not in ids_encontrados
+                ]
+
+                raise ValueError(
+                    "Um ou mais produtos não foram encontrados: "
+                    + ", ".join(
+                        str(produto_id)
+                        for produto_id in ids_ausentes
+                    )
+                )
 
             itens_processados = []
-            total_bruto = Decimal("0.00")
 
-            for item in carrinho:
+            # Calcula preços e valida estoques em memória.
+            for produto_id in produtos_ids:
+                produto = produtos_por_id[produto_id]
+                quantidade = quantidades_por_produto[
+                    produto_id
+                ]
 
-                produto_id = int(
-                    item["id"]
+                estoque_atual = int(
+                    produto["estoque"] or 0
                 )
 
-                quantidade = int(
-                    item["quantidade"]
-                )
-
-                if quantidade <= 0:
+                if estoque_atual < quantidade:
                     raise ValueError(
-                        "Quantidade inválida."
+                        "Estoque insuficiente para "
+                        f"{produto['nome']}. "
+                        f"Disponível: {estoque_atual}."
                     )
 
-                cursor.execute(
-                    """
-                    SELECT
-                        id,
-                        nome,
-                        preco,
-                        estoque
-
-                    FROM produtos
-
-                    WHERE id = %s
-                    AND empresa_id = %s
-
-                    FOR UPDATE
-                    """,
-                    (
-                        produto_id,
-                        empresa_id,
-                    ),
-                )
-
-                produto = cursor.fetchone()
-
-                if not produto:
-                    raise ValueError(
-                        "Produto não encontrado."
-                    )
-
-                if (
-                    int(produto["estoque"])
-                    < quantidade
-                ):
-                    raise ValueError(
-                        (
-                            "Estoque insuficiente para "
-                            f"{produto['nome']}."
-                        )
-                    )
-
-                preco_unitario = (
-                    _decimal_monetario(
-                        produto["preco"]
-                    )
+                preco_unitario = _decimal_monetario(
+                    produto["preco"]
                 )
 
                 valor_bruto_item = (
@@ -652,20 +877,14 @@ def registrar_rotas(app, socketio):
                     rounding=ROUND_HALF_UP,
                 )
 
-                total_bruto += (
-                    valor_bruto_item
-                )
+                total_bruto += valor_bruto_item
 
                 itens_processados.append(
                     {
                         "produto": produto,
                         "quantidade": quantidade,
-                        "preco_unitario": (
-                            preco_unitario
-                        ),
-                        "valor_bruto": (
-                            valor_bruto_item
-                        ),
+                        "preco_unitario": preco_unitario,
+                        "valor_bruto": valor_bruto_item,
                     }
                 )
 
@@ -678,10 +897,6 @@ def registrar_rotas(app, socketio):
                 raise ValueError(
                     "O total da venda é inválido."
                 )
-
-            # =====================================
-            # DESCONTO GERAL DA VENDA
-            # =====================================
 
             desconto_total, percentual = (
                 _calcular_desconto(
@@ -699,29 +914,18 @@ def registrar_rotas(app, socketio):
                 rounding=ROUND_HALF_UP,
             )
 
-            venda_grupo = str(
-                uuid4()
-            )
+            venda_grupo = str(uuid4())
+            desconto_restante = desconto_total
 
-            desconto_restante = (
-                desconto_total
-            )
-
-            vendas_cupom = []
-
-            # =====================================
-            # RATEAR DESCONTO E REGISTRAR ITENS
-            # =====================================
+            linhas_estoque = []
+            linhas_vendas = []
 
             for indice, item in enumerate(
                 itens_processados
             ):
-
                 produto = item["produto"]
                 quantidade = item["quantidade"]
-                valor_bruto_item = (
-                    item["valor_bruto"]
-                )
+                valor_bruto_item = item["valor_bruto"]
 
                 ultimo_item = (
                     indice
@@ -729,9 +933,7 @@ def registrar_rotas(app, socketio):
                 )
 
                 if ultimo_item:
-                    desconto_item = (
-                        desconto_restante
-                    )
+                    desconto_item = desconto_restante
 
                 else:
                     desconto_item = (
@@ -743,17 +945,10 @@ def registrar_rotas(app, socketio):
                         rounding=ROUND_HALF_UP,
                     )
 
-                    if (
-                        desconto_item
-                        > desconto_restante
-                    ):
-                        desconto_item = (
-                            desconto_restante
-                        )
+                    if desconto_item > desconto_restante:
+                        desconto_item = desconto_restante
 
-                desconto_restante -= (
-                    desconto_item
-                )
+                desconto_restante -= desconto_item
 
                 valor_liquido_item = (
                     valor_bruto_item
@@ -763,62 +958,17 @@ def registrar_rotas(app, socketio):
                     rounding=ROUND_HALF_UP,
                 )
 
-                novo_estoque = (
-                    int(produto["estoque"])
-                    - quantidade
-                )
-
-                cursor.execute(
-                    """
-                    UPDATE produtos
-
-                    SET estoque = %s
-
-                    WHERE id = %s
-                    AND empresa_id = %s
-                    """,
+                linhas_estoque.append(
                     (
-                        novo_estoque,
-                        produto["id"],
-                        empresa_id,
-                    ),
-                )
-
-                cursor.execute(
-                    """
-                    INSERT INTO vendas (
-                        produto_id,
+                        int(produto["id"]),
                         quantidade,
-                        valor,
-                        valor_bruto,
-                        desconto_valor,
-                        desconto_percentual,
-                        venda_grupo,
-                        pagamento,
                         empresa_id,
-                        caixa_id,
-                        usuario_id,
-                        cliente_id,
-                        data_venda
                     )
-                    VALUES (
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        CURRENT_TIMESTAMP
-                    )
-                    """,
+                )
+
+                linhas_vendas.append(
                     (
-                        produto["id"],
+                        int(produto["id"]),
                         quantidade,
                         valor_liquido_item,
                         valor_bruto_item,
@@ -827,10 +977,10 @@ def registrar_rotas(app, socketio):
                         venda_grupo,
                         forma_pagamento,
                         empresa_id,
-                        caixa["id"],
+                        int(caixa["id"]),
                         usuario_id,
                         cliente_id,
-                    ),
+                    )
                 )
 
                 vendas_cupom.append(
@@ -840,25 +990,12 @@ def registrar_rotas(app, socketio):
                         "preco_unitario": (
                             item["preco_unitario"]
                         ),
-                        "valor_bruto": (
-                            valor_bruto_item
-                        ),
-                        "desconto": (
-                            desconto_item
-                        ),
-                        "valor": (
-                            valor_liquido_item
-                        ),
-                        "pagamento": (
-                            forma_pagamento
-                        ),
-                        "empresa_id": (
-                            empresa_id
-                        ),
-                        "venda_grupo": (
-                            venda_grupo
-                        ),
-                        
+                        "valor_bruto": valor_bruto_item,
+                        "desconto": desconto_item,
+                        "valor": valor_liquido_item,
+                        "pagamento": forma_pagamento,
+                        "empresa_id": empresa_id,
+                        "venda_grupo": venda_grupo,
                         "cliente_id": cliente_id,
                         "cliente_nome": (
                             cliente_venda["nome"]
@@ -878,20 +1015,83 @@ def registrar_rotas(app, socketio):
                     }
                 )
 
-            # =====================================
-            # ATUALIZAR CAIXA PELO TOTAL LÍQUIDO
-            # =====================================
+            # Atualiza todos os estoques em uma única operação.
+            estoques_atualizados = execute_values(
+                cursor,
+                """
+                WITH dados (
+                    produto_id,
+                    quantidade,
+                    empresa_id
+                ) AS (
+                    VALUES %s
+                )
+                UPDATE produtos AS p
+                SET estoque = (
+                    p.estoque
+                    - dados.quantidade
+                )
+                FROM dados
+                WHERE p.id = dados.produto_id
+                  AND p.empresa_id = dados.empresa_id
+                  AND p.estoque >= dados.quantidade
+                RETURNING p.id
+                """,
+                linhas_estoque,
+                template="(%s, %s, %s)",
+                page_size=len(linhas_estoque),
+                fetch=True,
+            )
+
+            if len(estoques_atualizados) != len(
+                linhas_estoque
+            ):
+                raise ValueError(
+                    "O estoque de algum produto foi alterado "
+                    "durante a venda. Confira o carrinho novamente."
+                )
+
+            # Registra todos os itens em uma única operação.
+            execute_values(
+                cursor,
+                """
+                INSERT INTO vendas (
+                    produto_id,
+                    quantidade,
+                    valor,
+                    valor_bruto,
+                    desconto_valor,
+                    desconto_percentual,
+                    venda_grupo,
+                    pagamento,
+                    empresa_id,
+                    caixa_id,
+                    usuario_id,
+                    cliente_id,
+                    data_venda
+                )
+                VALUES %s
+                """,
+                linhas_vendas,
+                template=(
+                    "("
+                    "%s, %s, %s, %s, %s, %s, "
+                    "%s, %s, %s, %s, %s, %s, "
+                    "CURRENT_TIMESTAMP"
+                    ")"
+                ),
+                page_size=len(linhas_vendas),
+            )
 
             cursor.execute(
                 """
                 UPDATE caixa
-
-                SET valor_final =
+                SET valor_final = (
                     COALESCE(valor_final, 0)
                     + %s
-
+                )
                 WHERE id = %s
-                AND empresa_id = %s
+                  AND empresa_id = %s
                 """,
                 (
                     total_liquido,
@@ -900,10 +1100,14 @@ def registrar_rotas(app, socketio):
                 ),
             )
 
+            if cursor.rowcount != 1:
+                raise ValueError(
+                    "Não foi possível atualizar o caixa."
+                )
+
             conn.commit()
 
         except ValueError as erro:
-
             conn.rollback()
 
             flash(
@@ -913,15 +1117,16 @@ def registrar_rotas(app, socketio):
 
             return redirect("/vendas")
 
-        except Exception as erro:
-
+        except Exception:
             conn.rollback()
 
+            app.logger.exception(
+                "Erro inesperado ao finalizar venda."
+            )
+
             flash(
-                (
-                    "Erro ao finalizar venda: "
-                    f"{erro}"
-                ),
+                "Não foi possível finalizar a venda. "
+                "Tente novamente.",
                 "erro",
             )
 
@@ -931,9 +1136,10 @@ def registrar_rotas(app, socketio):
             cursor.close()
             conn.close()
 
-        # =====================================
-        # NOTIFICAÇÃO COM VALOR LÍQUIDO
-        # =====================================
+        # A venda já foi confirmada no banco.
+        # Limpa o carrinho antes das tarefas secundárias.
+        session["carrinho"] = []
+        session.modified = True
 
         try:
             notificar_gerente(
@@ -945,21 +1151,25 @@ def registrar_rotas(app, socketio):
 
         except Exception:
             app.logger.exception(
-                "Erro ao notificar gerente."
+                "Erro ao notificar gerente sobre a venda."
             )
 
-        # =====================================
-        # CUPOM
-        # =====================================
+        try:
+            pdf = gerar_cupom_venda(
+                vendas_cupom,
+                empresa_id,
+            )
 
-        pdf = gerar_cupom_venda(
-            vendas_cupom,
-            empresa_id,
-        )
+            if pdf:
+                session["ultimo_cupom"] = pdf
+                session.modified = True
 
-        session["carrinho"] = []
-        session["ultimo_cupom"] = pdf
-        
+        except Exception:
+            # Falha no cupom não pode duplicar ou desfazer a venda.
+            app.logger.exception(
+                "Venda concluída, mas o cupom não foi gerado."
+            )
+
         cliente_mensagem = (
             f" | Cliente: {cliente_venda['nome']}"
             if cliente_venda

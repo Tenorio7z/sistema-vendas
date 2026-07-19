@@ -2902,3 +2902,338 @@ body:not(.dark)
     font-weight: 700;
     text-decoration: none;
 }
+
+/* =========================================
+   CARRINHO AJAX — ESTADOS E ANIMAÇÕES
+========================================= */
+
+.carrinho-vazio.oculto {
+    display: none !important;
+}
+
+
+/* BOTÃO ADICIONAR AGORA É BUTTON */
+
+button.btn-add {
+    width: 100%;
+
+    border: 1px solid
+        rgba(105, 174, 255, 0.52);
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    font-family: inherit;
+    cursor: pointer;
+}
+
+button.btn-add:focus-visible {
+    outline: 3px solid
+        rgba(59, 130, 246, 0.25);
+
+    outline-offset: 2px;
+}
+
+
+/* BOTÃO REMOVER AGORA É BUTTON */
+
+button.remover-item {
+    padding: 0;
+
+    border: 1px solid
+        rgba(239, 71, 111, 0.28);
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    font-family: inherit;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+/* BOTÕES DESABILITADOS */
+
+.btn-add:disabled,
+.remover-item:disabled,
+#botaoPagar:disabled,
+.btn-finalizar-venda:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+    pointer-events: none;
+
+    filter: grayscale(0.25);
+}
+
+
+/* CARREGAMENTO DO BOTÃO ADICIONAR */
+
+.btn-add.carregando {
+    position: relative;
+
+    color: transparent !important;
+
+    pointer-events: none;
+}
+
+.btn-add.carregando::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 15px;
+    height: 15px;
+
+    margin-left: -8px;
+    margin-top: -8px;
+
+    border: 2px solid
+        rgba(255, 255, 255, 0.38);
+
+    border-top-color: #ffffff;
+    border-radius: 50%;
+
+    animation:
+        carregandoCarrinho
+        0.7s linear infinite;
+}
+
+
+/* CARREGAMENTO DO BOTÃO REMOVER */
+
+.remover-item.carregando {
+    position: relative;
+
+    color: transparent !important;
+
+    pointer-events: none;
+}
+
+.remover-item.carregando::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 12px;
+    height: 12px;
+
+    margin-left: -7px;
+    margin-top: -7px;
+
+    border: 2px solid
+        rgba(239, 71, 111, 0.25);
+
+    border-top-color: #ff6688;
+    border-radius: 50%;
+
+    animation:
+        carregandoCarrinho
+        0.65s linear infinite;
+}
+
+
+/* CARREGAMENTO AO FINALIZAR VENDA */
+
+.btn-finalizar-venda.carregando {
+    position: relative;
+
+    color: transparent !important;
+
+    pointer-events: none;
+}
+
+.btn-finalizar-venda.carregando strong {
+    visibility: hidden;
+}
+
+.btn-finalizar-venda.carregando::after {
+    content: "Finalizando venda...";
+
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+
+    font-size: 0.76rem;
+    font-weight: 750;
+}
+
+
+/* ANIMAÇÃO DOS ITENS */
+
+.item-carrinho {
+    animation:
+        entradaItemCarrinho
+        0.24s ease both;
+}
+
+@keyframes entradaItemCarrinho {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* CONTADOR ATUALIZADO */
+
+.contador {
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease;
+}
+
+.contador:not(:empty) {
+    animation:
+        atualizarContador
+        0.26s ease;
+}
+
+@keyframes atualizarContador {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.16);
+    }
+}
+
+
+/* TOTAL */
+
+#totalCarrinho,
+#totalBotaoPagar,
+#totalFinalPagamento,
+#valorBotaoFinalizar {
+    font-variant-numeric:
+        tabular-nums;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+/* SCROLL DO CARRINHO */
+
+.lista-carrinho {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(96, 165, 250, 0.45)
+        transparent;
+}
+
+.lista-carrinho::-webkit-scrollbar {
+    width: 6px;
+}
+
+.lista-carrinho::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.lista-carrinho::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+        rgba(96, 165, 250, 0.42);
+}
+
+
+/* GARANTE QUE O CARRINHO NÃO CRESÇA */
+
+.carrinho-box {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.carrinho-box .lista-carrinho {
+    flex: 1;
+}
+
+
+/* RESUMO ATUALIZADO NO MODAL */
+
+#itensResumoPagamento {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+#itensResumoPagamento:empty {
+    display: none;
+}
+
+
+/* =========================================
+   RETORNO VISUAL NO CARD DO PRODUTO
+========================================= */
+
+.produto-card {
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.produto-card:has(.btn-add.carregando) {
+    border-color:
+        rgba(96, 165, 250, 0.62);
+
+    box-shadow:
+        0 14px 30px
+        rgba(59, 130, 246, 0.17);
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 760px) {
+    .lista-carrinho {
+        max-height: 310px;
+    }
+
+    .btn-add {
+        min-height: 42px;
+    }
+
+    #botaoPagar {
+        min-height: 46px;
+    }
+}
+
+
+/* =========================================
+   ANIMAÇÃO PRINCIPAL
+========================================= */
+
+@keyframes carregandoCarrinho {
+    to {
+        transform: rotate(360deg);
+    }
+}
