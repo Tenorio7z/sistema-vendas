@@ -3237,3 +3237,64 @@ button.remover-item {
         transform: rotate(360deg);
     }
 }
+
+/* Corrige o carregamento do botão de finalizar venda */
+.btn-finalizar-venda.carregando {
+    position: relative;
+    animation: none !important;
+    transform: none !important;
+    color: transparent !important;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.btn-finalizar-venda.carregando strong {
+    color: transparent !important;
+    visibility: hidden;
+}
+
+/* Bolinha que realmente deve girar */
+.btn-finalizar-venda.carregando::before {
+    content: "";
+    position: absolute;
+
+    top: 50%;
+    left: calc(50% - 68px);
+
+    width: 17px;
+    height: 17px;
+
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+
+    transform: translateY(-50%);
+    animation: nexus-girar 0.7s linear infinite !important;
+}
+
+/* Texto permanece parado */
+.btn-finalizar-venda.carregando::after {
+    content: "Finalizando...";
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    transform: translate(-40%, -50%) !important;
+    animation: none !important;
+}
+
+@keyframes nexus-girar {
+    from {
+        transform: translateY(-50%) rotate(0deg);
+    }
+
+    to {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
