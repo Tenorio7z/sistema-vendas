@@ -1364,23 +1364,82 @@ body.modal-atualizacoes-aberto {
         padding: 18px 14px;
     }
 
-    /* Botão flutuante para abrir a sidebar no celular */
-    .sidebar:not(.aberta) .menu-toggle {
-        position: fixed;
-        z-index: 1001;
-        top: 13px;
-        left: 13px;
+   
 
-        transform: translateX(calc(100% + 8px));
-    }
-
-    .sidebar.aberta .menu-toggle {
-        position: static;
-        transform: none;
-    }
+    
 
     .atualizacoes-conteudo {
         grid-template-columns: 1fr;
+    }
+}
+
+
+/* =========================================================
+   CORREÇÃO DO BOTÃO MOBILE
+========================================================= */
+
+@media (max-width: 900px) {
+
+    /* Sidebar fica fora da tela, mas permite o botão aparecer */
+    .sidebar {
+        overflow: visible !important;
+    }
+
+    /* A navegação continua limitada dentro da sidebar */
+    .sidebar nav {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+
+    /* Quando o menu estiver fechado */
+    .sidebar:not(.aberta) .menu-toggle {
+        position: absolute !important;
+        z-index: 10005 !important;
+
+        top: 14px !important;
+        left: calc(100% + 12px) !important;
+        right: auto !important;
+
+        width: 48px !important;
+        height: 48px !important;
+
+        margin: 0 !important;
+
+        display: grid !important;
+        place-items: center !important;
+
+        visibility: visible !important;
+        opacity: 1 !important;
+
+        transform: none !important;
+        pointer-events: auto !important;
+    }
+
+    /* Garante que os elementos pais não cortem o botão */
+    .sidebar:not(.aberta) .sidebar-top,
+    .sidebar:not(.aberta) .sidebar-header,
+    .sidebar:not(.aberta) .sidebar-actions {
+        overflow: visible !important;
+    }
+
+    /* Quando abrir, o botão volta para dentro da sidebar */
+    .sidebar.aberta .menu-toggle {
+        position: static !important;
+
+        width: 48px !important;
+        height: 48px !important;
+
+        margin: 0 !important;
+
+        transform: none !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* Espaço para o botão não ficar sobre o conteúdo */
+    .main,
+    .sidebar.fechada ~ .main {
+        padding-top: 78px !important;
     }
 }
 
@@ -1432,5 +1491,194 @@ body.modal-atualizacoes-aberto {
 
     .btn-entendi-atualizacoes {
         width: 100%;
+    }
+}
+
+/* =========================================================
+   CORREÇÃO DEFINITIVA DO CONTEÚDO NO CELULAR
+========================================================= */
+
+@media (max-width: 900px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0 !important;
+
+        overflow-x: hidden !important;
+    }
+
+    /*
+     * No celular, a sidebar é flutuante.
+     * Portanto, ela não pode reservar espaço no conteúdo.
+     */
+    .main,
+    .sidebar.fechada ~ .main,
+    .sidebar.aberta ~ .main {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
+
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+
+        padding:
+            76px
+            12px
+            24px !important;
+
+        overflow-x: hidden !important;
+    }
+
+    /* Containers principais ocupam somente a área disponível */
+    .main > *,
+    .main > section,
+    .main > div,
+    .main > header {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        margin-left: auto !important;
+        margin-right: auto !important;
+
+        box-sizing: border-box !important;
+    }
+
+    /* Containers usados nas páginas do sistema */
+    :is(
+        .dashboard-container,
+        .dashboard,
+        .produtos-container,
+        .vendas-container,
+        .caixa-container,
+        .estatisticas-container,
+        .custos-container,
+        .clientes-container,
+        .perfis-container,
+        .emprestimos-container,
+        .ia-container
+    ) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        margin-inline: 0 !important;
+        padding-inline: 0 !important;
+
+        overflow: visible !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Cabeçalhos não podem manter largura de desktop */
+    :is(
+        .dashboard-header,
+        .produtos-header,
+        .vendas-header,
+        .caixa-header,
+        .estatisticas-header,
+        .custos-header,
+        .clientes-header,
+        .perfis-header,
+        .ia-header
+    ) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    /*
+     * Todo item dentro de grid ou flex pode encolher.
+     * Sem isso, textos e cards forçam a largura da página.
+     */
+    .main :is(
+        section,
+        article,
+        header,
+        footer,
+        form,
+        div
+    ) {
+        min-width: 0;
+    }
+
+    .main :is(
+        h1,
+        h2,
+        h3,
+        p,
+        span,
+        strong,
+        small
+    ) {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .main img,
+    .main svg,
+    .main canvas {
+        max-width: 100%;
+    }
+}
+
+
+/* =========================================================
+   DASHBOARD NO CELULAR
+========================================================= */
+
+@media (max-width: 650px) {
+
+    /* Cards principais ficam em uma coluna */
+    :is(
+        .dashboard-cards,
+        .cards-grid,
+        .resumo-grid,
+        .metricas-grid,
+        .stats-grid
+    ) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    /* Movimento e alertas também ficam um abaixo do outro */
+    :is(
+        .dashboard-content,
+        .dashboard-grid,
+        .dashboard-bottom,
+        .painel-grid
+    ) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    /* Cards nunca ultrapassam a largura disponível */
+    :is(
+        .dashboard-card,
+        .stat-card,
+        .metric-card,
+        .resumo-card,
+        .movimento-card,
+        .alertas-card
+    ) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+
+        box-sizing: border-box !important;
     }
 }
