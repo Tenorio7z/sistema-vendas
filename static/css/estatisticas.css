@@ -1608,3 +1608,254 @@ body:not(.dark) .filtro-atalhos {
         0 0 14px
         rgba(255, 99, 137, 0.2);
 }
+
+/* =====================================================
+   INTEGRAÇÃO — CUSTOS EMPRESARIAIS
+===================================================== */
+
+.financeiro-grid.secundario {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.indicador-card.custos-pagos::before {
+    background: var(--stats-verde);
+}
+
+.indicador-card.custos-pagos strong {
+    color: var(--stats-verde);
+}
+
+.indicador-card.custos-pendentes::before {
+    background: var(--stats-laranja);
+}
+
+.indicador-card.custos-pendentes strong {
+    color: var(--stats-laranja);
+}
+
+.indicador-card.resultado-projetado::before {
+    background: var(--stats-roxo);
+}
+
+.indicador-card.resultado-projetado.positivo strong {
+    color: var(--stats-verde);
+}
+
+.indicador-card.resultado-projetado.negativo::before {
+    background: var(--stats-vermelho);
+}
+
+.indicador-card.resultado-projetado.negativo strong {
+    color: var(--stats-vermelho);
+}
+
+.detalhes-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+}
+
+.custos-empresariais-card {
+    border-color: rgba(69, 189, 255, 0.24);
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            rgba(69, 189, 255, 0.12),
+            transparent 38%
+        ),
+        var(--stats-card);
+}
+
+.custos-empresariais-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 22px;
+    right: 22px;
+    height: 2px;
+    border-radius: 0 0 4px 4px;
+    background: linear-gradient(
+        90deg,
+        var(--stats-azul-claro),
+        var(--stats-verde)
+    );
+}
+
+.quantidade-badge.custos-badge {
+    border-color: rgba(69, 189, 255, 0.3);
+    color: var(--stats-azul-claro);
+    background: rgba(69, 189, 255, 0.08);
+}
+
+.detalhes-lista .valor-pendente {
+    color: var(--stats-laranja);
+}
+
+.detalhes-lista .valor-custo {
+    color: var(--stats-azul-claro);
+}
+
+.detalhes-lista .custos-total {
+    border-color: rgba(69, 189, 255, 0.24);
+    background: rgba(69, 189, 255, 0.07);
+}
+
+.detalhes-lista .custos-total strong {
+    color: var(--stats-azul-claro);
+}
+
+.btn-custos {
+    border-color: rgba(69, 189, 255, 0.32);
+    color: #ffffff;
+    background: linear-gradient(
+        135deg,
+        rgba(69, 174, 255, 0.95),
+        rgba(66, 98, 235, 0.95)
+    );
+    box-shadow: 0 9px 25px rgba(54, 116, 236, 0.2);
+}
+
+.btn-custos:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 13px 30px rgba(54, 116, 236, 0.3);
+}
+
+.categoria-badge {
+    white-space: nowrap;
+}
+
+.categoria-badge:has(+ *) {
+    max-width: 150px;
+}
+
+body.light-mode .custos-empresariais-card,
+[data-theme="light"] .custos-empresariais-card {
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            rgba(52, 139, 255, 0.11),
+            transparent 40%
+        ),
+        var(--stats-card);
+}
+
+@media (max-width: 1200px) {
+    .financeiro-grid.secundario {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .detalhes-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .despesas-card {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 900px) {
+    .detalhes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .despesas-card {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 650px) {
+    .financeiro-grid.secundario {
+        grid-template-columns: 1fr;
+    }
+
+    .indicador-card {
+        min-height: 105px;
+    }
+
+    .custos-empresariais-card {
+        padding: 18px;
+    }
+}
+
+@media print {
+    .financeiro-grid.secundario {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .detalhes-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .btn-custos {
+        display: none;
+    }
+}
+
+/* =====================================================
+   REMOVE ESTOURO HORIZONTAL DAS ESTATÍSTICAS
+===================================================== */
+
+main,
+.main-content,
+.content,
+.conteudo {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.estatisticas-container {
+    width: calc(100% - 30px) !important;
+    max-width: 1380px !important;
+    min-width: 0 !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    overflow: hidden;
+}
+
+.financeiro-grid,
+.detalhes-grid {
+    width: 100%;
+    min-width: 0;
+}
+
+.financeiro-grid > *,
+.detalhes-grid > * {
+    min-width: 0;
+}
+
+.grafico-card,
+.movimentacoes-card {
+    width: 100%;
+    min-width: 0;
+}
+
+.tabela-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+@media (max-width: 1200px) {
+    .financeiro-grid.principal {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .financeiro-grid.secundario {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 650px) {
+    .estatisticas-container {
+        width: calc(100% - 18px) !important;
+    }
+
+    .financeiro-grid.principal,
+    .financeiro-grid.secundario,
+    .detalhes-grid {
+        grid-template-columns: 1fr !important;
+    }
+}

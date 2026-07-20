@@ -264,7 +264,7 @@
             </strong>
 
             <small>
-                Folha e demais retiradas
+                Folha, custos empresariais e demais retiradas
             </small>
 
         </article>
@@ -452,6 +452,41 @@
 
         </article>
 
+        <article class="indicador-card custos-pagos">
+            <span>Custos empresariais pagos</span>
+            <strong>
+                R$ {{ "%.2f"|format(total_custos) }}
+            </strong>
+            <small>
+                {{ custos_pagos }} pagamento(s) no período
+            </small>
+        </article>
+
+        <article class="indicador-card custos-pendentes">
+            <span>Custos ainda pendentes</span>
+            <strong>
+                R$ {{ "%.2f"|format(custos_pendentes) }}
+            </strong>
+            <small>
+                {{ custos_pendentes_quantidade }} conta(s),
+                {{ custos_vencidos_quantidade }} vencida(s)
+            </small>
+        </article>
+
+        <article class="
+            indicador-card
+            resultado-projetado
+            {{ 'positivo' if resultado_projetado >= 0 else 'negativo' }}
+        ">
+            <span>Resultado projetado</span>
+            <strong>
+                R$ {{ "%.2f"|format(resultado_projetado) }}
+            </strong>
+            <small>
+                Resultado líquido menos custos pendentes
+            </small>
+        </article>
+
     </section>
 
     <!-- =====================================
@@ -619,6 +654,66 @@
 
         </article>
 
+        <article class="detalhes-card custos-empresariais-card">
+
+            <div class="secao-cabecalho compacto">
+                <div>
+                    <span class="secao-etiqueta">
+                        OPERAÇÃO
+                    </span>
+                    <h2>Custos empresariais</h2>
+                </div>
+
+                <span class="quantidade-badge custos-badge">
+                    {{ custos_pagos }} pagos
+                </span>
+            </div>
+
+            <div class="detalhes-lista">
+
+                <div>
+                    <span>Custos fixos pagos</span>
+                    <strong>
+                        R$ {{ "%.2f"|format(custos_fixos) }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Custos variáveis pagos</span>
+                    <strong>
+                        R$ {{ "%.2f"|format(custos_variaveis) }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Custos eventuais pagos</span>
+                    <strong>
+                        R$ {{ "%.2f"|format(custos_eventuais) }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Contas pendentes</span>
+                    <strong class="valor-pendente">
+                        R$ {{ "%.2f"|format(custos_pendentes) }}
+                    </strong>
+                </div>
+
+                <div class="detalhe-total custos-total">
+                    <span>Total pago no período</span>
+                    <strong>
+                        R$ {{ "%.2f"|format(total_custos) }}
+                    </strong>
+                </div>
+
+            </div>
+
+            <a href="{{ url_for('custos') }}" class="btn-detalhes btn-custos">
+                Abrir custos empresariais
+            </a>
+
+        </article>
+
         <article class="detalhes-card despesas-card">
 
             <div class="secao-cabecalho compacto">
@@ -657,6 +752,14 @@
                         }}
                     </strong>
 
+                </div>
+
+                <div>
+                    <span>Custos empresariais</span>
+
+                    <strong class="valor-custo">
+                        R$ {{ "%.2f"|format(total_custos) }}
+                    </strong>
                 </div>
 
                 <div>
@@ -711,9 +814,10 @@
 
             <p class="aviso-contabil">
 
-                Cancelamentos aparecem separadamente,
-                mas não são descontados duas vezes do
-                resultado líquido.
+                Custos pagos entram no resultado líquido.
+                Contas pendentes afetam somente o resultado
+                projetado. Cancelamentos não são descontados
+                duas vezes.
 
             </p>
 

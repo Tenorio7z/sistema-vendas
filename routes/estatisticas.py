@@ -308,6 +308,56 @@ def registrar_rotas(app):
             folha = cursor.fetchone() or {}
 
             # =====================================
+            # CUSTOS EMPRESARIAIS
+            # =====================================
+
+            cursor.execute(
+                """
+                SELECT
+                    COUNT(*) AS quantidade,
+                    COALESCE(SUM(cp.valor), 0) AS total,
+                    COALESCE(SUM(cp.valor) FILTER (WHERE ce.tipo = 'fixa'), 0) AS fixos,
+                    COALESCE(SUM(cp.valor) FILTER (WHERE ce.tipo = 'variavel'), 0) AS variaveis,
+                    COALESCE(SUM(cp.valor) FILTER (WHERE ce.tipo = 'eventual'), 0) AS eventuais
+                FROM custos_pagamentos cp
+                INNER JOIN custos_empresariais ce
+                    ON ce.id = cp.custo_id
+                   AND ce.empresa_id = cp.empresa_id
+                WHERE cp.empresa_id = %s
+                  AND cp.estornado = FALSE
+                  AND cp.data_pagamento >= %s
+                  AND cp.data_pagamento < %s
+                """,
+                (empresa_id, inicio, fim),
+            )
+            custos = cursor.fetchone() or {}
+
+            cursor.execute(
+                """
+                SELECT
+                    COALESCE(SUM(GREATEST(p.valor - p.valor_pago, 0)), 0) AS pendente,
+                    COUNT(*) FILTER (
+                        WHERE p.status IN ('pendente', 'parcial')
+                    ) AS quantidade_pendente,
+                    COUNT(*) FILTER (
+                        WHERE p.status IN ('pendente', 'parcial')
+                          AND p.data_vencimento < CURRENT_DATE
+                    ) AS quantidade_vencida
+                FROM custos_parcelas p
+                INNER JOIN custos_empresariais ce
+                    ON ce.id = p.custo_id
+                   AND ce.empresa_id = p.empresa_id
+                WHERE p.empresa_id = %s
+                  AND ce.ativo = TRUE
+                  AND p.status <> 'cancelada'
+                  AND p.data_vencimento >= %s::date
+                  AND p.data_vencimento < %s::date
+                """,
+                (empresa_id, inicio, fim),
+            )
+            custos_previstos = cursor.fetchone() or {}
+
+            # =====================================
             # OUTRAS MOVIMENTAÇÕES DO CAIXA
             # Evita duplicar folha e cancelamentos.
             # =====================================
@@ -321,6 +371,8 @@ def registrar_rotas(app):
                               AND LOWER(
                                   COALESCE(descricao, '')
                               ) <> 'abertura de caixa'
+                              AND LOWER(COALESCE(descricao, ''))
+                                  NOT LIKE 'estorno de custo empresarial%%'
                         ),
                         0
                     ) AS outras_entradas,
@@ -336,6 +388,10 @@ def registrar_rotas(app):
                                   COALESCE(descricao, '')
                               ) NOT LIKE
                                   'pagamento da folha%%'
+                              AND LOWER(COALESCE(descricao, ''))
+                                  NOT LIKE 'custo empresarial%%'
+                              AND LOWER(COALESCE(descricao, ''))
+                                  NOT LIKE 'estorno de custo empresarial%%'
                         ),
                         0
                     ) AS outras_saidas
@@ -395,6 +451,14 @@ def registrar_rotas(app):
                 folha.get("total_pago")
             )
 
+            total_custos = _decimal_para_float(custos.get("total"))
+            custos_fixos = _decimal_para_float(custos.get("fixos"))
+            custos_variaveis = _decimal_para_float(custos.get("variaveis"))
+            custos_eventuais = _decimal_para_float(custos.get("eventuais"))
+            custos_pendentes = _decimal_para_float(
+                custos_previstos.get("pendente")
+            )
+
             outras_entradas = _decimal_para_float(
                 caixa.get("outras_entradas")
             )
@@ -405,6 +469,7 @@ def registrar_rotas(app):
 
             total_saidas = (
                 total_folha
+                + total_custos
                 + outras_saidas
             )
 
@@ -413,6 +478,8 @@ def registrar_rotas(app):
                 + outras_entradas
                 - total_saidas
             )
+
+            resultado_projetado = resultado_liquido - custos_pendentes
 
             vendas_validas = int(
                 vendas.get("vendas_validas")
@@ -550,7 +617,25 @@ def registrar_rotas(app):
                       ) NOT LIKE
                           'pagamento da folha%%'
 
+                      AND LOWER(COALESCE(descricao, ''))
+                          NOT LIKE 'custo empresarial%%'
+                      AND LOWER(COALESCE(descricao, ''))
+                          NOT LIKE 'estorno de custo empresarial%%'
+
                     GROUP BY DATE(data)
+
+                    UNION ALL
+
+                    SELECT
+                        DATE(cp.data_pagamento) AS dia,
+                        0::NUMERIC AS entradas,
+                        SUM(cp.valor) AS saidas
+                    FROM custos_pagamentos cp
+                    WHERE cp.empresa_id = %s
+                      AND cp.estornado = FALSE
+                      AND cp.data_pagamento >= %s
+                      AND cp.data_pagamento < %s
+                    GROUP BY DATE(cp.data_pagamento)
                 ) financeiro
 
                 GROUP BY dia
@@ -568,6 +653,10 @@ def registrar_rotas(app):
                     empresa_id,
                     inicio,
                     fim,
+                    empresa_id,
+                    inicio,
+                    fim,
+
                 ),
             )
 
@@ -672,6 +761,27 @@ def registrar_rotas(app):
                     WHERE mc.empresa_id = %s
                     AND mc.data >= %s
                     AND mc.data < %s
+                    AND LOWER(COALESCE(mc.descricao, ''))
+                        NOT LIKE 'custo empresarial%%'
+                    AND LOWER(COALESCE(mc.descricao, ''))
+                        NOT LIKE 'estorno de custo empresarial%%'
+
+                    UNION ALL
+
+                    SELECT
+                        cp.data_pagamento AS data,
+                        ('Custo empresarial - ' || ce.descricao) AS descricao,
+                        cp.valor,
+                        'Custos empresariais' AS categoria,
+                        'saida' AS tipo
+                    FROM custos_pagamentos cp
+                    INNER JOIN custos_empresariais ce
+                        ON ce.id = cp.custo_id
+                       AND ce.empresa_id = cp.empresa_id
+                    WHERE cp.empresa_id = %s
+                      AND cp.estornado = FALSE
+                      AND cp.data_pagamento >= %s
+                      AND cp.data_pagamento < %s
 
                     UNION ALL
 
@@ -722,6 +832,10 @@ def registrar_rotas(app):
                     empresa_id,
                     inicio,
                     fim,
+                    empresa_id,
+                    inicio,
+                    fim,
+
                 ),
             )
 
@@ -748,6 +862,19 @@ def registrar_rotas(app):
 
                 resultado_liquido=(
                     resultado_liquido
+                ),
+                resultado_projetado=resultado_projetado,
+                total_custos=total_custos,
+                custos_fixos=custos_fixos,
+                custos_variaveis=custos_variaveis,
+                custos_eventuais=custos_eventuais,
+                custos_pendentes=custos_pendentes,
+                custos_pagos=int(custos.get("quantidade") or 0),
+                custos_pendentes_quantidade=int(
+                    custos_previstos.get("quantidade_pendente") or 0
+                ),
+                custos_vencidos_quantidade=int(
+                    custos_previstos.get("quantidade_vencida") or 0
                 ),
 
                 total_cancelado=total_cancelado,

@@ -93,6 +93,7 @@ from routes.clientes import (
     registrar_rotas as clientes_rotas
 )
 
+from routes.custos import registrar_rotas as registrar_rotas_custos
 
 # ==========================================
 # REGISTRO DAS ROTAS
@@ -127,7 +128,7 @@ admin(app)
 
 caixa(app)
 
-
+registrar_rotas_custos(app)
 
 app.register_blueprint(
     ia_bp
