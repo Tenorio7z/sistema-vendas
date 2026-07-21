@@ -1,0 +1,636 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for(
+        'static',
+        filename='css/estatisticas_funcionario.css'
+    ) }}"
+>
+{% endblock %}
+
+
+{% macro moeda(valor) %}
+R$ {{
+    "{:,.2f}".format(valor|float)
+    .replace(",", "X")
+    .replace(".", ",")
+    .replace("X", ".")
+}}
+{% endmacro %}
+
+
+{% block content %}
+
+<section class="ef-container">
+
+    <!-- =========================================
+         CABEÇALHO
+    ========================================== -->
+
+    <header class="ef-header">
+
+        <div class="ef-header-conteudo">
+
+            <span class="ef-kicker">
+                MEU DESEMPENHO
+            </span>
+
+            <h1>
+                Olá, {{ funcionario.usuario }}
+            </h1>
+
+            <p>
+                Acompanhe suas vendas, comissões e resultados.
+            </p>
+
+            <div class="ef-funcionario-info">
+
+                <span>
+                    {{ funcionario.cargo }}
+                </span>
+
+                <span class="ef-divisor"></span>
+
+                <span>
+                    Comissão:
+                    {{ "%.2f"|format(percentual_comissao) }}%
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="ef-header-icone" aria-hidden="true">
+            ↗
+        </div>
+
+    </header>
+
+
+    <!-- =========================================
+         PERÍODO
+    ========================================== -->
+
+    <section class="ef-periodo">
+
+        <div class="ef-periodo-info">
+
+            <span>PERÍODO ANALISADO</span>
+
+            <strong>
+                {{ periodo.titulo }}
+            </strong>
+
+            <small>
+                {{ periodo.inicio.strftime("%d/%m/%Y") }}
+                até
+                {{ periodo.fim_exibicao.strftime("%d/%m/%Y") }}
+            </small>
+
+        </div>
+
+
+        <div class="ef-periodo-controles">
+
+            <nav class="ef-atalhos">
+
+                <a
+                    href="{{ url_for(
+                        'minhas_estatisticas',
+                        periodo='hoje'
+                    ) }}"
+                    class="{% if periodo.tipo == 'hoje' %}ativo{% endif %}"
+                >
+                    Hoje
+                </a>
+
+                <a
+                    href="{{ url_for(
+                        'minhas_estatisticas',
+                        periodo='mes'
+                    ) }}"
+                    class="{% if periodo.tipo == 'mes' %}ativo{% endif %}"
+                >
+                    Este mês
+                </a>
+
+                <a
+                    href="{{ url_for(
+                        'minhas_estatisticas',
+                        periodo='ano'
+                    ) }}"
+                    class="{% if periodo.tipo == 'ano' %}ativo{% endif %}"
+                >
+                    Este ano
+                </a>
+
+            </nav>
+
+
+            <form
+                method="GET"
+                action="{{ url_for('minhas_estatisticas') }}"
+                class="ef-periodo-form"
+            >
+
+                <input
+                    type="hidden"
+                    name="periodo"
+                    value="personalizado"
+                >
+
+                <label>
+                    <span>Data inicial</span>
+
+                    <input
+                        type="date"
+                        name="inicio"
+                        value="{{ periodo.inicio.isoformat() }}"
+                        required
+                    >
+                </label>
+
+                <label>
+                    <span>Data final</span>
+
+                    <input
+                        type="date"
+                        name="fim"
+                        value="{{ periodo.fim_exibicao.isoformat() }}"
+                        required
+                    >
+                </label>
+
+                <button type="submit">
+                    Aplicar
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         INDICADORES PRINCIPAIS
+    ========================================== -->
+
+    <section class="ef-principais">
+
+        <article class="ef-card faturamento">
+
+            <div class="ef-card-topo">
+                <span>Faturamento realizado</span>
+                <span class="ef-card-icone">R$</span>
+            </div>
+
+            <strong>
+                {{ moeda(faturamento) }}
+            </strong>
+
+            <small>
+                Valor líquido das suas vendas
+            </small>
+
+        </article>
+
+
+        <article class="ef-card comissao">
+
+            <div class="ef-card-topo">
+                <span>Comissão gerada</span>
+                <span class="ef-card-icone">%</span>
+            </div>
+
+            <strong>
+                {{ moeda(comissao_gerada) }}
+            </strong>
+
+            <small>
+                {{ "%.2f"|format(percentual_comissao) }}%
+                sobre as vendas válidas
+            </small>
+
+        </article>
+
+
+        <article class="ef-card vendas">
+
+            <div class="ef-card-topo">
+                <span>Vendas concluídas</span>
+                <span class="ef-card-icone">#</span>
+            </div>
+
+            <strong>
+                {{ total_vendas }}
+            </strong>
+
+            <small>
+                {{ itens_vendidos }} item(ns) vendido(s)
+            </small>
+
+        </article>
+
+
+        <article class="ef-card ticket">
+
+            <div class="ef-card-topo">
+                <span>Ticket médio</span>
+                <span class="ef-card-icone">↗</span>
+            </div>
+
+            <strong>
+                {{ moeda(ticket_medio) }}
+            </strong>
+
+            <small>
+                Valor médio por venda
+            </small>
+
+        </article>
+
+    </section>
+
+
+    <!-- =========================================
+         INDICADORES SECUNDÁRIOS
+    ========================================== -->
+
+    <section class="ef-secundarios">
+
+        <article>
+            <span>Faturamento bruto</span>
+
+            <strong>
+                {{ moeda(faturamento_bruto) }}
+            </strong>
+
+            <small>
+                Antes dos descontos
+            </small>
+        </article>
+
+
+        <article class="desconto">
+            <span>Descontos aplicados</span>
+
+            <strong>
+                - {{ moeda(descontos) }}
+            </strong>
+
+            <small>
+                Redução aplicada nas vendas
+            </small>
+        </article>
+
+
+        <article class="cancelamento">
+            <span>Vendas canceladas</span>
+
+            <strong>
+                {{ vendas_canceladas }}
+            </strong>
+
+            <small>
+                - {{ moeda(total_cancelado) }}
+            </small>
+        </article>
+
+
+        <article class="pago">
+            <span>Comissão paga</span>
+
+            <strong>
+                {{ moeda(comissao_paga) }}
+            </strong>
+
+            <small>
+                Recebida dentro do período
+            </small>
+        </article>
+
+
+        <article class="pendente">
+            <span>Comissão estimada pendente</span>
+
+            <strong>
+                {{ moeda(comissao_pendente) }}
+            </strong>
+
+            <small>
+                Gerada menos comissão paga
+            </small>
+        </article>
+
+
+        <article class="bonus">
+            <span>Bônus recebidos</span>
+
+            <strong>
+                {{ moeda(bonus_pago) }}
+            </strong>
+
+            <small>
+                {{ pagamentos_recebidos }}
+                pagamento(s) de folha
+            </small>
+        </article>
+
+    </section>
+
+
+    <!-- =========================================
+         DESEMPENHO DIÁRIO
+    ========================================== -->
+
+    <section class="ef-painel ef-desempenho">
+
+        <header class="ef-secao-header">
+
+            <div>
+                <span>EVOLUÇÃO</span>
+                <h2>Desempenho diário</h2>
+
+                <p>
+                    Faturamento gerado em cada dia do período.
+                </p>
+            </div>
+
+            <div class="ef-secao-destaque">
+                {{ moeda(faturamento) }}
+            </div>
+
+        </header>
+
+
+        {% if desempenho_diario %}
+
+            <div class="ef-grafico-lista">
+
+                {% for item in desempenho_diario %}
+
+                    <article class="ef-grafico-item">
+
+                        <div class="ef-grafico-dados">
+
+                            <div>
+                                <strong>
+                                    {{ item.dia.strftime("%d/%m") }}
+                                </strong>
+
+                                <small>
+                                    {{ item.vendas }} venda(s)
+                                    ·
+                                    {{ item.itens }} item(ns)
+                                </small>
+                            </div>
+
+                            <strong class="ef-grafico-valor">
+                                {{ moeda(item.faturamento) }}
+                            </strong>
+
+                        </div>
+
+                        <progress
+                            max="{{ maior_faturamento_dia or 1 }}"
+                            value="{{ item.faturamento|float }}"
+                        >
+                            {{ item.faturamento|float }}
+                        </progress>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="ef-vazio">
+
+                <span>↗</span>
+
+                <h3>Nenhuma venda neste período</h3>
+
+                <p>
+                    Suas vendas aparecerão aqui assim que forem registradas.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =========================================
+         PRODUTOS MAIS VENDIDOS
+    ========================================== -->
+
+    <section class="ef-painel">
+
+        <header class="ef-secao-header">
+
+            <div>
+                <span>PRODUTOS</span>
+                <h2>Produtos mais vendidos</h2>
+
+                <p>
+                    Os itens com maior quantidade de vendas.
+                </p>
+            </div>
+
+            <div class="ef-secao-destaque">
+                {{ itens_vendidos }} itens
+            </div>
+
+        </header>
+
+
+        {% if produtos %}
+
+            <div class="ef-produtos-lista">
+
+                {% for produto in produtos %}
+
+                    <article class="ef-produto">
+
+                        <span class="ef-produto-posicao">
+                            {{ loop.index }}
+                        </span>
+
+                        <div class="ef-produto-info">
+
+                            <strong>
+                                {{ produto.nome }}
+                            </strong>
+
+                            <small>
+                                {{ produto.quantidade }}
+                                unidade(s)
+                            </small>
+
+                        </div>
+
+                        <strong class="ef-produto-valor">
+                            {{ moeda(produto.faturamento) }}
+                        </strong>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="ef-vazio compacto">
+
+                <h3>Nenhum produto vendido</h3>
+
+                <p>
+                    Ainda não existem produtos vendidos no período.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =========================================
+         HISTÓRICO
+    ========================================== -->
+
+    <section class="ef-painel">
+
+        <header class="ef-secao-header">
+
+            <div>
+                <span>HISTÓRICO</span>
+                <h2>Minhas últimas vendas</h2>
+
+                <p>
+                    Vendas válidas e canceladas dentro do período.
+                </p>
+            </div>
+
+            <div class="ef-secao-destaque">
+                Até 50 registros
+            </div>
+
+        </header>
+
+
+        {% if historico_vendas %}
+
+            <div class="ef-tabela-scroll">
+
+                <table class="ef-tabela">
+
+                    <thead>
+                        <tr>
+                            <th>Venda</th>
+                            <th>Data</th>
+                            <th>Pagamento</th>
+                            <th>Itens</th>
+                            <th>Bruto</th>
+                            <th>Desconto</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for venda in historico_vendas %}
+
+                            <tr class="{% if venda.cancelada %}cancelada{% endif %}">
+
+                                <td>
+                                    <strong>
+                                        #{{ venda.grupo|string|truncate(12, true, '') }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ venda.data_venda.strftime(
+                                        "%d/%m/%Y %H:%M"
+                                    ) }}
+                                </td>
+
+                                <td>
+                                    {{ venda.pagamento or "Não informado" }}
+                                </td>
+
+                                <td>
+                                    {{ venda.quantidade_itens }}
+                                </td>
+
+                                <td>
+                                    {{ moeda(venda.valor_bruto) }}
+                                </td>
+
+                                <td class="ef-valor-desconto">
+                                    {% if venda.desconto|float > 0 %}
+                                        - {{ moeda(venda.desconto) }}
+                                    {% else %}
+                                        {{ moeda(0) }}
+                                    {% endif %}
+                                </td>
+
+                                <td class="ef-valor-total">
+                                    {{ moeda(venda.valor) }}
+                                </td>
+
+                                <td>
+
+                                    {% if venda.cancelada %}
+
+                                        <span class="ef-status cancelada">
+                                            Cancelada
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="ef-status concluida">
+                                            Concluída
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="ef-vazio compacto">
+
+                <h3>Nenhuma venda encontrada</h3>
+
+                <p>
+                    Altere o período ou registre uma nova venda.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</section>
+
+{% endblock %}

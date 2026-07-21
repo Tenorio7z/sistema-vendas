@@ -1,0 +1,356 @@
+{% extends "layout.html" %}
+
+{% block css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for(
+        'static',
+        filename='css/perfis.css'
+    ) }}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="perfis historico-folha-page">
+
+    <header class="equipe-header historico-folha-header">
+
+        <div class="equipe-header-texto">
+
+            <span class="equipe-eyebrow">
+                GESTÃO FINANCEIRA
+            </span>
+
+            <h1>
+                Histórico da folha
+            </h1>
+
+            <p>
+                Consulte salários, comissões, bônus,
+                descontos e pagamentos da equipe.
+            </p>
+
+        </div>
+
+        <div class="equipe-header-acoes">
+
+            <a
+                href="/perfis"
+                class="btn-historico-folha"
+            >
+                ← Voltar para equipe
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================
+         RESUMO DO HISTÓRICO
+    ====================================== -->
+
+    {% set namespace = namespace(
+        total=0,
+        pago=0,
+        pendente=0,
+        quantidade_paga=0,
+        quantidade_pendente=0
+    ) %}
+
+    {% for pagamento in pagamentos %}
+
+        {% set namespace.total =
+            namespace.total
+            + pagamento["valor_total"]|float
+        %}
+
+        {% if pagamento["status"] == "pago" %}
+
+            {% set namespace.pago =
+                namespace.pago
+                + pagamento["valor_total"]|float
+            %}
+
+            {% set namespace.quantidade_paga =
+                namespace.quantidade_paga + 1
+            %}
+
+        {% elif pagamento["status"] == "pendente" %}
+
+            {% set namespace.pendente =
+                namespace.pendente
+                + pagamento["valor_total"]|float
+            %}
+
+            {% set namespace.quantidade_pendente =
+                namespace.quantidade_pendente + 1
+            %}
+
+        {% endif %}
+
+    {% endfor %}
+
+
+    <section class="equipe-indicadores historico-indicadores">
+
+        <article class="indicador-equipe azul">
+
+            <span class="indicador-label">
+                Folhas registradas
+            </span>
+
+            <strong>
+                {{ pagamentos|length }}
+            </strong>
+
+            <small>
+                Todos os períodos
+            </small>
+
+        </article>
+
+        <article class="indicador-equipe verde">
+
+            <span class="indicador-label">
+                Total pago
+            </span>
+
+            <strong>
+                R$ {{ "%.2f"|format(namespace.pago) }}
+            </strong>
+
+            <small>
+                {{ namespace.quantidade_paga }}
+                pagamentos realizados
+            </small>
+
+        </article>
+
+        <article class="indicador-equipe laranja">
+
+            <span class="indicador-label">
+                Total pendente
+            </span>
+
+            <strong>
+                R$ {{ "%.2f"|format(namespace.pendente) }}
+            </strong>
+
+            <small>
+                {{ namespace.quantidade_pendente }}
+                pagamentos aguardando
+            </small>
+
+        </article>
+
+    </section>
+
+
+    <!-- =====================================
+         LISTAGEM
+    ====================================== -->
+
+    <section class="historico-recente">
+
+        <div class="equipe-section-header">
+
+            <div>
+
+                <span class="equipe-eyebrow">
+                    LANÇAMENTOS
+                </span>
+
+                <h2>
+                    Pagamentos registrados
+                </h2>
+
+            </div>
+
+            <span class="equipe-periodo">
+                {{ pagamentos|length }} registros
+            </span>
+
+        </div>
+
+
+        {% if pagamentos %}
+
+        <div class="tabela-equipe-wrapper">
+
+            <table class="tabela-equipe tabela-folha-completa">
+
+                <thead>
+
+                    <tr>
+                        <th>Funcionário</th>
+                        <th>Competência</th>
+                        <th>Salário</th>
+                        <th>Comissão</th>
+                        <th>Bônus</th>
+                        <th>Descontos</th>
+                        <th>Total</th>
+                        <th>Pagamento</th>
+                        <th>Status</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for pagamento in pagamentos %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                {{ pagamento["usuario"] }}
+                            </strong>
+
+                            <small>
+                                {{ pagamento["cargo"] }}
+                            </small>
+
+                        </td>
+
+                        <td>
+                            {{
+                                pagamento["competencia"]
+                                .strftime("%m/%Y")
+                            }}
+                        </td>
+
+                        <td>
+                            R$
+                            {{ "%.2f"|format(
+                                pagamento["salario_base"]|float
+                            ) }}
+                        </td>
+
+                        <td>
+                            R$
+                            {{ "%.2f"|format(
+                                pagamento["valor_comissao"]|float
+                            ) }}
+                        </td>
+
+                        <td>
+                            R$
+                            {{ "%.2f"|format(
+                                pagamento["valor_bonus"]|float
+                            ) }}
+                        </td>
+
+                        <td>
+                            R$
+                            {{ "%.2f"|format(
+                                pagamento["valor_descontos"]|float
+                            ) }}
+                        </td>
+
+                        <td>
+
+                            <strong>
+                                R$
+                                {{ "%.2f"|format(
+                                    pagamento["valor_total"]|float
+                                ) }}
+                            </strong>
+
+                        </td>
+
+                        <td>
+
+                            {% if pagamento["data_pagamento"] %}
+
+                                {{
+                                    pagamento["data_pagamento"]
+                                    .strftime("%d/%m/%Y às %H:%M")
+                                }}
+
+                                {% if pagamento["forma_pagamento"] %}
+
+                                <small class="forma-pagamento-folha">
+                                    {{
+                                        pagamento["forma_pagamento"]
+                                        |replace(
+                                            "transferencia",
+                                            "Transferência"
+                                        )
+                                        |capitalize
+                                    }}
+                                </small>
+
+                                {% endif %}
+
+                            {% else %}
+
+                                <span class="texto-pendente">
+                                    Aguardando
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <span
+                                class="
+                                    tabela-status
+                                    {{ pagamento['status'] }}
+                                "
+                            >
+                                {{ pagamento["status"]|upper }}
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="equipe-vazia historico-vazio">
+
+            <span>
+                💳
+            </span>
+
+            <h2>
+                Nenhuma folha registrada
+            </h2>
+
+            <p>
+                Gere a primeira folha de pagamento
+                pelo dashboard da equipe.
+            </p>
+
+            <a
+                href="/perfis"
+                class="btn-novo-funcionario"
+            >
+                Ir para equipe
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</section>
+
+{% endblock %}

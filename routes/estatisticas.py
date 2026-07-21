@@ -123,8 +123,11 @@ def registrar_rotas(app):
     @app.route("/estatisticas")
     def estatisticas():
 
-        if not session.get("logado"):
-            return redirect("/")
+        if session.get("nivel") == "funcionario":
+            return redirect("/minhas-estatisticas")
+
+        if session.get("nivel") != "gerente":
+            return redirect("/dashboard")
 
         if session.get("plano") == "comum":
             return render_template(

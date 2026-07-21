@@ -93,6 +93,10 @@ from routes.clientes import (
     registrar_rotas as clientes_rotas
 )
 
+from routes.estatisticas_funcionario import (
+    registrar_rotas as registrar_rotas_estatisticas_funcionario,
+)
+
 from routes.custos import registrar_rotas as registrar_rotas_custos
 
 # ==========================================
@@ -106,6 +110,8 @@ historico_caixas_rotas(app)
 estatisticas.registrar_rotas(app)
 
 planos.registrar_rotas(app)
+
+registrar_rotas_estatisticas_funcionario(app)
 
 perfis_rotas(app)
 

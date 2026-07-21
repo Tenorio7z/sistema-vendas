@@ -1,0 +1,1266 @@
+/* =========================================================
+   NEXUS — ESTATÍSTICAS DO FUNCIONÁRIO
+========================================================= */
+
+:root {
+    --ef-card: rgba(255, 255, 255, 0.86);
+    --ef-card-forte: rgba(250, 252, 255, 0.96);
+    --ef-card-suave: rgba(229, 239, 252, 0.72);
+
+    --ef-texto: #11203b;
+    --ef-secundario: #60708a;
+    --ef-suave: #8491a6;
+
+    --ef-borda: rgba(67, 112, 176, 0.19);
+    --ef-borda-forte: rgba(67, 140, 255, 0.37);
+
+    --ef-azul: #428cff;
+    --ef-ciano: #4fc6ff;
+    --ef-verde: #17ca98;
+    --ef-roxo: #8e76ff;
+    --ef-laranja: #ffad32;
+    --ef-vermelho: #ff5578;
+
+    --ef-sombra:
+        0 18px 42px rgba(31, 59, 100, 0.10);
+
+    --ef-sombra-forte:
+        0 24px 58px rgba(31, 59, 100, 0.16);
+}
+
+body.dark {
+    --ef-card: rgba(30, 49, 79, 0.87);
+    --ef-card-forte: rgba(23, 40, 68, 0.97);
+    --ef-card-suave: rgba(15, 32, 57, 0.88);
+
+    --ef-texto: #f3f7ff;
+    --ef-secundario: #b5c2d6;
+    --ef-suave: #8391a8;
+
+    --ef-borda: rgba(113, 153, 210, 0.23);
+    --ef-borda-forte: rgba(76, 148, 250, 0.44);
+
+    --ef-sombra:
+        0 18px 46px rgba(0, 0, 0, 0.23);
+
+    --ef-sombra-forte:
+        0 27px 65px rgba(0, 0, 0, 0.31);
+}
+
+
+/* =========================================================
+   ESTRUTURA PRINCIPAL
+========================================================= */
+
+.ef-container {
+    width: min(100%, 1080px);
+    min-width: 0;
+    margin: 0 auto;
+    padding: 18px 14px 50px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    color: var(--ef-texto);
+}
+
+.ef-container *,
+.ef-container *::before,
+.ef-container *::after {
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CABEÇALHO
+========================================================= */
+
+.ef-header {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    min-height: 145px;
+    padding: 28px 31px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 23px;
+
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(73, 151, 255, 0.25),
+            transparent 33%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(220, 235, 255, 0.97),
+            rgba(249, 250, 255, 0.95)
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        var(--ef-sombra);
+}
+
+body.dark .ef-header {
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(62, 144, 255, 0.24),
+            transparent 34%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(32, 68, 118, 0.98),
+            rgba(28, 46, 78, 0.97)
+        );
+}
+
+.ef-header::after {
+    content: "META";
+
+    position: absolute;
+    z-index: -1;
+    right: 17px;
+    bottom: -21px;
+
+    color: rgba(43, 103, 183, 0.06);
+
+    font-size: clamp(74px, 10vw, 116px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -8px;
+
+    pointer-events: none;
+}
+
+body.dark .ef-header::after {
+    color: rgba(255, 255, 255, 0.035);
+}
+
+.ef-header-conteudo {
+    min-width: 0;
+}
+
+.ef-kicker,
+.ef-periodo-info > span,
+.ef-secao-header > div > span {
+    display: block;
+    margin-bottom: 7px;
+
+    color: var(--ef-ciano);
+
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: 2.3px;
+    text-transform: uppercase;
+}
+
+.ef-header h1 {
+    margin: 0 0 7px;
+
+    color: var(--ef-texto);
+
+    font-size: clamp(29px, 3.4vw, 41px);
+    font-weight: 850;
+    line-height: 1.04;
+    letter-spacing: -1.4px;
+}
+
+.ef-header p {
+    max-width: 570px;
+    margin: 0;
+
+    color: var(--ef-secundario);
+
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.ef-funcionario-info {
+    margin-top: 14px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--ef-secundario);
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.ef-divisor {
+    width: 4px;
+    height: 4px;
+
+    border-radius: 50%;
+    background: var(--ef-ciano);
+}
+
+.ef-header-icone {
+    position: relative;
+    z-index: 2;
+
+    width: 65px;
+    height: 65px;
+    flex: 0 0 65px;
+
+    display: grid;
+    place-items: center;
+
+    color: #ffffff;
+
+    font-size: 27px;
+    font-weight: 800;
+
+    border: 1px solid rgba(130, 192, 255, 0.48);
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--ef-ciano),
+            #456cf0
+        );
+
+    box-shadow:
+        0 18px 35px rgba(54, 112, 235, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+
+/* =========================================================
+   PERÍODO
+========================================================= */
+
+.ef-periodo {
+    padding: 15px 17px;
+
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 18px;
+
+    background: var(--ef-card);
+
+    box-shadow:
+        inset 3px 0 0 var(--ef-ciano),
+        inset 0 1px 0 rgba(255, 255, 255, 0.62),
+        var(--ef-sombra);
+
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+}
+
+.ef-periodo-info {
+    min-width: 0;
+}
+
+.ef-periodo-info strong {
+    display: block;
+
+    color: var(--ef-texto);
+
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.ef-periodo-info small {
+    display: block;
+    margin-top: 5px;
+
+    color: var(--ef-secundario);
+    font-size: 9px;
+}
+
+.ef-periodo-controles {
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) auto;
+    align-items: end;
+    gap: 10px;
+}
+
+.ef-atalhos {
+    height: 39px;
+    padding: 3px;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 11px;
+
+    background: var(--ef-card-suave);
+}
+
+.ef-atalhos a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--ef-secundario);
+
+    font-size: 10px;
+    text-decoration: none;
+
+    border-radius: 8px;
+
+    transition:
+        color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.ef-atalhos a:hover {
+    color: var(--ef-texto);
+}
+
+.ef-atalhos a.ativo {
+    color: #ffffff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #52afff,
+            #446cf0
+        );
+
+    box-shadow:
+        0 7px 16px rgba(56, 111, 235, 0.28);
+}
+
+.ef-periodo-form {
+    display: grid;
+    grid-template-columns: 105px 105px auto;
+    align-items: end;
+    gap: 8px;
+}
+
+.ef-periodo-form label {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ef-periodo-form label > span {
+    padding-left: 2px;
+
+    color: var(--ef-secundario);
+
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.ef-periodo-form input,
+.ef-periodo-form button {
+    width: 100%;
+    height: 39px;
+    min-height: 39px;
+
+    border-radius: 9px;
+
+    font: inherit;
+    font-size: 9px;
+}
+
+.ef-periodo-form input {
+    min-width: 0;
+    padding: 0 9px;
+
+    color: var(--ef-texto);
+
+    border: 1px solid var(--ef-borda);
+    outline: none;
+
+    background: var(--ef-card-suave);
+}
+
+.ef-periodo-form input:focus {
+    border-color: var(--ef-azul);
+
+    box-shadow:
+        0 0 0 3px rgba(66, 140, 255, 0.12);
+}
+
+.ef-periodo-form button {
+    padding: 0 14px;
+
+    color: #ffffff;
+    font-weight: 800;
+
+    border: 1px solid rgba(112, 181, 255, 0.55);
+
+    background:
+        linear-gradient(
+            135deg,
+            #53b5ff,
+            #426cf0
+        );
+
+    box-shadow:
+        0 8px 18px rgba(53, 110, 231, 0.23);
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   CARDS PRINCIPAIS
+========================================================= */
+
+.ef-principais {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 11px;
+}
+
+.ef-card {
+    --ef-cor-card: var(--ef-azul);
+
+    position: relative;
+    overflow: hidden;
+
+    min-width: 0;
+    min-height: 125px;
+    padding: 18px 16px;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 18px;
+
+    background:
+        radial-gradient(
+            circle at 100% 100%,
+            color-mix(
+                in srgb,
+                var(--ef-cor-card) 14%,
+                transparent
+            ),
+            transparent 43%
+        ),
+        var(--ef-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        var(--ef-sombra);
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.ef-card::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+
+    height: 3px;
+    background: var(--ef-cor-card);
+}
+
+.ef-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ef-sombra-forte);
+}
+
+.ef-card.faturamento {
+    --ef-cor-card: var(--ef-azul);
+}
+
+.ef-card.comissao {
+    --ef-cor-card: var(--ef-verde);
+}
+
+.ef-card.vendas {
+    --ef-cor-card: var(--ef-roxo);
+}
+
+.ef-card.ticket {
+    --ef-cor-card: var(--ef-laranja);
+}
+
+.ef-card-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ef-card-topo > span:first-child {
+    color: var(--ef-secundario);
+    font-size: 10px;
+}
+
+.ef-card-icone {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--ef-cor-card);
+
+    font-size: 10px;
+    font-weight: 850;
+
+    border: 1px solid
+        color-mix(
+            in srgb,
+            var(--ef-cor-card) 45%,
+            transparent
+        );
+
+    border-radius: 8px;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--ef-cor-card) 9%,
+            transparent
+        );
+}
+
+.ef-card > strong {
+    display: block;
+    margin-top: 13px;
+
+    overflow: hidden;
+
+    color: var(--ef-texto);
+
+    font-size: clamp(21px, 2.2vw, 27px);
+    font-weight: 850;
+    line-height: 1.08;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.ef-card > small {
+    display: block;
+    margin-top: 8px;
+
+    color: var(--ef-secundario);
+
+    font-size: 9px;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   CARDS SECUNDÁRIOS
+========================================================= */
+
+.ef-secundarios {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.ef-secundarios article {
+    position: relative;
+    overflow: hidden;
+
+    min-width: 0;
+    min-height: 106px;
+    padding: 15px 13px;
+
+    display: flex;
+    flex-direction: column;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 15px;
+
+    background: var(--ef-card);
+    box-shadow: var(--ef-sombra);
+}
+
+.ef-secundarios article::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 32%;
+    height: 2px;
+
+    background: var(--ef-ciano);
+}
+
+.ef-secundarios article.desconto::before,
+.ef-secundarios article.pendente::before {
+    background: var(--ef-laranja);
+}
+
+.ef-secundarios article.cancelamento::before {
+    background: var(--ef-vermelho);
+}
+
+.ef-secundarios article.pago::before {
+    background: var(--ef-verde);
+}
+
+.ef-secundarios article.bonus::before {
+    background: var(--ef-roxo);
+}
+
+.ef-secundarios span {
+    color: var(--ef-secundario);
+    font-size: 8px;
+}
+
+.ef-secundarios strong {
+    display: block;
+    margin-top: 11px;
+
+    overflow: hidden;
+
+    color: var(--ef-texto);
+
+    font-size: 16px;
+    font-weight: 850;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.ef-secundarios article.desconto strong,
+.ef-secundarios article.pendente strong {
+    color: var(--ef-laranja);
+}
+
+.ef-secundarios article.cancelamento strong {
+    color: var(--ef-vermelho);
+}
+
+.ef-secundarios article.pago strong {
+    color: var(--ef-verde);
+}
+
+.ef-secundarios article.bonus strong {
+    color: var(--ef-roxo);
+}
+
+.ef-secundarios small {
+    display: block;
+    margin-top: auto;
+    padding-top: 8px;
+
+    color: var(--ef-suave);
+
+    font-size: 7px;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   PAINÉIS
+========================================================= */
+
+.ef-painel {
+    min-width: 0;
+    padding: 19px;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 19px;
+
+    background: var(--ef-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.62),
+        var(--ef-sombra);
+
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+}
+
+.ef-secao-header {
+    margin-bottom: 15px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.ef-secao-header h2 {
+    margin: 0 0 5px;
+
+    color: var(--ef-texto);
+
+    font-size: 19px;
+    line-height: 1.15;
+}
+
+.ef-secao-header p {
+    margin: 0;
+
+    color: var(--ef-secundario);
+
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.ef-secao-destaque {
+    padding: 7px 10px;
+
+    color: var(--ef-secundario);
+
+    font-size: 9px;
+    font-weight: 750;
+    white-space: nowrap;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 999px;
+
+    background: var(--ef-card-suave);
+}
+
+
+/* =========================================================
+   GRÁFICO EM BARRAS
+========================================================= */
+
+.ef-grafico-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ef-grafico-item {
+    padding: 11px 12px;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 12px;
+
+    background: var(--ef-card-suave);
+}
+
+.ef-grafico-dados {
+    margin-bottom: 9px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.ef-grafico-dados strong {
+    display: block;
+
+    color: var(--ef-texto);
+    font-size: 10px;
+}
+
+.ef-grafico-dados small {
+    display: block;
+    margin-top: 3px;
+
+    color: var(--ef-secundario);
+    font-size: 8px;
+}
+
+.ef-grafico-valor {
+    color: var(--ef-verde) !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+}
+
+.ef-grafico-item progress {
+    width: 100%;
+    height: 7px;
+
+    display: block;
+
+    border: 0;
+    border-radius: 999px;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    overflow: hidden;
+    background: rgba(107, 137, 177, 0.18);
+}
+
+.ef-grafico-item progress::-webkit-progress-bar {
+    border-radius: 999px;
+    background: rgba(107, 137, 177, 0.18);
+}
+
+.ef-grafico-item progress::-webkit-progress-value {
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--ef-azul),
+            var(--ef-ciano),
+            var(--ef-verde)
+        );
+}
+
+.ef-grafico-item progress::-moz-progress-bar {
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--ef-azul),
+            var(--ef-ciano),
+            var(--ef-verde)
+        );
+}
+
+
+/* =========================================================
+   PRODUTOS
+========================================================= */
+
+.ef-produtos-lista {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.ef-produto {
+    min-width: 0;
+    min-height: 65px;
+    padding: 10px 12px;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 13px;
+
+    background: var(--ef-card-suave);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.ef-produto:hover {
+    transform: translateY(-2px);
+    border-color: var(--ef-borda-forte);
+}
+
+.ef-produto-posicao {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+
+    display: grid;
+    place-items: center;
+
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 850;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--ef-ciano),
+            #496bea
+        );
+
+    box-shadow:
+        0 7px 16px rgba(59, 111, 226, 0.22);
+}
+
+.ef-produto-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.ef-produto-info strong {
+    display: block;
+
+    overflow: hidden;
+
+    color: var(--ef-texto);
+
+    font-size: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.ef-produto-info small {
+    display: block;
+    margin-top: 4px;
+
+    color: var(--ef-secundario);
+    font-size: 8px;
+}
+
+.ef-produto-valor {
+    color: var(--ef-verde);
+
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   TABELA
+========================================================= */
+
+.ef-tabela-scroll {
+    width: 100%;
+    max-height: 430px;
+
+    overflow: auto;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 13px;
+
+    background: var(--ef-card-forte);
+}
+
+.ef-tabela-scroll::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+.ef-tabela-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ef-tabela-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(68, 139, 231, 0.48);
+}
+
+.ef-tabela {
+    width: 100%;
+    min-width: 850px;
+
+    border-collapse: collapse;
+
+    color: var(--ef-texto);
+}
+
+.ef-tabela th {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+
+    padding: 12px 11px;
+
+    color: var(--ef-secundario);
+
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: 0.7px;
+    text-align: left;
+    text-transform: uppercase;
+
+    border-bottom: 1px solid var(--ef-borda);
+
+    background: var(--ef-card-forte);
+}
+
+.ef-tabela td {
+    padding: 11px;
+
+    color: var(--ef-secundario);
+
+    font-size: 9px;
+    vertical-align: middle;
+
+    border-bottom: 1px solid var(--ef-borda);
+}
+
+.ef-tabela tbody tr {
+    transition: background 0.18s ease;
+}
+
+.ef-tabela tbody tr:hover {
+    background: rgba(67, 140, 255, 0.07);
+}
+
+.ef-tabela tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.ef-tabela tbody tr.cancelada {
+    background: rgba(255, 85, 120, 0.045);
+}
+
+.ef-tabela td > strong {
+    color: var(--ef-texto);
+}
+
+.ef-valor-desconto {
+    color: var(--ef-laranja) !important;
+    white-space: nowrap;
+}
+
+.ef-valor-total {
+    color: var(--ef-verde) !important;
+
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.ef-tabela tr.cancelada .ef-valor-total {
+    color: var(--ef-vermelho) !important;
+    text-decoration: line-through;
+}
+
+.ef-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 5px 8px;
+
+    font-size: 7px;
+    font-weight: 850;
+    white-space: nowrap;
+    text-transform: uppercase;
+
+    border: 1px solid transparent;
+    border-radius: 999px;
+}
+
+.ef-status.concluida {
+    color: var(--ef-verde);
+
+    border-color: rgba(23, 202, 152, 0.34);
+    background: rgba(23, 202, 152, 0.08);
+}
+
+.ef-status.cancelada {
+    color: var(--ef-vermelho);
+
+    border-color: rgba(255, 85, 120, 0.34);
+    background: rgba(255, 85, 120, 0.08);
+}
+
+
+/* =========================================================
+   ESTADO VAZIO
+========================================================= */
+
+.ef-vazio {
+    min-height: 220px;
+    padding: 30px 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    border: 1px dashed var(--ef-borda);
+    border-radius: 14px;
+
+    background: var(--ef-card-suave);
+}
+
+.ef-vazio.compacto {
+    min-height: 150px;
+}
+
+.ef-vazio > span {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 12px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--ef-ciano);
+    font-size: 22px;
+
+    border: 1px solid var(--ef-borda-forte);
+    border-radius: 16px;
+
+    background: rgba(66, 140, 255, 0.09);
+}
+
+.ef-vazio h3 {
+    margin: 0 0 6px;
+
+    color: var(--ef-texto);
+    font-size: 14px;
+}
+
+.ef-vazio p {
+    margin: 0;
+
+    color: var(--ef-secundario);
+
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+@media (max-width: 1100px) {
+    .ef-container {
+        padding-inline: 10px;
+    }
+
+    .ef-periodo {
+        grid-template-columns: 160px minmax(0, 1fr);
+    }
+
+    .ef-periodo-controles {
+        grid-template-columns: 1fr;
+    }
+
+    .ef-periodo-form {
+        grid-template-columns:
+            minmax(100px, 1fr)
+            minmax(100px, 1fr)
+            auto;
+    }
+
+    .ef-principais {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .ef-secundarios {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .ef-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 0 35px;
+    }
+
+    .ef-header {
+        min-height: auto;
+        padding: 22px 19px;
+
+        align-items: flex-start;
+    }
+
+    .ef-header-icone {
+        width: 52px;
+        height: 52px;
+        flex-basis: 52px;
+
+        font-size: 21px;
+        border-radius: 16px;
+    }
+
+    .ef-periodo {
+        padding: 16px;
+
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .ef-periodo-controles {
+        grid-template-columns: 1fr;
+    }
+
+    .ef-periodo-form {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(0, 1fr)
+            auto;
+    }
+
+    .ef-principais {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .ef-secundarios {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .ef-produtos-lista {
+        grid-template-columns: 1fr;
+    }
+
+    .ef-painel {
+        padding: 16px 13px 13px;
+    }
+}
+
+@media (max-width: 520px) {
+    .ef-header {
+        flex-direction: column;
+    }
+
+    .ef-header-icone {
+        display: none;
+    }
+
+    .ef-funcionario-info {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .ef-divisor {
+        display: none;
+    }
+
+    .ef-periodo-form {
+        grid-template-columns: 1fr;
+    }
+
+    .ef-principais,
+    .ef-secundarios {
+        grid-template-columns: 1fr;
+    }
+
+    .ef-card {
+        min-height: 116px;
+    }
+
+    .ef-secao-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .ef-grafico-dados {
+        align-items: flex-start;
+    }
+
+    .ef-produto {
+        padding-inline: 10px;
+    }
+}
