@@ -1,0 +1,774 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/onboarding_admin.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<main class="onboarding-admin-container">
+
+    <header class="onboarding-admin-header detalhes-header">
+
+        <div class="header-texto">
+
+            <span class="header-kicker">
+                SOLICITAÇÃO #{{ solicitacao["id"] }}
+            </span>
+
+            <h1>
+                {{ solicitacao["nome_empresa"] }}
+            </h1>
+
+            <p>
+                Confira os dados enviados antes de liberar o acesso.
+            </p>
+
+        </div>
+
+        <div class="header-acoes">
+
+            <span class="status-badge status-{{ solicitacao['status'] }}">
+
+                {% if solicitacao["status"] == "aguardando" %}
+                    Aguardando aprovação
+
+                {% elif solicitacao["status"] == "em_analise" %}
+                    Em análise
+
+                {% elif solicitacao["status"] == "aprovada" %}
+                    Aprovada
+
+                {% elif solicitacao["status"] == "rejeitada" %}
+                    Rejeitada
+
+                {% elif solicitacao["status"] == "cancelada" %}
+                    Cancelada
+
+                {% else %}
+                    {{ solicitacao["status"] }}
+                {% endif %}
+
+            </span>
+
+            <a
+                href="{{ url_for('onboarding_solicitacoes') }}"
+                class="btn-secundario"
+            >
+                ← Voltar
+            </a>
+
+        </div>
+
+    </header>
+
+    <section class="detalhes-layout">
+
+        <div class="detalhes-conteudo">
+
+            <!-- =====================================
+                 EMPRESA
+            ====================================== -->
+
+            <article class="detalhes-card">
+
+                <div class="detalhes-card-titulo">
+
+                    <span>01</span>
+
+                    <div>
+                        <small>EMPRESA</small>
+
+                        <h2>
+                            Dados empresariais
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div class="detalhes-grid">
+
+                    <div class="detalhe-item detalhe-destaque">
+
+                        <span>Nome da empresa</span>
+
+                        <strong>
+                            {{ solicitacao["nome_empresa"] }}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>CPF/CNPJ</span>
+
+                        <strong>
+                            {{ solicitacao["cpf_cnpj"] or "Não informado" }}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>Segmento</span>
+
+                        <strong>
+                            {{ solicitacao["segmento"] or "Não informado" }}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>Cidade</span>
+
+                        <strong>
+                            {{ solicitacao["cidade"] or "Não informada" }}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>Estado</span>
+
+                        <strong>
+                            {{ solicitacao["estado"] or "Não informado" }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+            <!-- =====================================
+                 RESPONSÁVEL
+            ====================================== -->
+
+            <article class="detalhes-card">
+
+                <div class="detalhes-card-titulo">
+
+                    <span>02</span>
+
+                    <div>
+                        <small>RESPONSÁVEL</small>
+
+                        <h2>
+                            Dados para contato
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div class="detalhes-grid">
+
+                    <div class="detalhe-item detalhe-destaque">
+
+                        <span>Nome completo</span>
+
+                        <strong>
+                            {{ solicitacao["nome_responsavel"] }}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>WhatsApp</span>
+
+                        <strong>
+                            {{ solicitacao["telefone"] }}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>E-mail</span>
+
+                        <strong>
+                            {{ solicitacao["email"] }}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>Autorizou contato pelo WhatsApp</span>
+
+                        <strong
+                            class="{% if solicitacao['aceitou_whatsapp'] %}texto-verde{% endif %}"
+                        >
+                            {% if solicitacao["aceitou_whatsapp"] %}
+                                Sim
+                            {% else %}
+                                Não
+                            {% endif %}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+            <!-- =====================================
+                 ACESSO
+            ====================================== -->
+
+            <article class="detalhes-card">
+
+                <div class="detalhes-card-titulo">
+
+                    <span>03</span>
+
+                    <div>
+                        <small>ACESSO</small>
+
+                        <h2>
+                            Credenciais solicitadas
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div class="detalhes-grid">
+
+                    <div class="detalhe-item detalhe-destaque">
+
+                        <span>Nome de usuário</span>
+
+                        <strong>
+                            {{ solicitacao["usuario"] }}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>Termos aceitos</span>
+
+                        <strong
+                            class="{% if solicitacao['aceitou_termos'] %}texto-verde{% endif %}"
+                        >
+                            {% if solicitacao["aceitou_termos"] %}
+                                Sim
+                            {% else %}
+                                Não
+                            {% endif %}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>Data do cadastro</span>
+
+                        <strong>
+                            {% if solicitacao["criada_em"] %}
+                                {{ solicitacao["criada_em"].strftime(
+                                    "%d/%m/%Y às %H:%M"
+                                ) }}
+                            {% else %}
+                                Não informada
+                            {% endif %}
+                        </strong>
+
+                    </div>
+
+                    <div class="detalhe-item">
+
+                        <span>Endereço IP</span>
+
+                        <strong>
+                            {{ solicitacao["ip_cadastro"] or "Não registrado" }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+            <!-- =====================================
+                 OBSERVAÇÕES
+            ====================================== -->
+
+            {% if solicitacao["observacoes_cliente"] %}
+
+            <article class="detalhes-card">
+
+                <div class="detalhes-card-titulo">
+
+                    <span>04</span>
+
+                    <div>
+                        <small>OBSERVAÇÕES</small>
+
+                        <h2>
+                            Mensagem do cliente
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div class="observacao-cliente">
+                    {{ solicitacao["observacoes_cliente"] }}
+                </div>
+
+            </article>
+
+            {% endif %}
+
+        </div>
+
+        <!-- =====================================
+             PAINEL DE DECISÃO
+        ====================================== -->
+
+        <aside class="painel-decisao">
+
+            {% if solicitacao["status"] in ["aguardando", "em_analise"] %}
+
+                {% if solicitacao["status"] == "aguardando" %}
+
+                <section class="decisao-card decisao-analise">
+
+                    <span class="decisao-kicker">
+                        PRIMEIRO PASSO
+                    </span>
+
+                    <h2>
+                        Iniciar análise
+                    </h2>
+
+                    <p>
+                        Registre que esta solicitação começou a ser
+                        verificada pelo administrador.
+                    </p>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'onboarding_solicitacao_analisar',
+                            solicitacao_id=solicitacao['id']
+                        ) }}"
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn-analise"
+                        >
+                            Marcar como em análise
+                        </button>
+
+                    </form>
+
+                </section>
+
+                {% endif %}
+
+                <!-- =================================
+                     APROVAR
+                ================================== -->
+
+                <section class="decisao-card decisao-aprovar">
+
+                    <span class="decisao-kicker">
+                        LIBERAR ACESSO
+                    </span>
+
+                    <h2>
+                        Aprovar empresa
+                    </h2>
+
+                    <p>
+                        Configure o plano e os módulos antes de criar
+                        a empresa e o usuário gerente.
+                    </p>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'onboarding_solicitacao_aprovar',
+                            solicitacao_id=solicitacao['id']
+                        ) }}"
+                        class="form-decisao"
+                        onsubmit="return confirmarAprovacao(this)"
+                    >
+
+                        <label class="decisao-campo">
+
+                            <span>Plano da empresa</span>
+
+                            <select
+                                name="plano"
+                                required
+                            >
+                                <option value="">
+                                    Selecione
+                                </option>
+
+                                <option
+                                    value="comum"
+                                    {% if solicitacao["plano_aprovado"] == "comum" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Comum
+                                </option>
+
+                                <option
+                                    value="premium"
+                                    {% if solicitacao["plano_aprovado"] == "premium" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Premium
+                                </option>
+                            </select>
+
+                        </label>
+
+                        <label class="decisao-campo">
+
+                            <span>Período de teste</span>
+
+                            <div class="campo-com-sufixo">
+
+                                <input
+                                    type="number"
+                                    name="dias_teste"
+                                    value="{{ solicitacao['dias_teste'] or 0 }}"
+                                    min="0"
+                                    max="365"
+                                    step="1"
+                                    required
+                                >
+
+                                <span>dias</span>
+
+                            </div>
+
+                        </label>
+
+                        <label class="modulo-opcao">
+
+                            <input
+                                type="checkbox"
+                                name="emprestimos_ativo"
+                                value="1"
+                                {% if solicitacao["emprestimos_ativo"] %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <span class="modulo-check">
+                                ✓
+                            </span>
+
+                            <span>
+
+                                <strong>
+                                    Módulo de empréstimos
+                                </strong>
+
+                                <small>
+                                    Libera clientes, contratos, parcelas
+                                    e cobranças.
+                                </small>
+
+                            </span>
+
+                        </label>
+
+                        <label class="decisao-campo">
+
+                            <span>Observações administrativas</span>
+
+                            <textarea
+                                name="observacoes_admin"
+                                placeholder="Anotações internas sobre esta aprovação..."
+                            >{{ solicitacao["observacoes_admin"] or "" }}</textarea>
+
+                        </label>
+
+                        <button
+                            type="submit"
+                            class="btn-aprovar"
+                        >
+                            <span>✓</span>
+                            Aprovar e criar empresa
+                        </button>
+
+                    </form>
+
+                </section>
+
+                <!-- =================================
+                     REJEITAR
+                ================================== -->
+
+                <section class="decisao-card decisao-rejeitar">
+
+                    <span class="decisao-kicker">
+                        RECUSAR SOLICITAÇÃO
+                    </span>
+
+                    <h2>
+                        Rejeitar cadastro
+                    </h2>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'onboarding_solicitacao_rejeitar',
+                            solicitacao_id=solicitacao['id']
+                        ) }}"
+                        class="form-decisao"
+                        onsubmit="return confirmarRejeicao(this)"
+                    >
+
+                        <label class="decisao-campo">
+
+                            <span>Motivo da rejeição</span>
+
+                            <textarea
+                                name="motivo"
+                                minlength="5"
+                                required
+                                placeholder="Explique por que o cadastro não será aprovado..."
+                            ></textarea>
+
+                        </label>
+
+                        <label class="decisao-campo">
+
+                            <span>Observação interna</span>
+
+                            <textarea
+                                name="observacoes_admin"
+                                placeholder="Esta informação não será enviada ao cliente..."
+                            ></textarea>
+
+                        </label>
+
+                        <button
+                            type="submit"
+                            class="btn-rejeitar"
+                        >
+                            Rejeitar solicitação
+                        </button>
+
+                    </form>
+
+                </section>
+
+            {% elif solicitacao["status"] == "aprovada" %}
+
+                <!-- =================================
+                     RESULTADO APROVADO
+                ================================== -->
+
+                <section class="decisao-card resultado-aprovado">
+
+                    <div class="resultado-icone">
+                        ✓
+                    </div>
+
+                    <span class="decisao-kicker">
+                        ACESSO LIBERADO
+                    </span>
+
+                    <h2>
+                        Empresa aprovada
+                    </h2>
+
+                    <p>
+                        A conta foi criada e já pode acessar o Nexus PDV.
+                    </p>
+
+                    <div class="resultado-dados">
+
+                        <div>
+                            <span>Empresa</span>
+
+                            <strong>
+                                {{ solicitacao["empresa_criada_nome"] or solicitacao["nome_empresa"] }}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Plano</span>
+
+                            <strong>
+                                {{ solicitacao["plano_aprovado"]|title }}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Usuário</span>
+
+                            <strong>
+                                {{ solicitacao["usuario_criado_nome"] or solicitacao["usuario"] }}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Empréstimos</span>
+
+                            <strong>
+                                {% if solicitacao["emprestimos_ativo"] %}
+                                    Ativado
+                                {% else %}
+                                    Desativado
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </section>
+
+            {% elif solicitacao["status"] == "rejeitada" %}
+
+                <!-- =================================
+                     RESULTADO REJEITADO
+                ================================== -->
+
+                <section class="decisao-card resultado-rejeitado">
+
+                    <div class="resultado-icone">
+                        ×
+                    </div>
+
+                    <span class="decisao-kicker">
+                        SOLICITAÇÃO ENCERRADA
+                    </span>
+
+                    <h2>
+                        Cadastro rejeitado
+                    </h2>
+
+                    <div class="motivo-rejeicao">
+
+                        <span>Motivo informado</span>
+
+                        <p>
+                            {{ solicitacao["motivo_rejeicao"] }}
+                        </p>
+
+                    </div>
+
+                </section>
+
+            {% else %}
+
+                <section class="decisao-card">
+
+                    <span class="decisao-kicker">
+                        SOLICITAÇÃO ENCERRADA
+                    </span>
+
+                    <h2>
+                        {{ solicitacao["status"]|replace("_", " ")|title }}
+                    </h2>
+
+                    <p>
+                        Esta solicitação não possui ações disponíveis.
+                    </p>
+
+                </section>
+
+            {% endif %}
+
+        </aside>
+
+    </section>
+
+</main>
+
+<script>
+    function confirmarAprovacao(
+        formulario
+    ) {
+        const plano =
+            formulario.querySelector(
+                '[name="plano"]'
+            ).value;
+
+        if (!plano) {
+            window.alert(
+                "Selecione o plano da empresa."
+            );
+
+            return false;
+        }
+
+        const confirmado =
+            window.confirm(
+                "Confirmar a aprovação?\n\n" +
+                "A empresa e o usuário gerente " +
+                "serão criados imediatamente."
+            );
+
+        if (!confirmado) {
+            return false;
+        }
+
+        const botao =
+            formulario.querySelector(
+                'button[type="submit"]'
+            );
+
+        botao.disabled = true;
+        botao.textContent =
+            "Criando empresa...";
+
+        return true;
+    }
+
+    function confirmarRejeicao(
+        formulario
+    ) {
+        const motivo =
+            formulario.querySelector(
+                '[name="motivo"]'
+            ).value.trim();
+
+        if (motivo.length < 5) {
+            window.alert(
+                "Informe um motivo válido."
+            );
+
+            return false;
+        }
+
+        const confirmado =
+            window.confirm(
+                "Tem certeza que deseja rejeitar esta solicitação?"
+            );
+
+        if (!confirmado) {
+            return false;
+        }
+
+        const botao =
+            formulario.querySelector(
+                'button[type="submit"]'
+            );
+
+        botao.disabled = true;
+        botao.textContent =
+            "Rejeitando...";
+
+        return true;
+    }
+</script>
+
+{% endblock %}

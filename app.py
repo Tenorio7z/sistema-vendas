@@ -97,6 +97,14 @@ from routes.estatisticas_funcionario import (
     registrar_rotas as registrar_rotas_estatisticas_funcionario,
 )
 
+from routes.onboarding_publico import (
+    registrar_rotas as registrar_rotas_onboarding_publico,
+)
+
+from routes.onboarding_admin import (
+    registrar_rotas_onboarding_admin,
+)
+
 from routes.custos import registrar_rotas as registrar_rotas_custos
 
 # ==========================================
@@ -122,6 +130,10 @@ vendas(
     socketio
 )
 
+registrar_rotas_onboarding_publico(app)
+
+registrar_rotas_onboarding_admin(app)
+
 auth(app)
 
 dashboard(app)
@@ -145,6 +157,9 @@ api_mobile_login(
     socketio
 )
 
+from routes.onboarding_admin import (
+    registrar_rotas_onboarding_admin,
+)
 
 app.register_blueprint(
     emprestimos_bp

@@ -1,0 +1,349 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/onboarding_admin.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<main class="onboarding-admin-container">
+
+    <header class="onboarding-admin-header">
+
+        <div class="header-texto">
+            <span class="header-kicker">
+                ONBOARDING
+            </span>
+
+            <h1>
+                Solicitações de acesso
+            </h1>
+
+            <p>
+                Analise e aprove as novas empresas que solicitaram
+                acesso ao Nexus PDV.
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('admin') }}"
+            class="btn-secundario"
+        >
+            ← Painel Master
+        </a>
+
+    </header>
+
+    <section class="onboarding-resumo">
+
+        <a
+            href="{{ url_for('onboarding_solicitacoes') }}"
+            class="resumo-card {% if not filtro_status %}ativo{% endif %}"
+        >
+            <span>Todas</span>
+            <strong>{{ totais.todas }}</strong>
+            <small>Solicitações recebidas</small>
+        </a>
+
+        <a
+            href="{{ url_for('onboarding_solicitacoes', status='aguardando') }}"
+            class="resumo-card resumo-aguardando
+                {% if filtro_status == 'aguardando' %}ativo{% endif %}"
+        >
+            <span>Aguardando</span>
+            <strong>{{ totais.aguardando }}</strong>
+            <small>Pendentes de análise</small>
+        </a>
+
+        <a
+            href="{{ url_for('onboarding_solicitacoes', status='em_analise') }}"
+            class="resumo-card resumo-analise
+                {% if filtro_status == 'em_analise' %}ativo{% endif %}"
+        >
+            <span>Em análise</span>
+            <strong>{{ totais.em_analise }}</strong>
+            <small>Sendo verificadas</small>
+        </a>
+
+        <a
+            href="{{ url_for('onboarding_solicitacoes', status='aprovada') }}"
+            class="resumo-card resumo-aprovada
+                {% if filtro_status == 'aprovada' %}ativo{% endif %}"
+        >
+            <span>Aprovadas</span>
+            <strong>{{ totais.aprovada }}</strong>
+            <small>Contas liberadas</small>
+        </a>
+
+        <a
+            href="{{ url_for('onboarding_solicitacoes', status='rejeitada') }}"
+            class="resumo-card resumo-rejeitada
+                {% if filtro_status == 'rejeitada' %}ativo{% endif %}"
+        >
+            <span>Rejeitadas</span>
+            <strong>{{ totais.rejeitada }}</strong>
+            <small>Cadastros recusados</small>
+        </a>
+
+    </section>
+
+    <form
+        method="GET"
+        action="{{ url_for('onboarding_solicitacoes') }}"
+        class="onboarding-filtros"
+    >
+
+        <div class="campo-busca">
+            <span>⌕</span>
+
+            <input
+                type="search"
+                name="busca"
+                value="{{ filtro_busca }}"
+                placeholder="Buscar empresa, responsável, telefone ou usuário..."
+                autocomplete="off"
+            >
+        </div>
+
+        <select name="status">
+            <option value="" {% if not filtro_status %}selected{% endif %}>
+                Todos os status
+            </option>
+
+            <option
+                value="aguardando"
+                {% if filtro_status == 'aguardando' %}selected{% endif %}
+            >
+                Aguardando
+            </option>
+
+            <option
+                value="em_analise"
+                {% if filtro_status == 'em_analise' %}selected{% endif %}
+            >
+                Em análise
+            </option>
+
+            <option
+                value="aprovada"
+                {% if filtro_status == 'aprovada' %}selected{% endif %}
+            >
+                Aprovada
+            </option>
+
+            <option
+                value="rejeitada"
+                {% if filtro_status == 'rejeitada' %}selected{% endif %}
+            >
+                Rejeitada
+            </option>
+
+            <option
+                value="cancelada"
+                {% if filtro_status == 'cancelada' %}selected{% endif %}
+            >
+                Cancelada
+            </option>
+        </select>
+
+        <button type="submit" class="btn-primario">
+            Buscar
+        </button>
+
+        {% if filtro_status or filtro_busca %}
+        <a
+            href="{{ url_for('onboarding_solicitacoes') }}"
+            class="btn-limpar"
+        >
+            Limpar
+        </a>
+        {% endif %}
+
+    </form>
+
+    <section class="solicitacoes-area">
+
+        <div class="secao-titulo">
+
+            <div>
+                <span class="secao-kicker">
+                    FILA DE ANÁLISE
+                </span>
+
+                <h2>
+                    Empresas cadastradas
+                </h2>
+            </div>
+
+            <span class="contador-resultados">
+                {{ solicitacoes|length }}
+                resultado{% if solicitacoes|length != 1 %}s{% endif %}
+            </span>
+
+        </div>
+
+        {% if solicitacoes %}
+
+        <div class="solicitacoes-grid">
+
+            {% for item in solicitacoes %}
+
+            <article class="solicitacao-card">
+
+                <div class="solicitacao-topo">
+
+                    <div class="empresa-identidade">
+
+                        <div class="empresa-avatar">
+                            {{ item.nome_empresa[:1]|upper }}
+                        </div>
+
+                        <div>
+                            <span class="empresa-label">
+                                EMPRESA
+                            </span>
+
+                            <h3>
+                                {{ item.nome_empresa }}
+                            </h3>
+
+                            <p>
+                                {{ item.nome_responsavel }}
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <span class="status-badge status-{{ item.status }}">
+
+                        {% if item.status == "aguardando" %}
+                            Aguardando
+                        {% elif item.status == "em_analise" %}
+                            Em análise
+                        {% elif item.status == "aprovada" %}
+                            Aprovada
+                        {% elif item.status == "rejeitada" %}
+                            Rejeitada
+                        {% elif item.status == "cancelada" %}
+                            Cancelada
+                        {% else %}
+                            {{ item.status }}
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+                <div class="solicitacao-informacoes">
+
+                    <div>
+                        <span>WhatsApp</span>
+                        <strong>
+                            {{ item.telefone or "Não informado" }}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>E-mail</span>
+                        <strong title="{{ item.email }}">
+                            {{ item.email }}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Usuário solicitado</span>
+                        <strong>
+                            {{ item.usuario }}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Localização</span>
+                        <strong>
+                            {% if item.cidade and item.estado %}
+                                {{ item.cidade }}/{{ item.estado }}
+                            {% elif item.cidade %}
+                                {{ item.cidade }}
+                            {% elif item.estado %}
+                                {{ item.estado }}
+                            {% else %}
+                                Não informada
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                </div>
+
+                <div class="solicitacao-meta">
+
+                    <span>
+                        Recebida em
+                    </span>
+
+                    <strong>
+                        {% if item.criada_em %}
+                            {{ item.criada_em.strftime("%d/%m/%Y às %H:%M") }}
+                        {% else %}
+                            Data não informada
+                        {% endif %}
+                    </strong>
+
+                </div>
+
+                <footer class="solicitacao-acoes">
+
+                    <a
+                        href="{{ url_for(
+                            'onboarding_solicitacao_detalhes',
+                            solicitacao_id=item.id
+                        ) }}"
+                        class="btn-ver-solicitacao"
+                    >
+                        Ver solicitação
+                        <span>→</span>
+                    </a>
+
+                </footer>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="estado-vazio">
+
+            <div class="estado-vazio-icone">
+                ✓
+            </div>
+
+            <h3>
+                Nenhuma solicitação encontrada
+            </h3>
+
+            <p>
+                Não existem cadastros correspondentes aos filtros
+                selecionados.
+            </p>
+
+            <a
+                href="{{ url_for('onboarding_solicitacoes') }}"
+                class="btn-primario"
+            >
+                Mostrar todas
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</main>
+
+{% endblock %}

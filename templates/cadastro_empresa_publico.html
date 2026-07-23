@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="robots"
+        content="noindex, nofollow"
+    >
+
+    <title>
+        Cadastro de empresa | Nexus PDV
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for(
+            'static',
+            filename='css/cadastro_empresa_publico.css'
+        ) }}"
+    >
+</head>
+
+<body>
+
+    <div class="onboarding-background">
+        <span class="orb orb-1"></span>
+        <span class="orb orb-2"></span>
+        <span class="orb orb-3"></span>
+    </div>
+
+
+    <main class="onboarding-page">
+
+        <header class="public-header">
+
+            <a href="/" class="public-brand">
+
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='img/logonexus.png'
+                    ) }}"
+                    alt="Nexus PDV"
+                    onerror="this.style.display='none'"
+                >
+
+                <div>
+                    <strong>Nexus PDV</strong>
+                    <span>Sistema operacional</span>
+                </div>
+
+            </a>
+
+            <div class="public-security">
+                <span class="security-dot"></span>
+
+                <div>
+                    <strong>Cadastro seguro</strong>
+                    <small>Convite protegido e uso único</small>
+                </div>
+            </div>
+
+        </header>
+
+
+        {% if estado == "erro" %}
+
+            <!-- =====================================
+                 CONVITE INVÁLIDO
+            ====================================== -->
+
+            <section class="status-card status-erro">
+
+                <div class="status-icon">
+                    !
+                </div>
+
+                <span class="status-kicker">
+                    CONVITE INDISPONÍVEL
+                </span>
+
+                <h1>
+                    Não foi possível abrir este convite
+                </h1>
+
+                <p>
+                    {{ mensagem or
+                        "O convite informado não está disponível."
+                    }}
+                </p>
+
+                <div class="status-info">
+
+                    <strong>O que fazer agora?</strong>
+
+                    <span>
+                        Entre em contato com o administrador
+                        do Nexus para solicitar um novo link.
+                    </span>
+
+                </div>
+
+                <a href="/" class="btn-status">
+                    Ir para o login
+                </a>
+
+            </section>
+
+
+        {% elif estado == "sucesso" %}
+
+            <!-- =====================================
+                 CADASTRO ENVIADO
+            ====================================== -->
+
+            <section class="status-card status-sucesso">
+
+                <div class="status-icon">
+                    ✓
+                </div>
+
+                <span class="status-kicker">
+                    SOLICITAÇÃO RECEBIDA
+                </span>
+
+                <h1>
+                    Cadastro enviado com sucesso!
+                </h1>
+
+                <p>
+                    Recebemos a solicitação da empresa
+                    <strong>
+                        {{ dados.get("nome_empresa", "") }}
+                    </strong>.
+                </p>
+
+                <div class="status-passos">
+
+                    <article class="concluido">
+                        <span>1</span>
+
+                        <div>
+                            <strong>Cadastro enviado</strong>
+
+                            <small>
+                                Seus dados foram recebidos
+                                com segurança.
+                            </small>
+                        </div>
+                    </article>
+
+                    <article class="atual">
+                        <span>2</span>
+
+                        <div>
+                            <strong>Análise do administrador</strong>
+
+                            <small>
+                                O plano e os recursos da empresa
+                                serão configurados.
+                            </small>
+                        </div>
+                    </article>
+
+                    <article>
+                        <span>3</span>
+
+                        <div>
+                            <strong>Liberação do acesso</strong>
+
+                            <small>
+                                Você receberá a confirmação
+                                pelo WhatsApp.
+                            </small>
+                        </div>
+                    </article>
+
+                </div>
+
+                <div class="status-info">
+
+                    <strong>
+                        Responsável:
+                        {{ dados.get("nome_responsavel", "") }}
+                    </strong>
+
+                    <span>
+                        A aprovação ainda não permite acesso imediato.
+                        Aguarde a confirmação do administrador.
+                    </span>
+
+                </div>
+
+                <a href="/" class="btn-status">
+                    Voltar para o login
+                </a>
+
+            </section>
+
+
+        {% else %}
+
+            <!-- =====================================
+                 APRESENTAÇÃO
+            ====================================== -->
+
+            <section class="onboarding-intro">
+
+                <div class="intro-content">
+
+                    <span class="intro-kicker">
+                        CONVITE EXCLUSIVO
+                    </span>
+
+                    <h1>
+                        Vamos preparar sua empresa para o Nexus
+                    </h1>
+
+                    <p>
+                        Preencha as informações abaixo.
+                        O cadastro será analisado antes da
+                        liberação do acesso.
+                    </p>
+
+                    <div class="intro-benefits">
+
+                        <article>
+                            <span>01</span>
+
+                            <div>
+                                <strong>Dados protegidos</strong>
+
+                                <small>
+                                    Sua senha será armazenada
+                                    de maneira segura.
+                                </small>
+                            </div>
+                        </article>
+
+                        <article>
+                            <span>02</span>
+
+                            <div>
+                                <strong>Aprovação personalizada</strong>
+
+                                <small>
+                                    O administrador definirá
+                                    seu plano e seus módulos.
+                                </small>
+                            </div>
+                        </article>
+
+                        <article>
+                            <span>03</span>
+
+                            <div>
+                                <strong>Confirmação pelo WhatsApp</strong>
+
+                                <small>
+                                    Você será avisado assim que
+                                    o acesso estiver disponível.
+                                </small>
+                            </div>
+                        </article>
+
+                    </div>
+
+                </div>
+
+
+                <div class="intro-invite">
+
+                    <div class="invite-icon">
+                        ↗
+                    </div>
+
+                    <div>
+                        <span>Convite válido até</span>
+
+                        <strong>
+                            {{ convite.expira_em.strftime(
+                                "%d/%m/%Y às %H:%M"
+                            ) }}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 FORMULÁRIO
+            ====================================== -->
+
+            <section class="onboarding-form-card">
+
+                <header class="form-header">
+
+                    <div>
+                        <span class="form-kicker">
+                            SOLICITAÇÃO DE ACESSO
+                        </span>
+
+                        <h2>Cadastre sua empresa</h2>
+
+                        <p>
+                            Os campos marcados com
+                            <strong>*</strong>
+                            são obrigatórios.
+                        </p>
+                    </div>
+
+                    <span class="form-step">
+                        Etapa única
+                    </span>
+
+                </header>
+
+
+                {% if mensagem %}
+
+                    <div class="form-alert" role="alert">
+                        <span>!</span>
+                        <p>{{ mensagem }}</p>
+                    </div>
+
+                {% endif %}
+
+
+                <form
+                    method="POST"
+                    class="onboarding-form"
+                    id="onboardingForm"
+                    autocomplete="on"
+                >
+
+                    <!-- Campo invisível contra robôs -->
+                    <div
+                        class="honeypot"
+                        aria-hidden="true"
+                    >
+                        <label>
+                            Site da empresa
+
+                            <input
+                                type="text"
+                                name="site_empresa"
+                                tabindex="-1"
+                                autocomplete="off"
+                            >
+                        </label>
+                    </div>
+
+
+                    <!-- =================================
+                         EMPRESA
+                    ================================== -->
+
+                    <fieldset>
+
+                        <legend>
+
+                            <span>1</span>
+
+                            <div>
+                                <strong>Dados da empresa</strong>
+
+                                <small>
+                                    Identificação e segmento
+                                    do negócio.
+                                </small>
+                            </div>
+
+                        </legend>
+
+
+                        <div class="form-grid">
+
+                            <label class="field field-wide">
+
+                                <span>
+                                    Nome da empresa *
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        ◇
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        name="nome_empresa"
+                                        value="{{ dados.get(
+                                            'nome_empresa',
+                                            ''
+                                        ) }}"
+                                        maxlength="180"
+                                        placeholder="Ex.: Tenório Store"
+                                        autocomplete="organization"
+                                        required
+                                    >
+
+                                </div>
+
+                            </label>
+
+
+                            <label class="field">
+
+                                <span>
+                                    CPF ou CNPJ
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        #
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        name="cpf_cnpj"
+                                        id="cpfCnpj"
+                                        value="{{ dados.get(
+                                            'cpf_cnpj',
+                                            ''
+                                        ) }}"
+                                        maxlength="18"
+                                        placeholder="CPF ou CNPJ"
+                                        inputmode="numeric"
+                                    >
+
+                                </div>
+
+                            </label>
+
+
+                            <label class="field">
+
+                                <span>
+                                    Segmento
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        ◫
+                                    </span>
+
+                                    <select name="segmento">
+
+                                        <option value="">
+                                            Selecione
+                                        </option>
+
+                                        {% set segmento_atual =
+                                            dados.get(
+                                                "segmento",
+                                                ""
+                                            )
+                                        %}
+
+                                        {% for segmento in [
+                                            "Alimentação",
+                                            "Automotivo",
+                                            "Beleza e estética",
+                                            "Construção",
+                                            "Eletrônicos",
+                                            "Moda e vestuário",
+                                            "Mercado e conveniência",
+                                            "Saúde",
+                                            "Serviços",
+                                            "Tecnologia",
+                                            "Outro"
+                                        ] %}
+
+                                            <option
+                                                value="{{ segmento }}"
+                                                {% if
+                                                    segmento_atual
+                                                    == segmento
+                                                %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                {{ segmento }}
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                            </label>
+
+
+                            <label class="field">
+
+                                <span>
+                                    Cidade
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        ◉
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        name="cidade"
+                                        value="{{ dados.get(
+                                            'cidade',
+                                            ''
+                                        ) }}"
+                                        maxlength="120"
+                                        placeholder="Sua cidade"
+                                        autocomplete="address-level2"
+                                    >
+
+                                </div>
+
+                            </label>
+
+
+                            <label class="field">
+
+                                <span>
+                                    Estado
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        BR
+                                    </span>
+
+                                    <select
+                                        name="estado"
+                                        autocomplete="address-level1"
+                                    >
+
+                                        <option value="">
+                                            UF
+                                        </option>
+
+                                        {% set estado_atual =
+                                            dados.get(
+                                                "estado",
+                                                ""
+                                            )
+                                        %}
+
+                                        {% for uf in [
+                                            "AC", "AL", "AP", "AM",
+                                            "BA", "CE", "DF", "ES",
+                                            "GO", "MA", "MT", "MS",
+                                            "MG", "PA", "PB", "PR",
+                                            "PE", "PI", "RJ", "RN",
+                                            "RS", "RO", "RR", "SC",
+                                            "SP", "SE", "TO"
+                                        ] %}
+
+                                            <option
+                                                value="{{ uf }}"
+                                                {% if
+                                                    estado_atual == uf
+                                                %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                {{ uf }}
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                            </label>
+
+                        </div>
+
+                    </fieldset>
+
+
+                    <!-- =================================
+                         RESPONSÁVEL
+                    ================================== -->
+
+                    <fieldset>
+
+                        <legend>
+
+                            <span>2</span>
+
+                            <div>
+                                <strong>Dados do responsável</strong>
+
+                                <small>
+                                    Pessoa que administrará
+                                    o sistema.
+                                </small>
+                            </div>
+
+                        </legend>
+
+
+                        <div class="form-grid">
+
+                            <label class="field field-wide">
+
+                                <span>
+                                    Nome completo *
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        ♙
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        name="nome_responsavel"
+                                        value="{{ dados.get(
+                                            'nome_responsavel',
+                                            ''
+                                        ) }}"
+                                        maxlength="180"
+                                        placeholder="Nome do responsável"
+                                        autocomplete="name"
+                                        required
+                                    >
+
+                                </div>
+
+                            </label>
+
+
+                            <label class="field">
+
+                                <span>
+                                    WhatsApp *
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        ☎
+                                    </span>
+
+                                    <input
+                                        type="tel"
+                                        name="telefone"
+                                        id="telefone"
+                                        value="{{ dados.get(
+                                            'telefone',
+                                            ''
+                                        ) }}"
+                                        maxlength="19"
+                                        placeholder="(11) 99999-9999"
+                                        inputmode="tel"
+                                        autocomplete="tel"
+                                        required
+                                    >
+
+                                </div>
+
+                            </label>
+
+
+                            <label class="field">
+
+                                <span>
+                                    E-mail *
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        @
+                                    </span>
+
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value="{{ dados.get(
+                                            'email',
+                                            ''
+                                        ) }}"
+                                        maxlength="180"
+                                        placeholder="voce@empresa.com"
+                                        autocomplete="email"
+                                        required
+                                    >
+
+                                </div>
+
+                            </label>
+
+                        </div>
+
+                    </fieldset>
+
+
+                    <!-- =================================
+                         ACESSO
+                    ================================== -->
+
+                    <fieldset>
+
+                        <legend>
+
+                            <span>3</span>
+
+                            <div>
+                                <strong>Dados de acesso</strong>
+
+                                <small>
+                                    Escolha seu usuário e
+                                    uma senha segura.
+                                </small>
+                            </div>
+
+                        </legend>
+
+
+                        <div class="form-grid">
+
+                            <label class="field field-wide">
+
+                                <span>
+                                    Usuário desejado *
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        @
+                                    </span>
+
+                                    <input
+                                        type="text"
+                                        name="usuario"
+                                        value="{{ dados.get(
+                                            'usuario',
+                                            ''
+                                        ) }}"
+                                        minlength="3"
+                                        maxlength="120"
+                                        pattern="[A-Za-z0-9._-]+"
+                                        placeholder="Ex.: tenoriostore"
+                                        autocomplete="username"
+                                        required
+                                    >
+
+                                </div>
+
+                                <small class="field-help">
+                                    Use letras, números, ponto,
+                                    hífen ou underline.
+                                </small>
+
+                            </label>
+
+
+                            <label class="field">
+
+                                <span>
+                                    Senha *
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        ◆
+                                    </span>
+
+                                    <input
+                                        type="password"
+                                        name="senha"
+                                        id="senha"
+                                        minlength="8"
+                                        placeholder="Mínimo de 8 caracteres"
+                                        autocomplete="new-password"
+                                        required
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        data-password-target="senha"
+                                        aria-label="Mostrar senha"
+                                    >
+                                        ◉
+                                    </button>
+
+                                </div>
+
+                                <div class="password-strength">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+
+                                <small
+                                    class="field-help"
+                                    id="senhaAjuda"
+                                >
+                                    Use letras e números.
+                                </small>
+
+                            </label>
+
+
+                            <label class="field">
+
+                                <span>
+                                    Confirmar senha *
+                                </span>
+
+                                <div class="input-box">
+
+                                    <span class="input-icon">
+                                        ◆
+                                    </span>
+
+                                    <input
+                                        type="password"
+                                        name="confirmar_senha"
+                                        id="confirmarSenha"
+                                        minlength="8"
+                                        placeholder="Digite novamente"
+                                        autocomplete="new-password"
+                                        required
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="password-toggle"
+                                        data-password-target="confirmarSenha"
+                                        aria-label="Mostrar senha"
+                                    >
+                                        ◉
+                                    </button>
+
+                                </div>
+
+                                <small
+                                    class="field-help"
+                                    id="confirmacaoAjuda"
+                                >
+                                    As senhas devem ser iguais.
+                                </small>
+
+                            </label>
+
+                        </div>
+
+                    </fieldset>
+
+
+                    <!-- =================================
+                         OBSERVAÇÕES
+                    ================================== -->
+
+                    <fieldset>
+
+                        <legend>
+
+                            <span>4</span>
+
+                            <div>
+                                <strong>Informações adicionais</strong>
+
+                                <small>
+                                    Conte-nos algo importante
+                                    sobre sua operação.
+                                </small>
+                            </div>
+
+                        </legend>
+
+
+                        <label class="field">
+
+                            <span>
+                                Observações
+                            </span>
+
+                            <textarea
+                                name="observacoes_cliente"
+                                maxlength="2000"
+                                rows="4"
+                                placeholder="Ex.: quantidade de funcionários, tipo de atendimento ou necessidades específicas..."
+                            >{{ dados.get(
+                                "observacoes_cliente",
+                                ""
+                            ) }}</textarea>
+
+                        </label>
+
+                    </fieldset>
+
+
+                    <!-- =================================
+                         CONSENTIMENTOS
+                    ================================== -->
+
+                    <section class="consentimentos">
+
+                        <label class="consentimento">
+
+                            <input
+                                type="checkbox"
+                                name="aceitou_termos"
+                                required
+                            >
+
+                            <span class="custom-check">
+                                ✓
+                            </span>
+
+                            <span>
+                                <strong>
+                                    Aceito os termos e a política
+                                    de privacidade *
+                                </strong>
+
+                                <small>
+                                    Autorizo o tratamento dos dados
+                                    para análise e criação da conta.
+                                </small>
+                            </span>
+
+                        </label>
+
+
+                        <label class="consentimento">
+
+                            <input
+                                type="checkbox"
+                                name="aceitou_whatsapp"
+                            >
+
+                            <span class="custom-check">
+                                ✓
+                            </span>
+
+                            <span>
+                                <strong>
+                                    Aceito receber mensagens
+                                    pelo WhatsApp
+                                </strong>
+
+                                <small>
+                                    A confirmação de aprovação
+                                    poderá ser enviada para o número
+                                    informado.
+                                </small>
+                            </span>
+
+                        </label>
+
+                    </section>
+
+
+                    <!-- =================================
+                         ENVIO
+                    ================================== -->
+
+                    <footer class="form-footer">
+
+                        <div class="form-security">
+
+                            <span>✓</span>
+
+                            <p>
+                                Seus dados serão enviados
+                                de forma segura para análise.
+                            </p>
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn-enviar"
+                            id="botaoEnviar"
+                        >
+                            <span class="btn-text">
+                                Enviar solicitação
+                            </span>
+
+                            <span class="btn-arrow">
+                                →
+                            </span>
+                        </button>
+
+                    </footer>
+
+                </form>
+
+            </section>
+
+        {% endif %}
+
+
+        <footer class="public-footer">
+
+            <span>
+                © 2026 Nexus PDV
+            </span>
+
+            <span class="footer-dot"></span>
+
+            <span>
+                Cadastro protegido
+            </span>
+
+        </footer>
+
+    </main>
+
+
+    <script>
+        (function () {
+            "use strict";
+
+            const formulario =
+                document.getElementById(
+                    "onboardingForm"
+                );
+
+            const telefone =
+                document.getElementById(
+                    "telefone"
+                );
+
+            const cpfCnpj =
+                document.getElementById(
+                    "cpfCnpj"
+                );
+
+            const senha =
+                document.getElementById(
+                    "senha"
+                );
+
+            const confirmarSenha =
+                document.getElementById(
+                    "confirmarSenha"
+                );
+
+            const ajudaSenha =
+                document.getElementById(
+                    "senhaAjuda"
+                );
+
+            const ajudaConfirmacao =
+                document.getElementById(
+                    "confirmacaoAjuda"
+                );
+
+
+            function somenteNumeros(valor) {
+                return String(
+                    valor || ""
+                ).replace(/\D/g, "");
+            }
+
+
+            function formatarTelefone(valor) {
+                const numeros =
+                    somenteNumeros(valor)
+                        .slice(0, 11);
+
+                if (numeros.length <= 2) {
+                    return numeros;
+                }
+
+                if (numeros.length <= 6) {
+                    return (
+                        "(" +
+                        numeros.slice(0, 2) +
+                        ") " +
+                        numeros.slice(2)
+                    );
+                }
+
+                if (numeros.length <= 10) {
+                    return (
+                        "(" +
+                        numeros.slice(0, 2) +
+                        ") " +
+                        numeros.slice(2, 6) +
+                        "-" +
+                        numeros.slice(6)
+                    );
+                }
+
+                return (
+                    "(" +
+                    numeros.slice(0, 2) +
+                    ") " +
+                    numeros.slice(2, 7) +
+                    "-" +
+                    numeros.slice(7)
+                );
+            }
+
+
+            function formatarCpfCnpj(valor) {
+                const numeros =
+                    somenteNumeros(valor)
+                        .slice(0, 14);
+
+                if (numeros.length <= 11) {
+                    return numeros
+                        .replace(
+                            /(\d{3})(\d)/,
+                            "$1.$2"
+                        )
+                        .replace(
+                            /(\d{3})(\d)/,
+                            "$1.$2"
+                        )
+                        .replace(
+                            /(\d{3})(\d{1,2})$/,
+                            "$1-$2"
+                        );
+                }
+
+                return numeros
+                    .replace(
+                        /^(\d{2})(\d)/,
+                        "$1.$2"
+                    )
+                    .replace(
+                        /^(\d{2})\.(\d{3})(\d)/,
+                        "$1.$2.$3"
+                    )
+                    .replace(
+                        /\.(\d{3})(\d)/,
+                        ".$1/$2"
+                    )
+                    .replace(
+                        /(\d{4})(\d)/,
+                        "$1-$2"
+                    );
+            }
+
+
+            function atualizarForcaSenha() {
+                if (!senha) {
+                    return;
+                }
+
+                const valor = senha.value;
+
+                let pontos = 0;
+
+                if (valor.length >= 8) {
+                    pontos += 1;
+                }
+
+                if (
+                    /[A-Za-z]/.test(valor)
+                    && /\d/.test(valor)
+                ) {
+                    pontos += 1;
+                }
+
+                if (
+                    /[a-z]/.test(valor)
+                    && /[A-Z]/.test(valor)
+                ) {
+                    pontos += 1;
+                }
+
+                if (
+                    /[^A-Za-z0-9]/.test(valor)
+                    && valor.length >= 10
+                ) {
+                    pontos += 1;
+                }
+
+                document
+                    .querySelectorAll(
+                        ".password-strength span"
+                    )
+                    .forEach(function (
+                        barra,
+                        indice
+                    ) {
+                        barra.classList.toggle(
+                            "ativa",
+                            indice < pontos
+                        );
+                    });
+
+                if (!ajudaSenha) {
+                    return;
+                }
+
+                if (!valor) {
+                    ajudaSenha.textContent =
+                        "Use letras e números.";
+
+                } else if (pontos <= 1) {
+                    ajudaSenha.textContent =
+                        "Senha fraca.";
+
+                } else if (pontos === 2) {
+                    ajudaSenha.textContent =
+                        "Senha razoável.";
+
+                } else if (pontos === 3) {
+                    ajudaSenha.textContent =
+                        "Senha forte.";
+
+                } else {
+                    ajudaSenha.textContent =
+                        "Senha muito forte.";
+                }
+            }
+
+
+            function validarConfirmacao() {
+                if (
+                    !senha
+                    || !confirmarSenha
+                    || !ajudaConfirmacao
+                ) {
+                    return true;
+                }
+
+                const iguais = (
+                    senha.value
+                    === confirmarSenha.value
+                );
+
+                const deveValidar = Boolean(
+                    confirmarSenha.value
+                );
+
+                confirmarSenha.setCustomValidity(
+                    deveValidar && !iguais
+                        ? "As senhas não são iguais."
+                        : ""
+                );
+
+                ajudaConfirmacao.textContent = (
+                    deveValidar && iguais
+                        ? "As senhas conferem."
+                        : "As senhas devem ser iguais."
+                );
+
+                ajudaConfirmacao.classList.toggle(
+                    "valido",
+                    deveValidar && iguais
+                );
+
+                ajudaConfirmacao.classList.toggle(
+                    "invalido",
+                    deveValidar && !iguais
+                );
+
+                return iguais;
+            }
+
+
+            if (telefone) {
+                telefone.addEventListener(
+                    "input",
+                    function () {
+                        telefone.value =
+                            formatarTelefone(
+                                telefone.value
+                            );
+                    }
+                );
+            }
+
+
+            if (cpfCnpj) {
+                cpfCnpj.addEventListener(
+                    "input",
+                    function () {
+                        cpfCnpj.value =
+                            formatarCpfCnpj(
+                                cpfCnpj.value
+                            );
+                    }
+                );
+            }
+
+
+            if (senha) {
+                senha.addEventListener(
+                    "input",
+                    function () {
+                        atualizarForcaSenha();
+                        validarConfirmacao();
+                    }
+                );
+            }
+
+
+            if (confirmarSenha) {
+                confirmarSenha.addEventListener(
+                    "input",
+                    validarConfirmacao
+                );
+            }
+
+
+            document
+                .querySelectorAll(
+                    "[data-password-target]"
+                )
+                .forEach(function (botao) {
+                    botao.addEventListener(
+                        "click",
+                        function () {
+                            const campo =
+                                document.getElementById(
+                                    botao.dataset
+                                        .passwordTarget
+                                );
+
+                            if (!campo) {
+                                return;
+                            }
+
+                            const mostrando = (
+                                campo.type === "text"
+                            );
+
+                            campo.type = mostrando
+                                ? "password"
+                                : "text";
+
+                            botao.classList.toggle(
+                                "ativo",
+                                !mostrando
+                            );
+
+                            botao.setAttribute(
+                                "aria-label",
+                                mostrando
+                                    ? "Mostrar senha"
+                                    : "Ocultar senha"
+                            );
+                        }
+                    );
+                });
+
+
+            if (formulario) {
+                formulario.addEventListener(
+                    "submit",
+                    function (evento) {
+                        if (!validarConfirmacao()) {
+                            evento.preventDefault();
+
+                            if (confirmarSenha) {
+                                confirmarSenha.focus();
+                            }
+
+                            return;
+                        }
+
+                        if (
+                            formulario.dataset.enviando
+                            === "true"
+                        ) {
+                            evento.preventDefault();
+                            return;
+                        }
+
+                        formulario.dataset.enviando =
+                            "true";
+
+                        const botao =
+                            document.getElementById(
+                                "botaoEnviar"
+                            );
+
+                        if (botao) {
+                            botao.disabled = true;
+                            botao.classList.add(
+                                "enviando"
+                            );
+
+                            const texto =
+                                botao.querySelector(
+                                    ".btn-text"
+                                );
+
+                            if (texto) {
+                                texto.textContent =
+                                    "Enviando...";
+                            }
+                        }
+                    }
+                );
+            }
+
+
+            atualizarForcaSenha();
+            validarConfirmacao();
+        }());
+    </script>
+
+</body>
+
+</html>

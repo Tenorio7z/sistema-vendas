@@ -1,151 +1,293 @@
 {% extends "layout.html" %}
 
 {% block css %}
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
 {% endblock %}
-
 
 {% block content %}
 
 <section class="admin">
 
-    <!-- =====================================
-         CABEÇALHO
-    ====================================== -->
-
     <header class="admin-header">
 
         <div>
-
             <h1 class="page-title">
                 Painel Master
             </h1>
 
             <p class="page-subtitle">
-                Controle total das empresas cadastradas
+                Controle de empresas, convites e liberações de acesso
             </p>
-
         </div>
 
-        <div class="system-status">
+        <div class="admin-header-actions">
 
-            <span class="status-dot"></span>
+            <a
+                href="{{ url_for('onboarding_solicitacoes') }}"
+                class="btn-solicitacoes-admin"
+            >
+                <span class="solicitacoes-icon">
+                    ♙
+                </span>
 
-            Sistema Online
+                <span class="solicitacoes-texto">
+                    <strong>
+                        Solicitações de acesso
+                    </strong>
+
+                    <small>
+                        {{ solicitacoes_pendentes|default(0) }}
+                        pendente{% if solicitacoes_pendentes|default(0) != 1 %}s{% endif %}
+                    </small>
+                </span>
+
+                {% if solicitacoes_pendentes|default(0) > 0 %}
+                <span class="solicitacoes-contador">
+                    {{ solicitacoes_pendentes }}
+                </span>
+                {% endif %}
+            </a>
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+                Sistema Online
+            </div>
 
         </div>
 
     </header>
 
-
     <!-- =====================================
-         CADASTRAR EMPRESA
+         GERAR CONVITE
     ====================================== -->
 
-    <section class="card admin-form-card">
+    <section class="card admin-form-card convite-admin-card">
 
         <div class="section-header">
 
-            <h2>
-                Nova Empresa
-            </h2>
+            <div>
+                <span class="convite-kicker">
+                    ONBOARDING
+                </span>
 
-            <p>
-                Cadastre novos clientes no sistema
-            </p>
+                <h2>
+                    Convidar nova empresa
+                </h2>
+
+                <p>
+                    Gere um link seguro para o cliente realizar
+                    o próprio cadastro.
+                </p>
+            </div>
+
+            <div class="convite-seguranca">
+                <span>✓</span>
+
+                <div>
+                    <strong>Cadastro protegido</strong>
+                    <small>Link único e com validade</small>
+                </div>
+            </div>
 
         </div>
 
-        <form method="POST" class="admin-form-grid">
+        <form
+            method="POST"
+            action="{{ url_for('criar_convite_empresa') }}"
+            class="admin-form-grid convite-form"
+        >
 
             <div class="form-group">
 
-                <label for="empresa">
-                    Nome da empresa
+                <label for="nome_destinatario">
+                    Nome do responsável
                 </label>
 
-                <input type="text" id="empresa" name="empresa" placeholder="Ex: Tenório Store" required>
+                <input
+                    type="text"
+                    id="nome_destinatario"
+                    name="nome_destinatario"
+                    maxlength="160"
+                    placeholder="Ex.: Victor Tenorio"
+                    autocomplete="name"
+                    required
+                >
 
             </div>
 
             <div class="form-group">
 
-                <label for="usuario">
-                    Usuário
+                <label for="telefone_destinatario">
+                    WhatsApp
                 </label>
 
-                <input type="text" id="usuario" name="usuario" placeholder="Usuário de acesso" autocomplete="username"
-                    required>
+                <input
+                    type="tel"
+                    id="telefone_destinatario"
+                    name="telefone_destinatario"
+                    maxlength="30"
+                    placeholder="Ex.: (11) 99999-9999"
+                    autocomplete="tel"
+                    required
+                >
 
             </div>
 
             <div class="form-group">
 
-                <label for="senha">
-                    Senha
+                <label for="email_destinatario">
+                    E-mail
                 </label>
 
-                <input type="password" id="senha" name="senha" placeholder="Senha segura" autocomplete="new-password"
-                    required>
+                <input
+                    type="email"
+                    id="email_destinatario"
+                    name="email_destinatario"
+                    maxlength="180"
+                    placeholder="cliente@empresa.com"
+                    autocomplete="email"
+                >
 
             </div>
 
             <div class="form-group">
 
-                <label for="plano">
-                    Plano
+                <label for="validade_horas">
+                    Validade do convite
                 </label>
 
-                <select id="plano" name="plano" required>
-
-                    <option value="comum">
-                        Comum
+                <select
+                    id="validade_horas"
+                    name="validade_horas"
+                    required
+                >
+                    <option value="24">
+                        24 horas
                     </option>
 
-                    <option value="premium">
-                        Premium
+                    <option value="72" selected>
+                        3 dias
                     </option>
 
+                    <option value="168">
+                        7 dias
+                    </option>
+
+                    <option value="360">
+                        15 dias
+                    </option>
+
+                    <option value="720">
+                        30 dias
+                    </option>
                 </select>
 
             </div>
 
-            <div class="nexus-modulo-cadastro">
+            <div class="convite-explicacao">
 
-                <span class="nexus-modulo-titulo">
-                    Módulos adicionais
+                <span class="convite-explicacao-icone">
+                    i
                 </span>
 
-                <label class="nexus-modulo-opcao">
-
-                    <input class="nexus-modulo-input" type="checkbox" name="emprestimos_ativo" value="1">
-
-                    <span class="nexus-modulo-controle">
-                        <span></span>
-                    </span>
-
-                    <span class="nexus-modulo-info">
-                        <strong>Módulo de empréstimos</strong>
-
-                        <small>
-                            Clientes, contratos, parcelas e cobranças.
-                        </small>
-                    </span>
-
-                </label>
+                <p>
+                    O cliente escolherá o nome da empresa, usuário e senha.
+                    Nenhuma conta será criada antes da aprovação do Master.
+                </p>
 
             </div>
 
-            <button type="submit" class="btn-primary btn-full">
-                Cadastrar Empresa
+            <button
+                type="submit"
+                class="btn-primary btn-full"
+                id="btnGerarConvite"
+            >
+                Gerar link de cadastro
             </button>
 
         </form>
 
-    </section>
+        {% if ultimo_convite %}
 
+        <section class="convite-gerado">
+
+            <div class="convite-gerado-topo">
+
+                <div class="convite-gerado-icone">
+                    ✓
+                </div>
+
+                <div>
+                    <span>CONVITE GERADO</span>
+
+                    <h3>
+                        Link pronto para envio
+                    </h3>
+
+                    <p>
+                        {% if ultimo_convite.nome_destinatario %}
+                            Envie para {{ ultimo_convite.nome_destinatario }}.
+                        {% else %}
+                            Copie e envie o endereço ao cliente.
+                        {% endif %}
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="convite-link-box">
+
+                <input
+                    type="text"
+                    id="linkConviteGerado"
+                    value="{{ ultimo_convite.link }}"
+                    readonly
+                >
+
+                <button
+                    type="button"
+                    id="copiarLinkConvite"
+                    class="btn-copiar-convite"
+                >
+                    Copiar link
+                </button>
+
+            </div>
+
+            <div class="convite-gerado-acoes">
+
+                {% if ultimo_convite.telefone_destinatario %}
+                <button
+                    type="button"
+                    class="btn-whatsapp-convite"
+                    id="enviarConviteWhatsApp"
+                    data-telefone="{{ ultimo_convite.telefone_destinatario }}"
+                    data-nome="{{ ultimo_convite.nome_destinatario }}"
+                    data-link="{{ ultimo_convite.link }}"
+                >
+                    Enviar pelo WhatsApp
+                </button>
+                {% endif %}
+
+                <a
+                    href="{{ ultimo_convite.link }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-visualizar-convite"
+                >
+                    Visualizar formulário
+                </a>
+
+            </div>
+
+        </section>
+
+        {% endif %}
+
+    </section>
 
     <!-- =====================================
          RESUMO
@@ -154,31 +296,57 @@
     <section class="admin-stats">
 
         <div class="stat-card">
-
-            <h3>
-                {{ total_empresas }}
-            </h3>
-
-            <p>
-                Empresas
-            </p>
-
+            <h3>{{ total_empresas }}</h3>
+            <p>Empresas</p>
         </div>
 
         <div class="stat-card">
-
-            <h3>
-                {{ total_usuarios }}
-            </h3>
-
-            <p>
-                Usuários
-            </p>
-
+            <h3>{{ total_usuarios }}</h3>
+            <p>Usuários gerentes</p>
         </div>
 
-    </section>
+        <a
+            href="{{ url_for('onboarding_solicitacoes') }}"
+            class="stat-card stat-card-solicitacoes"
+        >
 
+            <div class="stat-card-conteudo">
+
+                <span class="stat-label">
+                    Solicitações
+                </span>
+
+                <h3>
+                    {{ solicitacoes_pendentes|default(0) }}
+                </h3>
+
+                <p>
+                    Aguardando aprovação
+                </p>
+
+            </div>
+
+            <div class="stat-solicitacoes-resumo">
+
+                <span>
+                    <strong>
+                        {{ solicitacoes_aguardando|default(0) }}
+                    </strong>
+                    novas
+                </span>
+
+                <span>
+                    <strong>
+                        {{ solicitacoes_em_analise|default(0) }}
+                    </strong>
+                    em análise
+                </span>
+
+            </div>
+
+        </a>
+
+    </section>
 
     <!-- =====================================
          BUSCA
@@ -186,10 +354,14 @@
 
     <div class="busca-box">
 
-        <input type="search" id="buscaEmpresa" placeholder="Buscar empresa..." autocomplete="off">
+        <input
+            type="search"
+            id="buscaEmpresa"
+            placeholder="Buscar empresa..."
+            autocomplete="off"
+        >
 
     </div>
-
 
     <!-- =====================================
          EMPRESAS
@@ -199,18 +371,20 @@
 
         {% for empresa in empresas %}
 
-        <article class="company-card" data-empresa="{{ empresa['nome']|lower }}"
-            data-usuario="{{ empresa['usuario']|lower }}">
+        <article
+            class="company-card"
+            data-empresa="{{ empresa['nome']|lower }}"
+            data-usuario="{{ empresa['usuario']|lower }}"
+        >
 
             <div class="company-header">
 
                 <div class="company-icon">
-
-                    <img src="/static/img/empresa.png" alt="">
-
+                    <img
+                        src="{{ url_for('static', filename='img/empresa.png') }}"
+                        alt=""
+                    >
                 </div>
-
-
 
                 <div class="company-info">
 
@@ -230,7 +404,6 @@
 
             </div>
 
-
             <div class="company-status">
 
                 {% if empresa["status"] == "ativo" %}
@@ -249,119 +422,173 @@
 
             </div>
 
-            <form method="POST" action="/alterar_modulo_emprestimos/{{ empresa['empresa_id'] }}"
-                    class="nexus-empresa-modulo">
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'alterar_modulo_emprestimos',
+                    empresa_id=empresa['empresa_id']
+                ) }}"
+                class="nexus-empresa-modulo"
+            >
 
-                    <input type="hidden" name="emprestimos_ativo" value="0">
+                <input
+                    type="hidden"
+                    name="emprestimos_ativo"
+                    value="0"
+                >
 
-                    <label class="nexus-empresa-modulo-opcao">
+                <label class="nexus-empresa-modulo-opcao">
 
-                        <input class="nexus-empresa-modulo-input" type="checkbox" name="emprestimos_ativo" value="1" {%
-                            if empresa["emprestimos_ativo"] %} checked {% endif %} onchange="this.form.submit()">
+                    <input
+                        class="nexus-empresa-modulo-input"
+                        type="checkbox"
+                        name="emprestimos_ativo"
+                        value="1"
+                        {% if empresa["emprestimos_ativo"] %}
+                            checked
+                        {% endif %}
+                        onchange="this.form.submit()"
+                    >
 
-                        <span class="nexus-empresa-modulo-controle">
-                            <span></span>
-                        </span>
+                    <span class="nexus-empresa-modulo-controle">
+                        <span></span>
+                    </span>
 
-                        <span class="nexus-empresa-modulo-info">
-                            <strong>Empréstimos</strong>
+                    <span class="nexus-empresa-modulo-info">
 
-                            <small>
-                                {% if empresa["emprestimos_ativo"] %}
+                        <strong>
+                            Empréstimos
+                        </strong>
+
+                        <small>
+                            {% if empresa["emprestimos_ativo"] %}
                                 Módulo ativado
-                                {% else %}
+                            {% else %}
                                 Módulo desativado
-                                {% endif %}
-                            </small>
-                        </span>
+                            {% endif %}
+                        </small>
 
-                    </label>
+                    </span>
 
-                </form>
+                </label>
+
+            </form>
 
             <div class="company-footer">
 
                 <div class="empresa-stats">
 
                     <span>
-                        {{ empresa["total_produtos"] }}
-                        produtos
+                        {{ empresa["total_produtos"] }} produtos
                     </span>
 
                     <span>
-                        {{ empresa["total_vendas"] }}
-                        vendas
+                        {{ empresa["total_vendas"] }} vendas
                     </span>
 
                     <span>
-                        {{ empresa["total_usuarios"] }}
-                        usuários
+                        {{ empresa["total_usuarios"] }} usuários
                     </span>
 
                 </div>
 
-                
-
-
                 <div class="dropdown">
 
-                    <button type="button" class="menu-btn" aria-label="Abrir opções da empresa" aria-expanded="false">
+                    <button
+                        type="button"
+                        class="menu-btn"
+                        aria-label="Abrir opções da empresa"
+                        aria-expanded="false"
+                    >
                         ⋮
                     </button>
 
-
                     <div class="dropdown-content">
 
-                        <!-- ALTERAR PLANO -->
+                        <form
+                            method="POST"
+                            action="{{ url_for(
+                                'alterar_plano_empresa',
+                                empresa_id=empresa['empresa_id']
+                            ) }}"
+                            class="form-alterar-plano"
+                        >
 
-                        <form method="POST" action="/alterar_plano_empresa/{{ empresa['empresa_id'] }}"
-                            class="form-alterar-plano">
-
-                            <label for="planoEmpresa{{ empresa['empresa_id'] }}">
+                            <label
+                                for="planoEmpresa{{ empresa['empresa_id'] }}"
+                            >
                                 Alterar plano
                             </label>
 
-                            <select id="planoEmpresa{{ empresa['empresa_id'] }}" name="plano"
-                                aria-label="Alterar plano da empresa {{ empresa['nome'] }}">
-
-                                <option value="comum" {% if empresa["plano"]=="comum" %} selected {% endif %}>
+                            <select
+                                id="planoEmpresa{{ empresa['empresa_id'] }}"
+                                name="plano"
+                                aria-label="Alterar plano da empresa {{ empresa['nome'] }}"
+                            >
+                                <option
+                                    value="comum"
+                                    {% if empresa["plano"] == "comum" %}
+                                        selected
+                                    {% endif %}
+                                >
                                     Comum
                                 </option>
 
-                                <option value="premium" {% if empresa["plano"]=="premium" %} selected {% endif %}>
+                                <option
+                                    value="premium"
+                                    {% if empresa["plano"] == "premium" %}
+                                        selected
+                                    {% endif %}
+                                >
                                     Premium
                                 </option>
-
                             </select>
 
-                            <button type="submit" class="btn-salvar-plano">
+                            <button
+                                type="submit"
+                                class="btn-salvar-plano"
+                            >
                                 Salvar plano
                             </button>
 
                         </form>
 
-
-                        <!-- AÇÕES -->
-
                         {% if empresa["status"] == "ativo" %}
 
-                        <a href="/bloquear_usuario/{{ empresa['id'] }}" class="acao-bloquear">
+                        <a
+                            href="{{ url_for(
+                                'bloquear_usuario',
+                                id=empresa['id']
+                            ) }}"
+                            class="acao-bloquear"
+                        >
                             Bloquear acesso
                         </a>
 
                         {% else %}
 
-                        <a href="/liberar_usuario/{{ empresa['id'] }}" class="acao-liberar">
+                        <a
+                            href="{{ url_for(
+                                'liberar_usuario',
+                                id=empresa['id']
+                            ) }}"
+                            class="acao-liberar"
+                        >
                             Liberar acesso
                         </a>
 
                         {% endif %}
 
-                        <a href="/excluir_empresa/{{ empresa['id'] }}" class="acao-excluir" onclick="
-                                    return confirm(
-                                        'Deseja realmente excluir esta empresa?'
-                                    )
-                                ">
+                        <a
+                            href="{{ url_for(
+                                'excluir_empresa',
+                                id=empresa['id']
+                            ) }}"
+                            class="acao-excluir"
+                            onclick="return confirm(
+                                'Deseja realmente excluir esta empresa?'
+                            )"
+                        >
                             Excluir empresa
                         </a>
 
@@ -382,8 +609,8 @@
             </h2>
 
             <p>
-                Utilize o formulário acima para cadastrar
-                a primeira empresa.
+                Gere um convite e aguarde o cliente concluir
+                o cadastro para aprovar a primeira empresa.
             </p>
 
         </div>
@@ -394,129 +621,97 @@
 
 </section>
 
-
 <script>
-
     const botoesMenu =
         document.querySelectorAll(
             ".menu-btn"
-        )
+        );
 
     const menus =
         document.querySelectorAll(
             ".dropdown-content"
-        )
-
+        );
 
     function fecharTodosMenus(
         menuIgnorado = null
     ) {
-
-        menus.forEach(menu => {
-
+        menus.forEach(function (menu) {
             if (menu !== menuIgnorado) {
-
-                menu.style.display = "none"
+                menu.style.display = "none";
 
                 const botao =
                     menu
                         .closest(".dropdown")
-                        .querySelector(".menu-btn")
+                        .querySelector(".menu-btn");
 
                 if (botao) {
-
                     botao.setAttribute(
                         "aria-expanded",
                         "false"
-                    )
-
+                    );
                 }
-
             }
-
-        })
-
+        });
     }
 
-
-    botoesMenu.forEach(botao => {
-
+    botoesMenu.forEach(function (botao) {
         botao.addEventListener(
             "click",
             function (event) {
-
-                event.stopPropagation()
+                event.stopPropagation();
 
                 const dropdown =
-                    this.closest(
-                        ".dropdown"
-                    )
+                    this.closest(".dropdown");
 
                 const menu =
                     dropdown.querySelector(
                         ".dropdown-content"
-                    )
+                    );
 
                 const estaAberto =
-                    menu.style.display === "block"
+                    menu.style.display === "block";
 
-                fecharTodosMenus(menu)
+                fecharTodosMenus(menu);
 
                 menu.style.display =
                     estaAberto
                         ? "none"
-                        : "block"
+                        : "block";
 
                 this.setAttribute(
                     "aria-expanded",
                     estaAberto
                         ? "false"
                         : "true"
-                )
-
+                );
             }
-        )
+        );
+    });
 
-    })
-
-
-    menus.forEach(menu => {
-
+    menus.forEach(function (menu) {
         menu.addEventListener(
             "click",
             function (event) {
-
-                event.stopPropagation()
-
+                event.stopPropagation();
             }
-        )
-
-    })
-
+        );
+    });
 
     document.addEventListener(
         "click",
         function () {
-
-            fecharTodosMenus()
-
+            fecharTodosMenus();
         }
-    )
-
+    );
 
     document.addEventListener(
         "keydown",
         function (event) {
-
             if (event.key === "Escape") {
-
-                fecharTodosMenus()
-
+                fecharTodosMenus();
             }
-
         }
-    )
-
+    );
 
     /* =====================================
        BUSCA DE EMPRESAS
@@ -525,45 +720,200 @@
     const buscaEmpresa =
         document.getElementById(
             "buscaEmpresa"
-        )
+        );
 
     const cardsEmpresa =
         document.querySelectorAll(
             ".company-card"
-        )
+        );
 
+    if (buscaEmpresa) {
+        buscaEmpresa.addEventListener(
+            "input",
+            function () {
+                const termo =
+                    this.value
+                        .toLowerCase()
+                        .trim();
 
-    buscaEmpresa.addEventListener(
-        "input",
-        function () {
+                cardsEmpresa.forEach(
+                    function (card) {
+                        const nome =
+                            card.dataset.empresa || "";
 
-            const termo =
-                this.value
-                    .toLowerCase()
-                    .trim()
+                        const usuario =
+                            card.dataset.usuario || "";
 
-            cardsEmpresa.forEach(card => {
+                        const encontrado =
+                            nome.includes(termo)
+                            || usuario.includes(termo);
+
+                        card.style.display =
+                            encontrado
+                                ? ""
+                                : "none";
+                    }
+                );
+            }
+        );
+    }
+
+    /* =====================================
+       GERAÇÃO DO CONVITE
+    ====================================== */
+
+    const formularioConvite =
+        document.querySelector(
+            ".convite-form"
+        );
+
+    if (formularioConvite) {
+        formularioConvite.addEventListener(
+            "submit",
+            function () {
+                const botao =
+                    document.getElementById(
+                        "btnGerarConvite"
+                    );
+
+                if (botao) {
+                    botao.disabled = true;
+                    botao.textContent =
+                        "Gerando link...";
+                }
+            }
+        );
+    }
+
+    const telefoneConvite =
+        document.getElementById(
+            "telefone_destinatario"
+        );
+
+    if (telefoneConvite) {
+        telefoneConvite.addEventListener(
+            "input",
+            function () {
+                let valor =
+                    this.value.replace(
+                        /\D/g,
+                        ""
+                    );
+
+                valor = valor.slice(0, 11);
+
+                if (valor.length > 10) {
+                    valor = valor.replace(
+                        /^(\d{2})(\d{5})(\d{4})$/,
+                        "($1) $2-$3"
+                    );
+                } else if (valor.length > 6) {
+                    valor = valor.replace(
+                        /^(\d{2})(\d{4})(\d{0,4})$/,
+                        "($1) $2-$3"
+                    );
+                } else if (valor.length > 2) {
+                    valor = valor.replace(
+                        /^(\d{2})(\d+)/,
+                        "($1) $2"
+                    );
+                }
+
+                this.value = valor;
+            }
+        );
+    }
+
+    const botaoCopiar =
+        document.getElementById(
+            "copiarLinkConvite"
+        );
+
+    if (botaoCopiar) {
+        botaoCopiar.addEventListener(
+            "click",
+            async function () {
+                const campo =
+                    document.getElementById(
+                        "linkConviteGerado"
+                    );
+
+                try {
+                    await navigator.clipboard.writeText(
+                        campo.value
+                    );
+
+                    this.textContent =
+                        "Link copiado!";
+
+                    window.setTimeout(
+                        () => {
+                            this.textContent =
+                                "Copiar link";
+                        },
+                        1800
+                    );
+
+                } catch (erro) {
+                    campo.select();
+                    document.execCommand("copy");
+
+                    this.textContent =
+                        "Link copiado!";
+                }
+            }
+        );
+    }
+
+    const botaoWhatsApp =
+        document.getElementById(
+            "enviarConviteWhatsApp"
+        );
+
+    if (botaoWhatsApp) {
+        botaoWhatsApp.addEventListener(
+            "click",
+            function () {
+                let telefone =
+                    this.dataset.telefone
+                        .replace(/\D/g, "");
+
+                if (
+                    telefone.length >= 10
+                    && !telefone.startsWith("55")
+                ) {
+                    telefone = "55" + telefone;
+                }
 
                 const nome =
-                    card.dataset.empresa || ""
+                    this.dataset.nome
+                    || "cliente";
 
-                const usuario =
-                    card.dataset.usuario || ""
+                const link =
+                    this.dataset.link;
 
-                const encontrado =
-                    nome.includes(termo)
-                    || usuario.includes(termo)
+                const mensagem =
+                    "Olá, " + nome + "! 👋\n\n" +
+                    "Você recebeu um convite para " +
+                    "cadastrar sua empresa no Nexus PDV.\n\n" +
+                    "Acesse o link abaixo e preencha seus dados:\n" +
+                    link + "\n\n" +
+                    "Após o envio, sua solicitação será analisada.";
 
-                card.style.display =
-                    encontrado
-                        ? ""
-                        : "none"
+                const endereco =
+                    "https://wa.me/"
+                    + telefone
+                    + "?text="
+                    + encodeURIComponent(mensagem);
 
-            })
-
-        }
-    )
-
+                window.open(
+                    endereco,
+                    "_blank",
+                    "noopener,noreferrer"
+                );
+            }
+        );
+    }
 </script>
 
 {% endblock %}
