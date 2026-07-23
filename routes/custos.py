@@ -1,4 +1,7 @@
+import re
+
 from datetime import date, datetime, timedelta
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from flask import (
     flash,
@@ -46,6 +49,129 @@ FORMAS_PAGAMENTO = [
 ]
 
 
+def _converter_moeda_brasileira(valor):
+    """
+    Converte valores digitados nos formatos:
+
+    5.020       -> 5020.00
+    5.020,50    -> 5020.50
+    5020        -> 5020.00
+    5020,50     -> 5020.50
+    5020.50     -> 5020.50
+    R$ 5.020,50 -> 5020.50
+    """
+
+    texto = str(
+        valor or ""
+    ).strip()
+
+    texto = (
+        texto
+        .replace("R$", "")
+        .replace("\u00a0", "")
+        .replace(" ", "")
+        .strip()
+    )
+
+    if not texto:
+        raise ValueError(
+            "Informe um valor válido."
+        )
+
+    if not re.fullmatch(
+        r"-?[\d.,]+",
+        texto,
+    ):
+        raise ValueError(
+            "Informe um valor monetário válido."
+        )
+
+    # Formato brasileiro com vírgula decimal.
+    # Exemplo: 5.020,50
+    if "," in texto:
+        if texto.count(",") > 1:
+            raise ValueError(
+                "Informe um valor monetário válido."
+            )
+
+        parte_inteira, parte_decimal = (
+            texto.split(",", 1)
+        )
+
+        if (
+            parte_decimal
+            and not parte_decimal.isdigit()
+        ):
+            raise ValueError(
+                "Informe um valor monetário válido."
+            )
+
+        if len(parte_decimal) > 2:
+            raise ValueError(
+                "Use no máximo duas casas decimais."
+            )
+
+        parte_inteira = (
+            parte_inteira.replace(".", "")
+        )
+
+        texto_normalizado = parte_inteira
+
+        if parte_decimal:
+            texto_normalizado += (
+                "." + parte_decimal
+            )
+
+    # Quando existem pontos no padrão de milhar,
+    # remove todos eles.
+    # Exemplo: 5.020 ou 1.250.000
+    elif re.fullmatch(
+        r"-?\d{1,3}(\.\d{3})+",
+        texto,
+    ):
+        texto_normalizado = (
+            texto.replace(".", "")
+        )
+
+    else:
+        # Permite também valor decimal no padrão
+        # técnico, por exemplo: 5020.50
+        if texto.count(".") > 1:
+            raise ValueError(
+                "Informe um valor monetário válido."
+            )
+
+        texto_normalizado = texto
+
+    if not re.fullmatch(
+        r"-?\d+(\.\d{1,2})?",
+        texto_normalizado,
+    ):
+        raise ValueError(
+            "Informe um valor monetário válido."
+        )
+
+    try:
+        resultado = Decimal(
+            texto_normalizado
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+    except InvalidOperation as erro:
+        raise ValueError(
+            "Informe um valor monetário válido."
+        ) from erro
+
+    if resultado <= 0:
+        raise ValueError(
+            "O valor deve ser maior que zero."
+        )
+
+    return resultado
+
+
 def _inicio_mes(data_base=None):
     data_base = data_base or date.today()
 
@@ -74,8 +200,8 @@ def _fim_mes(data_base=None):
         )
 
     return (
-    proximo_mes
-    - timedelta(days=1)
+        proximo_mes
+        - timedelta(days=1)
     )
 
 
@@ -351,6 +477,10 @@ def registrar_rotas(app):
                 )
 
         try:
+            valor = _converter_moeda_brasileira(
+                request.form.get("valor")
+            )
+
             resultado = CustosService.criar(
                 empresa_id=empresa_id,
                 descricao=request.form.get(
@@ -362,9 +492,7 @@ def registrar_rotas(app):
                 fornecedor=request.form.get(
                     "fornecedor"
                 ),
-                valor=request.form.get(
-                    "valor"
-                ),
+                valor=valor,
                 data_inicio=request.form.get(
                     "data_inicio"
                 ),
@@ -453,6 +581,12 @@ def registrar_rotas(app):
         )
 
         try:
+            valor_pagamento = (
+                _converter_moeda_brasileira(
+                    request.form.get("valor")
+                )
+            )
+
             caixa_id = _caixa_aberto(
                 empresa_id
             )
@@ -460,9 +594,7 @@ def registrar_rotas(app):
             resultado = CustosService.pagar(
                 empresa_id=empresa_id,
                 parcela_id=parcela_id,
-                valor=request.form.get(
-                    "valor"
-                ),
+                valor=valor_pagamento,
                 forma_pagamento=request.form.get(
                     "forma_pagamento"
                 ),
@@ -473,18 +605,32 @@ def registrar_rotas(app):
                 ),
             )
 
-            saldo = resultado["saldo"]
+            saldo = Decimal(
+                str(
+                    resultado.get(
+                        "saldo",
+                        0,
+                    )
+                )
+            )
 
-            if saldo <= 0:
+            if saldo <= Decimal("0.00"):
                 mensagem = (
                     "Pagamento registrado. "
                     "A despesa foi quitada."
                 )
 
             else:
+                saldo_formatado = (
+                    f"{saldo:,.2f}"
+                    .replace(",", "X")
+                    .replace(".", ",")
+                    .replace("X", ".")
+                )
+
                 mensagem = (
                     "Pagamento parcial registrado. "
-                    f"Saldo restante: R$ {saldo:.2f}."
+                    f"Saldo restante: R$ {saldo_formatado}."
                 )
 
             flash(
