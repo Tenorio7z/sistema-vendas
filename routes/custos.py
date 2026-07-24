@@ -560,6 +560,249 @@ def registrar_rotas(app):
         )
 
     # ==========================================
+    # EDITAR DESPESA
+    # ==========================================
+
+    @app.route(
+        "/custos/<int:custo_id>/editar",
+        methods=["POST"],
+    )
+    def editar_custo(custo_id):
+
+        if not _exigir_login():
+            return redirect("/")
+
+        empresa_id = session.get(
+            "empresa_id"
+        )
+
+        recorrente = (
+            request.form.get("recorrente")
+            == "on"
+        )
+
+        try:
+            valor = _converter_moeda_brasileira(
+                request.form.get("valor")
+            )
+
+            CustosService.editar(
+                empresa_id=empresa_id,
+                custo_id=custo_id,
+                descricao=request.form.get(
+                    "descricao"
+                ),
+                categoria=request.form.get(
+                    "categoria"
+                ),
+                fornecedor=request.form.get(
+                    "fornecedor"
+                ),
+                valor=valor,
+                data_inicio=request.form.get(
+                    "data_inicio"
+                ),
+                data_vencimento=request.form.get(
+                    "data_vencimento"
+                ),
+                tipo=request.form.get(
+                    "tipo",
+                    "variavel",
+                ),
+                observacoes=request.form.get(
+                    "observacoes"
+                ),
+                recorrente=recorrente,
+                periodicidade=request.form.get(
+                    "periodicidade"
+                ),
+                quantidade_parcelas=request.form.get(
+                    "quantidade_parcelas",
+                    1,
+                ),
+                dia_vencimento=request.form.get(
+                    "dia_vencimento"
+                ),
+                forma_pagamento_padrao=(
+                    request.form.get(
+                        "forma_pagamento_padrao"
+                    )
+                ),
+            )
+
+            flash(
+                "Despesa atualizada com sucesso.",
+                "sucesso",
+            )
+
+        except ValueError as erro:
+            flash(
+                str(erro),
+                "erro",
+            )
+
+        except Exception:
+            app.logger.exception(
+                "Erro ao editar despesa."
+            )
+
+            flash(
+                "Não foi possível editar a despesa.",
+                "erro",
+            )
+
+        return redirect(
+            request.referrer
+            or url_for("custos")
+        )
+        
+    # ==========================================
+    # PREPARAR CORREÇÃO DA DESPESA
+    # ==========================================
+
+    @app.route(
+        "/custos/<int:custo_id>/corrigir",
+        methods=["POST"],
+    )
+    def corrigir_custo(custo_id):
+
+        if not _exigir_login():
+            return redirect("/")
+
+        empresa_id = session.get(
+            "empresa_id"
+        )
+
+        motivo = request.form.get(
+            "motivo"
+        )
+
+        try:
+            resultado = (
+                CustosService.preparar_correcao(
+                    empresa_id=empresa_id,
+                    custo_id=custo_id,
+                    motivo=motivo,
+                )
+            )
+
+            quantidade = resultado[
+                "pagamentos_estornados"
+            ]
+
+            total = resultado[
+                "total_estornado"
+            ]
+
+            total_formatado = (
+                f"{total:,.2f}"
+                .replace(",", "X")
+                .replace(".", ",")
+                .replace("X", ".")
+            )
+
+            if quantidade:
+                mensagem = (
+                    f"{quantidade} pagamento(s) estornado(s). "
+                    f"Total: R$ {total_formatado}. "
+                    "A despesa já pode ser editada ou excluída."
+                )
+
+            else:
+                mensagem = (
+                    "A despesa não possui pagamentos ativos "
+                    "e já pode ser editada ou excluída."
+                )
+
+            flash(
+                mensagem,
+                "sucesso",
+            )
+
+        except ValueError as erro:
+            flash(
+                str(erro),
+                "erro",
+            )
+
+        except Exception:
+            app.logger.exception(
+                "Erro ao preparar correção da despesa."
+            )
+
+            flash(
+                "Não foi possível preparar o lançamento "
+                "para correção.",
+                "erro",
+            )
+
+        return redirect(
+            request.referrer
+            or url_for("custos")
+        )
+    
+    
+
+    # ==========================================
+    # EXCLUIR OU ARQUIVAR DESPESA
+    # ==========================================
+
+    @app.route(
+        "/custos/<int:custo_id>/excluir",
+        methods=["POST"],
+    )
+    def excluir_custo(custo_id):
+
+        if not _exigir_login():
+            return redirect("/")
+
+        empresa_id = session.get(
+            "empresa_id"
+        )
+
+        try:
+            resultado = CustosService.excluir(
+                empresa_id=empresa_id,
+                custo_id=custo_id,
+            )
+
+            if resultado["acao"] == "arquivada":
+                mensagem = (
+                    "Despesa arquivada com sucesso. "
+                    "O histórico estornado foi preservado."
+                )
+
+            else:
+                mensagem = (
+                    "Despesa excluída com sucesso."
+                )
+
+            flash(
+                mensagem,
+                "sucesso",
+            )
+
+        except ValueError as erro:
+            flash(
+                str(erro),
+                "erro",
+            )
+
+        except Exception:
+            app.logger.exception(
+                "Erro ao excluir despesa."
+            )
+
+            flash(
+                "Não foi possível excluir a despesa.",
+                "erro",
+            )
+
+        return redirect(
+            url_for("custos")
+        )
+    
+    # ==========================================
     # PAGAR PARCELA
     # ==========================================
 
@@ -787,7 +1030,7 @@ def registrar_rotas(app):
                 "Não foi possível alterar a despesa.",
                 "erro",
             )
-
+ 
         return redirect(
             request.referrer
             or url_for("custos")

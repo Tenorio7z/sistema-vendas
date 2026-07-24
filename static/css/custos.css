@@ -1702,3 +1702,212 @@ body.modal-aberto {
         grid-template-columns: 1fr !important;
     }
 }
+
+.btn-editar-despesa,
+.btn-excluir-despesa {
+    min-height: 35px;
+    padding: 0 11px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    font: inherit;
+    font-size: 10px;
+    font-weight: 750;
+
+    border-radius: 10px;
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.btn-editar-despesa {
+    color: #71c7ff;
+
+    border: 1px solid rgba(80, 169, 255, 0.36);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(62, 148, 255, 0.17),
+            rgba(92, 105, 255, 0.08)
+        );
+}
+
+.btn-editar-despesa:hover {
+    transform: translateY(-2px);
+
+    border-color: rgba(80, 169, 255, 0.72);
+
+    box-shadow:
+        0 9px 20px rgba(38, 120, 234, 0.18);
+}
+
+.btn-excluir-despesa {
+    color: #ff718b;
+
+    border: 1px solid rgba(255, 83, 119, 0.34);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 72, 111, 0.13),
+            rgba(255, 72, 111, 0.05)
+        );
+}
+
+.btn-excluir-despesa:hover {
+    transform: translateY(-2px);
+
+    color: #ffffff;
+
+    border-color: rgba(255, 83, 119, 0.7);
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff536f,
+            #d9365c
+        );
+
+    box-shadow:
+        0 9px 20px rgba(224, 53, 91, 0.22);
+}
+
+.aviso-edicao {
+    margin-bottom: 18px;
+    padding: 13px 15px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+
+    color: #c7d5e9;
+
+    border: 1px solid rgba(255, 174, 56, 0.3);
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 174, 56, 0.12),
+            rgba(255, 113, 69, 0.05)
+        );
+}
+
+.aviso-edicao strong {
+    color: #ffbb52;
+    white-space: nowrap;
+}
+
+.aviso-edicao span {
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+html:not(.dark) .btn-editar-despesa {
+    color: #1667bc;
+    background: rgba(228, 241, 255, 0.9);
+}
+
+html:not(.dark) .btn-excluir-despesa {
+    color: #d32650;
+    background: rgba(255, 237, 241, 0.92);
+}
+
+html:not(.dark) .aviso-edicao {
+    color: #5a6474;
+    background: rgba(255, 247, 228, 0.94);
+}
+
+@media (max-width: 760px) {
+    .acoes-despesa {
+        min-width: 220px;
+        flex-wrap: wrap;
+    }
+
+    .btn-editar-despesa,
+    .btn-excluir-despesa {
+        flex: 1;
+    }
+
+    .aviso-edicao {
+        flex-direction: column;
+    }
+}
+
+.btn-corrigir-despesa {
+    min-height: 35px;
+    padding: 0 11px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    color: #ffbd59;
+
+    font: inherit;
+    font-size: 10px;
+    font-weight: 750;
+
+    border: 1px solid rgba(255, 177, 59, 0.4);
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 177, 59, 0.16),
+            rgba(255, 112, 51, 0.06)
+        );
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        color 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.btn-corrigir-despesa:hover {
+    transform: translateY(-2px);
+
+    color: #151d2d;
+
+    border-color: #ffbd59;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffc868,
+            #f39b35
+        );
+
+    box-shadow:
+        0 10px 23px rgba(242, 157, 47, 0.23);
+}
+
+html:not(.dark) .btn-corrigir-despesa {
+    color: #a96000;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 190, 79, 0.22),
+            rgba(255, 143, 54, 0.1)
+        );
+}
+
+@media (max-width: 760px) {
+    .btn-corrigir-despesa {
+        flex: 1;
+    }
+}

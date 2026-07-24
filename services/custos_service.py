@@ -692,6 +692,712 @@ class CustosService:
             conn.close()
 
     @staticmethod
+    def preparar_correcao(
+        empresa_id,
+        custo_id,
+        motivo=None,
+    ):
+        motivo = (
+            str(motivo or "").strip()
+            or "Correção de lançamento da despesa."
+        )
+
+        conn = conectar()
+        cursor = criar_cursor(conn)
+        conn.autocommit = False
+
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    descricao
+                FROM custos_empresariais
+                WHERE id = %s
+                  AND empresa_id = %s
+                FOR UPDATE
+                """,
+                (
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            custo = cursor.fetchone()
+
+            if not custo:
+                raise ValueError(
+                    "Despesa não encontrada."
+                )
+
+            cursor.execute(
+                """
+                SELECT
+                    cp.id,
+                    cp.parcela_id,
+                    cp.caixa_id,
+                    cp.valor,
+                    p.valor AS valor_parcela,
+                    p.valor_pago
+                FROM custos_pagamentos cp
+                INNER JOIN custos_parcelas p
+                    ON p.id = cp.parcela_id
+                   AND p.empresa_id = cp.empresa_id
+                WHERE cp.custo_id = %s
+                  AND cp.empresa_id = %s
+                  AND COALESCE(cp.estornado, FALSE) = FALSE
+                ORDER BY cp.id ASC
+                FOR UPDATE OF cp, p
+                """,
+                (
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            pagamentos = cursor.fetchall()
+            total_estornado = Decimal("0.00")
+
+            for pagamento in pagamentos:
+                valor_pagamento = _decimal(
+                    pagamento["valor"],
+                    "Valor do pagamento",
+                )
+
+                valor_parcela = _decimal(
+                    pagamento["valor_parcela"],
+                    "Valor da parcela",
+                )
+
+                valor_pago_atual = _decimal(
+                    pagamento["valor_pago"],
+                    "Valor pago da parcela",
+                )
+
+                novo_valor_pago = max(
+                    valor_pago_atual - valor_pagamento,
+                    Decimal("0.00"),
+                )
+
+                if novo_valor_pago <= Decimal("0.00"):
+                    novo_status = "pendente"
+                    paga_em = None
+                elif novo_valor_pago < valor_parcela:
+                    novo_status = "parcial"
+                    paga_em = None
+                else:
+                    novo_status = "paga"
+                    paga_em = datetime.now()
+
+                caixa_id = pagamento["caixa_id"]
+
+                if caixa_id:
+                    cursor.execute(
+                        """
+                        SELECT
+                            id,
+                            status
+                        FROM caixa
+                        WHERE id = %s
+                          AND empresa_id = %s
+                        FOR UPDATE
+                        """,
+                        (
+                            caixa_id,
+                            empresa_id,
+                        ),
+                    )
+
+                    caixa = cursor.fetchone()
+
+                    if not caixa:
+                        raise ValueError(
+                            "O caixa original do pagamento "
+                            "não foi encontrado."
+                        )
+
+                    if caixa["status"] != "aberto":
+                        raise ValueError(
+                            "O caixa original deste pagamento já "
+                            "foi fechado. Faça um lançamento de "
+                            "ajuste no caixa antes da correção."
+                        )
+
+                    _registrar_entrada_caixa(
+                        cursor=cursor,
+                        empresa_id=empresa_id,
+                        caixa_id=caixa_id,
+                        valor=valor_pagamento,
+                        descricao=(
+                            "Estorno para correção do custo "
+                            f"#{custo_id} - "
+                            f"{custo['descricao']}"
+                        ),
+                    )
+
+                cursor.execute(
+                    """
+                    UPDATE custos_parcelas
+                    SET valor_pago = %s,
+                        status = %s,
+                        paga_em = %s
+                    WHERE id = %s
+                      AND empresa_id = %s
+                    """,
+                    (
+                        novo_valor_pago,
+                        novo_status,
+                        paga_em,
+                        pagamento["parcela_id"],
+                        empresa_id,
+                    ),
+                )
+
+                if cursor.rowcount != 1:
+                    raise ValueError(
+                        "Não foi possível atualizar a parcela."
+                    )
+
+                cursor.execute(
+                    """
+                    UPDATE custos_pagamentos
+                    SET estornado = TRUE,
+                        estornado_em = CURRENT_TIMESTAMP,
+                        motivo_estorno = %s
+                    WHERE id = %s
+                      AND empresa_id = %s
+                      AND COALESCE(estornado, FALSE) = FALSE
+                    """,
+                    (
+                        motivo,
+                        pagamento["id"],
+                        empresa_id,
+                    ),
+                )
+
+                if cursor.rowcount != 1:
+                    raise ValueError(
+                        "Não foi possível estornar o pagamento."
+                    )
+
+                total_estornado += valor_pagamento
+
+            conn.commit()
+
+            return {
+                "custo": custo,
+                "pagamentos_estornados": len(
+                    pagamentos
+                ),
+                "total_estornado": total_estornado,
+            }
+
+        except Exception:
+            conn.rollback()
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    @staticmethod
+    def editar(
+        empresa_id,
+        custo_id,
+        descricao,
+        categoria,
+        valor,
+        data_inicio,
+        data_vencimento,
+        tipo="variavel",
+        fornecedor=None,
+        observacoes=None,
+        recorrente=False,
+        periodicidade=None,
+        quantidade_parcelas=1,
+        dia_vencimento=None,
+        forma_pagamento_padrao=None,
+    ):
+        descricao = str(descricao or "").strip()
+        categoria = str(
+            categoria or "Outras despesas"
+        ).strip()
+
+        fornecedor = (
+            str(fornecedor or "").strip()
+            or None
+        )
+
+        observacoes = (
+            str(observacoes or "").strip()
+            or None
+        )
+
+        tipo = str(
+            tipo or "variavel"
+        ).strip().lower()
+
+        periodicidade = (
+            str(periodicidade or "")
+            .strip()
+            .lower()
+            or None
+        )
+
+        forma_pagamento_padrao = (
+            str(forma_pagamento_padrao or "")
+            .strip()
+            or None
+        )
+
+        valor = _decimal(
+            valor,
+            "Valor da despesa",
+        )
+
+        data_inicio = _data(
+            data_inicio,
+            "Data inicial",
+        )
+
+        primeiro_vencimento = _data(
+            data_vencimento or data_inicio,
+            "Data de vencimento",
+        )
+
+        try:
+            quantidade_parcelas = int(
+                quantidade_parcelas or 1
+            )
+
+        except (TypeError, ValueError) as erro:
+            raise ValueError(
+                "Quantidade de parcelas inválida."
+            ) from erro
+
+        recorrente = bool(recorrente)
+
+        if not empresa_id:
+            raise ValueError(
+                "Empresa não identificada."
+            )
+
+        if not descricao:
+            raise ValueError(
+                "Informe a descrição da despesa."
+            )
+
+        if len(descricao) > 160:
+            raise ValueError(
+                "A descrição pode ter no máximo 160 caracteres."
+            )
+
+        if valor <= 0:
+            raise ValueError(
+                "O valor da despesa deve ser maior que zero."
+            )
+
+        if tipo not in TIPOS_CUSTO:
+            raise ValueError(
+                "Tipo de despesa inválido."
+            )
+
+        if not 1 <= quantidade_parcelas <= 240:
+            raise ValueError(
+                "A quantidade deve estar entre 1 e 240."
+            )
+
+        if (
+            recorrente
+            and periodicidade not in PERIODICIDADES
+        ):
+            raise ValueError(
+                "Selecione a periodicidade da despesa recorrente."
+            )
+
+        if not recorrente:
+            periodicidade = None
+
+        if dia_vencimento not in (None, ""):
+            try:
+                dia_vencimento = int(
+                    dia_vencimento
+                )
+
+            except (TypeError, ValueError) as erro:
+                raise ValueError(
+                    "Dia de vencimento inválido."
+                ) from erro
+
+            if not 1 <= dia_vencimento <= 31:
+                raise ValueError(
+                    "O dia do vencimento deve estar entre 1 e 31."
+                )
+
+        else:
+            dia_vencimento = None
+
+        conn = conectar()
+        cursor = criar_cursor(conn)
+        conn.autocommit = False
+
+        try:
+            cursor.execute(
+                """
+                SELECT id
+                FROM custos_empresariais
+                WHERE id = %s
+                  AND empresa_id = %s
+                FOR UPDATE
+                """,
+                (
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            custo_existente = cursor.fetchone()
+
+            if not custo_existente:
+                raise ValueError(
+                    "Despesa não encontrada."
+                )
+
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS total
+                FROM custos_pagamentos
+                WHERE custo_id = %s
+                  AND empresa_id = %s
+                """,
+                (
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            pagamentos = cursor.fetchone()
+
+            total_pagamentos = int(
+                pagamentos["total"] or 0
+            )
+
+            if total_pagamentos > 0:
+                raise ValueError(
+                    "Essa despesa possui pagamentos registrados. "
+                    "Estorne os pagamentos antes de editar o valor "
+                    "ou o parcelamento."
+                )
+
+            cursor.execute(
+                """
+                DELETE FROM custos_parcelas
+                WHERE custo_id = %s
+                  AND empresa_id = %s
+                """,
+                (
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            cursor.execute(
+                """
+                UPDATE custos_empresariais
+                SET descricao = %s,
+                    categoria = %s,
+                    fornecedor = %s,
+                    observacoes = %s,
+                    tipo = %s,
+                    recorrente = %s,
+                    periodicidade = %s,
+                    quantidade_parcelas = %s,
+                    dia_vencimento = %s,
+                    valor_total = %s,
+                    data_inicio = %s,
+                    forma_pagamento_padrao = %s,
+                    ativo = TRUE,
+                    atualizado_em = CURRENT_TIMESTAMP
+                WHERE id = %s
+                  AND empresa_id = %s
+                RETURNING *
+                """,
+                (
+                    descricao,
+                    categoria,
+                    fornecedor,
+                    observacoes,
+                    tipo,
+                    recorrente,
+                    periodicidade,
+                    quantidade_parcelas,
+                    dia_vencimento,
+                    valor,
+                    data_inicio,
+                    forma_pagamento_padrao,
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            custo = cursor.fetchone()
+
+            valores = (
+                [valor] * quantidade_parcelas
+                if recorrente
+                else _dividir_valor(
+                    valor,
+                    quantidade_parcelas,
+                )
+            )
+
+            parcelas = []
+            ultimo_vencimento = primeiro_vencimento
+
+            for indice, valor_parcela in enumerate(
+                valores
+            ):
+                if recorrente:
+                    vencimento = _proxima_data(
+                        primeiro_vencimento,
+                        periodicidade,
+                        indice,
+                    )
+
+                else:
+                    vencimento = _somar_meses(
+                        primeiro_vencimento,
+                        indice,
+                    )
+
+                if periodicidade not in {
+                    "semanal",
+                    "quinzenal",
+                }:
+                    vencimento = (
+                        _aplicar_dia_vencimento(
+                            vencimento,
+                            dia_vencimento,
+                        )
+                    )
+
+                ultimo_vencimento = vencimento
+
+                competencia = date(
+                    vencimento.year,
+                    vencimento.month,
+                    1,
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO custos_parcelas (
+                        custo_id,
+                        empresa_id,
+                        numero_parcela,
+                        competencia,
+                        data_vencimento,
+                        valor,
+                        valor_pago,
+                        status,
+                        paga_em
+                    )
+                    VALUES (
+                        %s, %s, %s, %s, %s,
+                        %s, 0, 'pendente', NULL
+                    )
+                    RETURNING *
+                    """,
+                    (
+                        custo_id,
+                        empresa_id,
+                        indice + 1,
+                        competencia,
+                        vencimento,
+                        valor_parcela,
+                    ),
+                )
+
+                parcelas.append(
+                    cursor.fetchone()
+                )
+
+            cursor.execute(
+                """
+                UPDATE custos_empresariais
+                SET data_fim = %s,
+                    atualizado_em = CURRENT_TIMESTAMP
+                WHERE id = %s
+                  AND empresa_id = %s
+                """,
+                (
+                    ultimo_vencimento,
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            conn.commit()
+
+            return {
+                "custo": custo,
+                "parcelas": parcelas,
+            }
+
+        except Exception:
+            conn.rollback()
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    @staticmethod
+    def excluir(
+        empresa_id,
+        custo_id,
+    ):
+        conn = conectar()
+        cursor = criar_cursor(conn)
+        conn.autocommit = False
+
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    descricao
+                FROM custos_empresariais
+                WHERE id = %s
+                  AND empresa_id = %s
+                FOR UPDATE
+                """,
+                (
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            custo = cursor.fetchone()
+
+            if not custo:
+                raise ValueError(
+                    "Despesa não encontrada."
+                )
+
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS total
+                FROM custos_pagamentos
+                WHERE custo_id = %s
+                  AND empresa_id = %s
+                  AND COALESCE(estornado, FALSE) = FALSE
+                """,
+                (
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            pagamentos = cursor.fetchone()
+
+            pagamentos_ativos = int(
+                pagamentos["total"] or 0
+            )
+
+            if pagamentos_ativos > 0:
+                raise ValueError(
+                    "Esta despesa possui pagamentos ativos. "
+                    "Use primeiro o botão Corrigir lançamento."
+                )
+
+            # Pagamentos estornados permanecem no banco para
+            # auditoria. Por isso a despesa será arquivada
+            # quando já existir histórico.
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS total
+                FROM custos_pagamentos
+                WHERE custo_id = %s
+                  AND empresa_id = %s
+                """,
+                (
+                    custo_id,
+                    empresa_id,
+                ),
+            )
+
+            historico = cursor.fetchone()
+
+            possui_historico = (
+                int(historico["total"] or 0) > 0
+            )
+
+            if possui_historico:
+                cursor.execute(
+                    """
+                    UPDATE custos_empresariais
+                    SET ativo = FALSE,
+                        atualizado_em = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                      AND empresa_id = %s
+                    """,
+                    (
+                        custo_id,
+                        empresa_id,
+                    ),
+                )
+
+                acao = "arquivada"
+
+            else:
+                cursor.execute(
+                    """
+                    DELETE FROM custos_parcelas
+                    WHERE custo_id = %s
+                      AND empresa_id = %s
+                    """,
+                    (
+                        custo_id,
+                        empresa_id,
+                    ),
+                )
+
+                cursor.execute(
+                    """
+                    DELETE FROM custos_empresariais
+                    WHERE id = %s
+                      AND empresa_id = %s
+                    """,
+                    (
+                        custo_id,
+                        empresa_id,
+                    ),
+                )
+
+                if cursor.rowcount != 1:
+                    raise ValueError(
+                        "Não foi possível excluir a despesa."
+                    )
+
+                acao = "excluída"
+
+            conn.commit()
+
+            return {
+                "custo": custo,
+                "acao": acao,
+            }
+
+        except Exception:
+            conn.rollback()
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    @staticmethod
     def alterar_status(empresa_id, custo_id, ativo):
         conn = conectar()
         cursor = criar_cursor(conn)
@@ -720,16 +1426,33 @@ class CustosService:
             conn.close()
 
     @staticmethod
-    def listar(empresa_id, status=None, categoria=None, busca=None):
-        filtros = ["c.empresa_id = %s", "c.ativo = TRUE"]
-        parametros = [empresa_id]
+    def listar(
+        empresa_id,
+        status=None,
+        categoria=None,
+        busca=None,
+    ):
+        filtros = [
+            "c.empresa_id = %s",
+            "c.ativo = TRUE",
+        ]
+
+        parametros = [
+            empresa_id,
+        ]
 
         if categoria:
-            filtros.append("LOWER(c.categoria) = LOWER(%s)")
-            parametros.append(categoria)
+            filtros.append(
+                "LOWER(c.categoria) = LOWER(%s)"
+            )
+
+            parametros.append(
+                categoria
+            )
 
         if busca:
             termo = f"%{busca}%"
+
             filtros.append(
                 """
                 (
@@ -739,19 +1462,40 @@ class CustosService:
                 )
                 """
             )
-            parametros.extend([termo, termo, termo])
+
+            parametros.extend(
+                [
+                    termo,
+                    termo,
+                    termo,
+                ]
+            )
 
         if status == "vencidas":
             filtros.append(
-                "p.status IN ('pendente', 'parcial') "
-                "AND p.data_vencimento < CURRENT_DATE"
+                """
+                p.status IN ('pendente', 'parcial')
+                AND p.data_vencimento < CURRENT_DATE
+                """
             )
-        elif status in {"pendente", "parcial", "paga", "cancelada"}:
-            filtros.append("p.status = %s")
-            parametros.append(status)
+
+        elif status in {
+            "pendente",
+            "parcial",
+            "paga",
+            "cancelada",
+        }:
+            filtros.append(
+                "p.status = %s"
+            )
+
+            parametros.append(
+                status
+            )
 
         conn = conectar()
         cursor = criar_cursor(conn)
+
         try:
             cursor.execute(
                 f"""
@@ -760,41 +1504,79 @@ class CustosService:
                     c.descricao,
                     c.categoria,
                     c.fornecedor,
+                    c.observacoes,
                     c.tipo,
                     c.recorrente,
                     c.periodicidade,
+                    c.quantidade_parcelas,
+                    c.dia_vencimento,
                     c.valor_total,
+                    c.data_inicio,
+                    c.data_fim,
                     c.forma_pagamento_padrao,
+                    c.ativo,
+
                     p.id AS parcela_id,
                     p.numero_parcela,
                     p.competencia,
                     p.data_vencimento,
                     p.valor,
                     p.valor_pago,
-                    GREATEST(p.valor - p.valor_pago, 0) AS saldo,
+
+                    MIN(
+                        p.data_vencimento
+                    ) OVER (
+                        PARTITION BY c.id
+                    ) AS primeiro_vencimento,
+
+                    GREATEST(
+                        p.valor - p.valor_pago,
+                        0
+                    ) AS saldo,
+
                     CASE
-                        WHEN p.status IN ('pendente', 'parcial')
-                         AND p.data_vencimento < CURRENT_DATE
+                        WHEN
+                            p.status IN (
+                                'pendente',
+                                'parcial'
+                            )
+                            AND p.data_vencimento
+                                < CURRENT_DATE
                         THEN 'vencida'
+
                         ELSE p.status
                     END AS status_exibicao
+
                 FROM custos_empresariais c
+
                 INNER JOIN custos_parcelas p
                     ON p.custo_id = c.id
                    AND p.empresa_id = c.empresa_id
+
                 WHERE {' AND '.join(filtros)}
+
                 ORDER BY
                     CASE
-                        WHEN p.status IN ('pendente', 'parcial')
-                         AND p.data_vencimento < CURRENT_DATE
-                        THEN 0 ELSE 1
+                        WHEN
+                            p.status IN (
+                                'pendente',
+                                'parcial'
+                            )
+                            AND p.data_vencimento
+                                < CURRENT_DATE
+                        THEN 0
+
+                        ELSE 1
                     END,
+
                     p.data_vencimento ASC,
                     c.descricao ASC
                 """,
                 tuple(parametros),
             )
+
             return cursor.fetchall()
+
         finally:
             cursor.close()
             conn.close()

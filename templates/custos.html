@@ -1,18 +1,15 @@
 {% extends "layout.html" %}
 
 {% block css %}
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/custos.css') }}"
->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custos.css') }}">
 {% endblock %}
 
 {% macro moeda(valor) %}
 R$ {{
-    "{:,.2f}".format(valor|float)
-    .replace(",", "X")
-    .replace(".", ",")
-    .replace("X", ".")
+"{:,.2f}".format(valor|float)
+.replace(",", "X")
+.replace(".", ",")
+.replace("X", ".")
 }}
 {% endmacro %}
 
@@ -34,11 +31,7 @@ R$ {{
             </p>
         </div>
 
-        <button
-            type="button"
-            class="btn btn-principal"
-            id="abrirModalCusto"
-        >
+        <button type="button" class="btn btn-principal" id="abrirModalCusto">
             <span>＋</span>
             Nova despesa
         </button>
@@ -61,58 +54,33 @@ R$ {{
         <div class="periodo-acoes">
 
             <div class="periodo-atalhos">
-                <a
-                    href="{{ url_for('custos', periodo='hoje') }}"
-                    class="{% if periodo.tipo == 'hoje' %}ativo{% endif %}"
-                >
+                <a href="{{ url_for('custos', periodo='hoje') }}"
+                    class="{% if periodo.tipo == 'hoje' %}ativo{% endif %}">
                     Hoje
                 </a>
 
-                <a
-                    href="{{ url_for('custos', periodo='mes') }}"
-                    class="{% if periodo.tipo == 'mes' %}ativo{% endif %}"
-                >
+                <a href="{{ url_for('custos', periodo='mes') }}" class="{% if periodo.tipo == 'mes' %}ativo{% endif %}">
                     Este mês
                 </a>
 
-                <a
-                    href="{{ url_for('custos', periodo='ano') }}"
-                    class="{% if periodo.tipo == 'ano' %}ativo{% endif %}"
-                >
+                <a href="{{ url_for('custos', periodo='ano') }}" class="{% if periodo.tipo == 'ano' %}ativo{% endif %}">
                     Este ano
                 </a>
             </div>
 
-            <form
-                method="GET"
-                class="periodo-personalizado"
-            >
-                <input
-                    type="hidden"
-                    name="periodo"
-                    value="personalizado"
-                >
+            <form method="GET" class="periodo-personalizado">
+                <input type="hidden" name="periodo" value="personalizado">
 
                 <label>
                     <span>Data inicial</span>
 
-                    <input
-                        type="date"
-                        name="inicio"
-                        value="{{ periodo.data_inicial.isoformat() }}"
-                        required
-                    >
+                    <input type="date" name="inicio" value="{{ periodo.data_inicial.isoformat() }}" required>
                 </label>
 
                 <label>
                     <span>Data final</span>
 
-                    <input
-                        type="date"
-                        name="fim"
-                        value="{{ periodo.data_final.isoformat() }}"
-                        required
-                    >
+                    <input type="date" name="fim" value="{{ periodo.data_final.isoformat() }}" required>
                 </label>
 
                 <button type="submit" class="btn btn-aplicar">
@@ -209,78 +177,47 @@ R$ {{
 
         <form method="GET" class="filtros-form">
 
-            <input
-                type="hidden"
-                name="periodo"
-                value="{{ periodo.tipo }}"
-            >
+            <input type="hidden" name="periodo" value="{{ periodo.tipo }}">
 
             {% if periodo.tipo == "personalizado" %}
-                <input
-                    type="hidden"
-                    name="inicio"
-                    value="{{ periodo.data_inicial.isoformat() }}"
-                >
+            <input type="hidden" name="inicio" value="{{ periodo.data_inicial.isoformat() }}">
 
-                <input
-                    type="hidden"
-                    name="fim"
-                    value="{{ periodo.data_final.isoformat() }}"
-                >
+            <input type="hidden" name="fim" value="{{ periodo.data_final.isoformat() }}">
             {% endif %}
 
             <div class="campo-busca">
                 <span>⌕</span>
 
-                <input
-                    type="search"
-                    name="q"
-                    value="{{ busca }}"
-                    placeholder="Buscar despesa, fornecedor ou categoria..."
-                >
+                <input type="search" name="q" value="{{ busca }}"
+                    placeholder="Buscar despesa, fornecedor ou categoria...">
             </div>
 
             <select name="categoria">
                 <option value="">Todas as categorias</option>
 
                 {% for item in categorias %}
-                    <option
-                        value="{{ item }}"
-                        {% if filtro_categoria == item %}selected{% endif %}
-                    >
-                        {{ item }}
-                    </option>
+                <option value="{{ item }}" {% if filtro_categoria==item %}selected{% endif %}>
+                    {{ item }}
+                </option>
                 {% endfor %}
             </select>
 
             <select name="status">
                 <option value="">Todos os status</option>
 
-                <option
-                    value="pendente"
-                    {% if filtro_status == "pendente" %}selected{% endif %}
-                >
+                <option value="pendente" {% if filtro_status=="pendente" %}selected{% endif %}>
                     Pendentes
                 </option>
 
-                <option
-                    value="parcial"
-                    {% if filtro_status == "parcial" %}selected{% endif %}
-                >
+                <option value="parcial" {% if filtro_status=="parcial" %}selected{% endif %}>
                     Pagamento parcial
                 </option>
 
-                <option
-                    value="vencidas"
-                    {% if filtro_status == "vencidas" %}selected{% endif %}
-                >
+                <option value="vencidas" {% if filtro_status=="vencidas" %}selected{% endif %}>
                     Vencidas
                 </option>
 
-                <option
-                    value="paga"
-                    {% if filtro_status == "paga" %}selected{% endif %}
-                >
+                <option value="paga" {% if filtro_status=="paga" %}selected{% endif %}>
                     Pagas
                 </option>
             </select>
@@ -289,10 +226,7 @@ R$ {{
                 Buscar
             </button>
 
-            <a
-                href="{{ url_for('custos') }}"
-                class="btn btn-limpar"
-            >
+            <a href="{{ url_for('custos') }}" class="btn btn-limpar">
                 Limpar
             </a>
 
@@ -316,182 +250,207 @@ R$ {{
 
         {% if despesas %}
 
-            <div class="tabela-scroll">
+        <div class="tabela-scroll">
 
-                <table class="despesas-tabela">
+            <table class="despesas-tabela">
 
-                    <thead>
-                        <tr>
-                            <th>Despesa</th>
-                            <th>Categoria</th>
-                            <th>Vencimento</th>
-                            <th>Valor</th>
-                            <th>Pago</th>
-                            <th>Saldo</th>
-                            <th>Status</th>
-                            <th></th>
-                        </tr>
-                    </thead>
+                <thead>
+                    <tr>
+                        <th>Despesa</th>
+                        <th>Categoria</th>
+                        <th>Vencimento</th>
+                        <th>Valor</th>
+                        <th>Pago</th>
+                        <th>Saldo</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
 
-                    <tbody>
+                <tbody>
 
-                        {% for despesa in despesas %}
+                    {% for despesa in despesas %}
 
-                            <tr>
-                                <td>
-                                    <div class="despesa-identificacao">
-                                        <span class="despesa-avatar">
-                                            {{ despesa.descricao[:1]|upper }}
-                                        </span>
+                    <tr>
+                        <td>
+                            <div class="despesa-identificacao">
+                                <span class="despesa-avatar">
+                                    {{ despesa.descricao[:1]|upper }}
+                                </span>
 
-                                        <div>
-                                            <strong>
-                                                {{ despesa.descricao }}
-                                            </strong>
-
-                                            <small>
-                                                {% if despesa.fornecedor %}
-                                                    {{ despesa.fornecedor }}
-                                                    •
-                                                {% endif %}
-
-                                                Parcela
-                                                {{ despesa.numero_parcela }}
-
-                                                {% if despesa.recorrente %}
-                                                    • Recorrente
-                                                {% endif %}
-                                            </small>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <span class="categoria-tag">
-                                        {{ despesa.categoria }}
-                                    </span>
-                                </td>
-
-                                <td>
+                                <div>
                                     <strong>
-                                        {{ despesa.data_vencimento.strftime("%d/%m/%Y") }}
+                                        {{ despesa.descricao }}
                                     </strong>
 
-                                    <small class="competencia">
-                                        Competência:
-                                        {{ despesa.competencia.strftime("%m/%Y") }}
+                                    <small>
+                                        {% if despesa.fornecedor %}
+                                        {{ despesa.fornecedor }}
+                                        •
+                                        {% endif %}
+
+                                        Parcela
+                                        {{ despesa.numero_parcela }}
+
+                                        {% if despesa.recorrente %}
+                                        • Recorrente
+                                        {% endif %}
                                     </small>
-                                </td>
+                                </div>
+                            </div>
+                        </td>
 
-                                <td class="valor">
-                                    {{ moeda(despesa.valor) }}
-                                </td>
+                        <td>
+                            <span class="categoria-tag">
+                                {{ despesa.categoria }}
+                            </span>
+                        </td>
 
-                                <td class="valor valor-pago">
-                                    {{ moeda(despesa.valor_pago) }}
-                                </td>
+                        <td>
+                            <strong>
+                                {{ despesa.data_vencimento.strftime("%d/%m/%Y") }}
+                            </strong>
 
-                                <td class="valor valor-saldo">
-                                    {{ moeda(despesa.saldo) }}
-                                </td>
+                            <small class="competencia">
+                                Competência:
+                                {{ despesa.competencia.strftime("%m/%Y") }}
+                            </small>
+                        </td>
 
-                                <td>
-                                    <span
-                                        class="status status-{{ despesa.status_exibicao }}"
-                                    >
-                                        {% if despesa.status_exibicao == "paga" %}
-                                            Pago
-                                        {% elif despesa.status_exibicao == "parcial" %}
-                                            Parcial
-                                        {% elif despesa.status_exibicao == "vencida" %}
-                                            Vencido
-                                        {% elif despesa.status_exibicao == "cancelada" %}
-                                            Cancelado
-                                        {% else %}
-                                            Pendente
-                                        {% endif %}
-                                    </span>
-                                </td>
+                        <td class="valor">
+                            {{ moeda(despesa.valor) }}
+                        </td>
 
-                                <td>
-                                    <div class="acoes-despesa">
+                        <td class="valor valor-pago">
+                            {{ moeda(despesa.valor_pago) }}
+                        </td>
 
-                                        {% if
-                                            despesa.saldo|float > 0
-                                            and despesa.status_exibicao
-                                                not in ["cancelada", "paga"]
-                                        %}
-                                            <button
-                                                type="button"
-                                                class="btn-pagar"
-                                                data-modal-pagamento
-                                                data-url="{{ url_for(
-                                                    'pagar_custo',
-                                                    parcela_id=despesa.parcela_id
-                                                ) }}"
-                                                data-descricao="{{ despesa.descricao }}"
-                                                data-saldo="{{ despesa.saldo }}"
-                                            >
-                                                Pagar
-                                            </button>
-                                        {% endif %}
+                        <td class="valor valor-saldo">
+                            {{ moeda(despesa.saldo) }}
+                        </td>
 
-                                        <form
-                                            method="POST"
-                                            action="{{ url_for(
-                                                'alterar_status_custo',
-                                                custo_id=despesa.custo_id
-                                            ) }}"
-                                            onsubmit="return confirm(
-                                                'Deseja desativar esta despesa?'
-                                            )"
-                                        >
-                                            <input
-                                                type="hidden"
-                                                name="acao"
-                                                value="desativar"
-                                            >
+                        <td>
+                            <span class="status status-{{ despesa.status_exibicao }}">
+                                {% if despesa.status_exibicao == "paga" %}
+                                Pago
+                                {% elif despesa.status_exibicao == "parcial" %}
+                                Parcial
+                                {% elif despesa.status_exibicao == "vencida" %}
+                                Vencido
+                                {% elif despesa.status_exibicao == "cancelada" %}
+                                Cancelado
+                                {% else %}
+                                Pendente
+                                {% endif %}
+                            </span>
+                        </td>
 
-                                            <button
-                                                type="submit"
-                                                class="btn-menu"
-                                                title="Desativar despesa"
-                                            >
-                                                ⋮
-                                            </button>
-                                        </form>
+                        <td>
+                            <div class="acoes-despesa">
 
-                                    </div>
-                                </td>
-                            </tr>
+                                {% if
+                                despesa.saldo|float > 0
+                                and despesa.status_exibicao
+                                not in ["cancelada", "paga"]
+                                %}
+                                <button type="button" class="btn-pagar" data-modal-pagamento data-url="{{ url_for(
+                'pagar_custo',
+                parcela_id=despesa.parcela_id
+            ) }}" data-descricao="{{ despesa.descricao|e }}" data-saldo="{{ despesa.saldo }}">
+                                    Pagar
+                                </button>
+                                {% endif %}
 
-                        {% endfor %}
+                                <button type="button" class="btn-editar-despesa" title="Editar despesa"
+                                    data-editar-despesa data-url="{{ url_for(
+            'editar_custo',
+            custo_id=despesa.custo_id
+        ) }}" data-descricao="{{ despesa.descricao|e }}" data-categoria="{{ despesa.categoria|e }}"
+                                    data-fornecedor="{{ (despesa.fornecedor or '')|e }}"
+                                    data-observacoes="{{ (despesa.observacoes or '')|e }}"
+                                    data-tipo="{{ despesa.tipo }}" data-valor="{{ despesa.valor_total }}" data-inicio="{{
+            despesa.data_inicio.isoformat()
+            if despesa.data_inicio
+            else ''
+        }}" data-vencimento="{{
+            despesa.primeiro_vencimento.isoformat()
+            if despesa.primeiro_vencimento
+            else ''
+        }}" data-recorrente="{{
+            '1'
+            if despesa.recorrente
+            else '0'
+        }}" data-periodicidade="{{
+            despesa.periodicidade or ''
+        }}" data-quantidade="{{
+            despesa.quantidade_parcelas or 1
+        }}" data-dia="{{
+            despesa.dia_vencimento or ''
+        }}" data-forma="{{
+            despesa.forma_pagamento_padrao or ''
+        }}">
+                                    ✎
+                                    <span>Editar</span>
+                                </button>
 
-                    </tbody>
+                                {% if despesa.valor_pago|float > 0 %}
+                                <form method="POST" action="{{ url_for(
+                'corrigir_custo',
+                custo_id=despesa.custo_id
+            ) }}" onsubmit="return confirm(
+                'Os pagamentos desta despesa serão estornados. ' +
+                'Deseja preparar o lançamento para correção?'
+            )">
+                                    <input type="hidden" name="motivo" value="Correção solicitada pelo usuário.">
 
-                </table>
+                                    <button type="submit" class="btn-corrigir-despesa"
+                                        title="Estornar pagamentos para corrigir">
+                                        ↶
+                                        <span>Corrigir</span>
+                                    </button>
+                                </form>
+                                {% endif %}
 
-            </div>
+                                <form method="POST" action="{{ url_for(
+            'excluir_custo',
+            custo_id=despesa.custo_id
+        ) }}" onsubmit="return confirm(
+            'Deseja excluir esta despesa? ' +
+            'Lançamentos com histórico serão arquivados.'
+        )">
+                                    <button type="submit" class="btn-excluir-despesa" title="Excluir despesa">
+                                        ×
+                                        <span>Excluir</span>
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
 
         {% else %}
 
-            <div class="estado-vazio">
-                <div class="estado-icone">◫</div>
+        <div class="estado-vazio">
+            <div class="estado-icone">◫</div>
 
-                <h3>Nenhuma despesa encontrada</h3>
+            <h3>Nenhuma despesa encontrada</h3>
 
-                <p>
-                    Cadastre uma despesa ou altere os filtros utilizados.
-                </p>
+            <p>
+                Cadastre uma despesa ou altere os filtros utilizados.
+            </p>
 
-                <button
-                    type="button"
-                    class="btn btn-principal"
-                    data-abrir-custo
-                >
-                    ＋ Cadastrar despesa
-                </button>
-            </div>
+            <button type="button" class="btn btn-principal" data-abrir-custo>
+                ＋ Cadastrar despesa
+            </button>
+        </div>
 
         {% endif %}
 
@@ -504,11 +463,7 @@ R$ {{
      MODAL NOVA DESPESA
 ========================================= -->
 
-<div
-    class="modal-overlay"
-    id="modalCusto"
-    aria-hidden="true"
->
+<div class="modal-overlay" id="modalCusto" aria-hidden="true">
     <section class="modal-card modal-grande">
 
         <header class="modal-header">
@@ -521,34 +476,19 @@ R$ {{
                 </p>
             </div>
 
-            <button
-                type="button"
-                class="modal-fechar"
-                data-fechar-modal
-            >
+            <button type="button" class="modal-fechar" data-fechar-modal>
                 ×
             </button>
         </header>
 
-        <form
-            method="POST"
-            action="{{ url_for('criar_custo') }}"
-            class="modal-form"
-            id="formCusto"
-        >
+        <form method="POST" action="{{ url_for('criar_custo') }}" class="modal-form" id="formCusto">
 
             <div class="form-grid">
 
                 <label class="campo campo-duplo">
                     <span>Descrição *</span>
 
-                    <input
-                        type="text"
-                        name="descricao"
-                        maxlength="160"
-                        placeholder="Ex.: Aluguel da loja"
-                        required
-                    >
+                    <input type="text" name="descricao" maxlength="160" placeholder="Ex.: Aluguel da loja" required>
                 </label>
 
                 <label class="campo">
@@ -556,9 +496,9 @@ R$ {{
 
                     <select name="categoria" required>
                         {% for categoria in categorias %}
-                            <option value="{{ categoria }}">
-                                {{ categoria }}
-                            </option>
+                        <option value="{{ categoria }}">
+                            {{ categoria }}
+                        </option>
                         {% endfor %}
                     </select>
                 </label>
@@ -576,46 +516,25 @@ R$ {{
                 <label class="campo">
                     <span>Fornecedor</span>
 
-                    <input
-                        type="text"
-                        name="fornecedor"
-                        maxlength="160"
-                        placeholder="Nome do fornecedor"
-                    >
+                    <input type="text" name="fornecedor" maxlength="160" placeholder="Nome do fornecedor">
                 </label>
 
                 <label class="campo">
                     <span>Valor *</span>
 
-                    <input
-                        type="text"
-                        inputmode="decimal"
-                        name="valor"
-                        placeholder="0,00"
-                        required
-                    >
+                    <input type="text" inputmode="decimal" name="valor" placeholder="0,00" required>
                 </label>
 
                 <label class="campo">
                     <span>Data inicial *</span>
 
-                    <input
-                        type="date"
-                        name="data_inicio"
-                        value="{{ hoje.isoformat() }}"
-                        required
-                    >
+                    <input type="date" name="data_inicio" value="{{ hoje.isoformat() }}" required>
                 </label>
 
                 <label class="campo">
                     <span>Primeiro vencimento *</span>
 
-                    <input
-                        type="date"
-                        name="data_vencimento"
-                        value="{{ hoje.isoformat() }}"
-                        required
-                    >
+                    <input type="date" name="data_vencimento" value="{{ hoje.isoformat() }}" required>
                 </label>
 
                 <label class="campo">
@@ -625,9 +544,9 @@ R$ {{
                         <option value="">Não definida</option>
 
                         {% for forma in formas_pagamento %}
-                            <option value="{{ forma }}">
-                                {{ forma }}
-                            </option>
+                        <option value="{{ forma }}">
+                            {{ forma }}
+                        </option>
                         {% endfor %}
                     </select>
                 </label>
@@ -637,24 +556,13 @@ R$ {{
                         Quantidade de parcelas
                     </span>
 
-                    <input
-                        type="number"
-                        name="quantidade_parcelas"
-                        value="1"
-                        min="1"
-                        max="240"
-                        required
-                    >
+                    <input type="number" name="quantidade_parcelas" value="1" min="1" max="240" required>
                 </label>
 
                 <div class="campo campo-duplo opcoes-box">
 
                     <label class="switch-option">
-                        <input
-                            type="checkbox"
-                            name="recorrente"
-                            id="custoRecorrente"
-                        >
+                        <input type="checkbox" name="recorrente" id="custoRecorrente">
 
                         <span class="switch-visual"></span>
 
@@ -667,10 +575,7 @@ R$ {{
                     </label>
 
                     <label class="switch-option">
-                        <input
-                            type="checkbox"
-                            name="ja_pago"
-                        >
+                        <input type="checkbox" name="ja_pago">
 
                         <span class="switch-visual"></span>
 
@@ -684,10 +589,7 @@ R$ {{
 
                 </div>
 
-                <label
-                    class="campo campo-recorrencia"
-                    id="campoPeriodicidade"
-                >
+                <label class="campo campo-recorrencia" id="campoPeriodicidade">
                     <span>Periodicidade *</span>
 
                     <select name="periodicidade">
@@ -701,46 +603,26 @@ R$ {{
                     </select>
                 </label>
 
-                <label
-                    class="campo campo-recorrencia"
-                    id="campoDiaVencimento"
-                >
+                <label class="campo campo-recorrencia" id="campoDiaVencimento">
                     <span>Dia padrão do vencimento</span>
 
-                    <input
-                        type="number"
-                        name="dia_vencimento"
-                        min="1"
-                        max="31"
-                        placeholder="Ex.: 10"
-                    >
+                    <input type="number" name="dia_vencimento" min="1" max="31" placeholder="Ex.: 10">
                 </label>
 
                 <label class="campo campo-duplo">
                     <span>Observações</span>
 
-                    <textarea
-                        name="observacoes"
-                        rows="4"
-                        placeholder="Informações adicionais..."
-                    ></textarea>
+                    <textarea name="observacoes" rows="4" placeholder="Informações adicionais..."></textarea>
                 </label>
 
             </div>
 
             <footer class="modal-footer">
-                <button
-                    type="button"
-                    class="btn btn-cancelar"
-                    data-fechar-modal
-                >
+                <button type="button" class="btn btn-cancelar" data-fechar-modal>
                     Cancelar
                 </button>
 
-                <button
-                    type="submit"
-                    class="btn btn-principal"
-                >
+                <button type="submit" class="btn btn-principal">
                     Salvar despesa
                 </button>
             </footer>
@@ -755,11 +637,7 @@ R$ {{
      MODAL DE PAGAMENTO
 ========================================= -->
 
-<div
-    class="modal-overlay"
-    id="modalPagamento"
-    aria-hidden="true"
->
+<div class="modal-overlay" id="modalPagamento" aria-hidden="true">
     <section class="modal-card">
 
         <header class="modal-header">
@@ -772,20 +650,12 @@ R$ {{
                 </p>
             </div>
 
-            <button
-                type="button"
-                class="modal-fechar"
-                data-fechar-pagamento
-            >
+            <button type="button" class="modal-fechar" data-fechar-pagamento>
                 ×
             </button>
         </header>
 
-        <form
-            method="POST"
-            class="modal-form"
-            id="formPagamento"
-        >
+        <form method="POST" class="modal-form" id="formPagamento">
 
             <div class="saldo-pagamento">
                 <span>Saldo disponível</span>
@@ -795,27 +665,17 @@ R$ {{
             <label class="campo">
                 <span>Valor do pagamento *</span>
 
-                <input
-                    type="number"
-                    name="valor"
-                    id="pagamentoValor"
-                    min="0.01"
-                    step="0.01"
-                    required
-                >
+                <input type="number" name="valor" id="pagamentoValor" min="0.01" step="0.01" required>
             </label>
 
             <label class="campo">
                 <span>Forma de pagamento *</span>
 
-                <select
-                    name="forma_pagamento"
-                    required
-                >
+                <select name="forma_pagamento" required>
                     {% for forma in formas_pagamento %}
-                        <option value="{{ forma }}">
-                            {{ forma }}
-                        </option>
+                    <option value="{{ forma }}">
+                        {{ forma }}
+                    </option>
                     {% endfor %}
                 </select>
             </label>
@@ -823,26 +683,15 @@ R$ {{
             <label class="campo">
                 <span>Observações</span>
 
-                <textarea
-                    name="observacoes"
-                    rows="3"
-                    placeholder="Informações sobre o pagamento..."
-                ></textarea>
+                <textarea name="observacoes" rows="3" placeholder="Informações sobre o pagamento..."></textarea>
             </label>
 
             <footer class="modal-footer">
-                <button
-                    type="button"
-                    class="btn btn-cancelar"
-                    data-fechar-pagamento
-                >
+                <button type="button" class="btn btn-cancelar" data-fechar-pagamento>
                     Cancelar
                 </button>
 
-                <button
-                    type="submit"
-                    class="btn btn-principal"
-                >
+                <button type="submit" class="btn btn-principal">
                     Confirmar pagamento
                 </button>
             </footer>
@@ -862,6 +711,51 @@ R$ {{
 
         const modalPagamento =
             document.getElementById("modalPagamento");
+
+        const modalEditarCusto =
+            document.getElementById("modalEditarCusto");
+
+        const formEditarCusto =
+            document.getElementById("formEditarCusto");
+
+        const editarDescricao =
+            document.getElementById("editarDescricao");
+
+        const editarCategoria =
+            document.getElementById("editarCategoria");
+
+        const editarTipo =
+            document.getElementById("editarTipo");
+
+        const editarFornecedor =
+            document.getElementById("editarFornecedor");
+
+        const editarValor =
+            document.getElementById("editarValor");
+
+        const editarDataInicio =
+            document.getElementById("editarDataInicio");
+
+        const editarVencimento =
+            document.getElementById("editarVencimento");
+
+        const editarRecorrente =
+            document.getElementById("editarRecorrente");
+
+        const editarPeriodicidade =
+            document.getElementById("editarPeriodicidade");
+
+        const editarQuantidade =
+            document.getElementById("editarQuantidade");
+
+        const editarDiaVencimento =
+            document.getElementById("editarDiaVencimento");
+
+        const editarFormaPagamento =
+            document.getElementById("editarFormaPagamento");
+
+        const editarObservacoes =
+            document.getElementById("editarObservacoes");
 
         const botaoAbrir =
             document.getElementById("abrirModalCusto");
@@ -1020,6 +914,73 @@ R$ {{
 
 
         document
+            .querySelectorAll("[data-editar-despesa]")
+            .forEach(function (botao) {
+                botao.addEventListener(
+                    "click",
+                    function () {
+                        formEditarCusto.action =
+                            botao.dataset.url;
+
+                        editarDescricao.value =
+                            botao.dataset.descricao || "";
+
+                        editarCategoria.value =
+                            botao.dataset.categoria || "";
+
+                        editarTipo.value =
+                            botao.dataset.tipo || "variavel";
+
+                        editarFornecedor.value =
+                            botao.dataset.fornecedor || "";
+
+                        editarValor.value =
+                            String(botao.dataset.valor || "0")
+                                .replace(".", ",");
+
+                        editarDataInicio.value =
+                            botao.dataset.inicio || "";
+
+                        editarVencimento.value =
+                            botao.dataset.vencimento || "";
+
+                        editarRecorrente.checked =
+                            botao.dataset.recorrente === "1";
+
+                        editarPeriodicidade.value =
+                            botao.dataset.periodicidade
+                            || "mensal";
+
+                        editarQuantidade.value =
+                            botao.dataset.quantidade || "1";
+
+                        editarDiaVencimento.value =
+                            botao.dataset.dia || "";
+
+                        editarFormaPagamento.value =
+                            botao.dataset.forma || "";
+
+                        editarObservacoes.value =
+                            botao.dataset.observacoes || "";
+
+                        abrirModal(modalEditarCusto);
+                    }
+                );
+            });
+
+
+        document
+            .querySelectorAll("[data-fechar-edicao]")
+            .forEach(function (botao) {
+                botao.addEventListener(
+                    "click",
+                    function () {
+                        fecharModal(modalEditarCusto);
+                    }
+                );
+            });
+
+        document
             .querySelectorAll("[data-fechar-pagamento]")
             .forEach(function (botao) {
                 botao.addEventListener(
@@ -1059,6 +1020,7 @@ R$ {{
                 if (evento.key === "Escape") {
                     fecharModal(modalCusto);
                     fecharModal(modalPagamento);
+                    fecharModal(modalEditarCusto);
                 }
             }
         );
