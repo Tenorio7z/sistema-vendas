@@ -9,6 +9,14 @@ from services.ia.capabilities.consultas_admin import (
     ConsultasAdminNami,
 )
 
+from services.ia.capabilities.custos import (
+    ConsultasCustosNami,
+)
+
+from services.ia.capabilities.clientes import (
+    ConsultasClientesNami,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -656,8 +664,346 @@ FERRAMENTAS = [
         },
         "strict": True,
     },
+
+    # ==========================================
+    # CUSTOS EMPRESARIAIS
+    # ==========================================
+
+    {
+        "type": "function",
+        "name": "consultar_resumo_custos",
+        "description": (
+            "Consulta custos empresariais previstos, pagos, "
+            "pendentes e vencidos, além das categorias com "
+            "maior gasto. Use para perguntas sobre despesas, "
+            "contas, custos e valores pagos a fornecedores."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "periodo": {
+                    "type": "string",
+                    "enum": PERIODOS,
+                },
+                "data_inicio": {
+                    "type": ["string", "null"],
+                },
+                "data_fim": {
+                    "type": ["string", "null"],
+                },
+            },
+            "required": [
+                "periodo",
+                "data_inicio",
+                "data_fim",
+            ],
+            "additionalProperties": False,
+        },
+        "strict": True,
+    },
+
+    {
+        "type": "function",
+        "name": "listar_custos",
+        "description": (
+            "Lista despesas empresariais pagas, pendentes "
+            "ou vencidas com descrição, categoria, fornecedor, "
+            "vencimento, valor e saldo."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "periodo": {
+                    "type": "string",
+                    "enum": PERIODOS,
+                },
+                "data_inicio": {
+                    "type": ["string", "null"],
+                },
+                "data_fim": {
+                    "type": ["string", "null"],
+                },
+                "situacao": {
+                    "type": "string",
+                    "enum": [
+                        "todas",
+                        "pagas",
+                        "pendentes",
+                        "vencidas",
+                    ],
+                },
+                "limite": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                },
+            },
+            "required": [
+                "periodo",
+                "data_inicio",
+                "data_fim",
+                "situacao",
+                "limite",
+            ],
+            "additionalProperties": False,
+        },
+        "strict": True,
+    },
+
+    # ==========================================
+    # CLIENTES
+    # ==========================================
+
+    {
+        "type": "function",
+        "name": "consultar_resumo_clientes",
+        "description": (
+            "Consulta quantidade total de clientes, ativos, "
+            "inativos e novos cadastros."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": False,
+        },
+        "strict": True,
+    },
+
+    {
+        "type": "function",
+        "name": "consultar_ranking_clientes",
+        "description": (
+            "Consulta os melhores clientes por valor gasto, "
+            "quantidade de compras ou compra mais recente."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "periodo": {
+                    "type": "string",
+                    "enum": PERIODOS,
+                },
+                "data_inicio": {
+                    "type": ["string", "null"],
+                },
+                "data_fim": {
+                    "type": ["string", "null"],
+                },
+                "ordem": {
+                    "type": "string",
+                    "enum": [
+                        "maior_valor",
+                        "mais_compras",
+                        "mais_recente",
+                    ],
+                },
+                "limite": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                },
+            },
+            "required": [
+                "periodo",
+                "data_inicio",
+                "data_fim",
+                "ordem",
+                "limite",
+            ],
+            "additionalProperties": False,
+        },
+        "strict": True,
+    },
     
 ]
+
+
+def selecionar_ferramentas(
+    mensagem,
+    nivel="funcionario",
+):
+    texto = str(
+        mensagem or ""
+    ).lower()
+
+    nivel = str(
+        nivel or "funcionario"
+    ).lower()
+
+    nomes = set()
+
+    grupos = {
+        "vendas": {
+            "consultar_resumo_vendas",
+            "listar_produtos_vendidos",
+            "listar_vendas",
+            "consultar_formas_pagamento",
+        },
+        "produtos": {
+            "buscar_produto",
+            "consultar_estoque",
+            "listar_produtos_vendidos",
+        },
+        "equipe": {
+            "consultar_ranking_funcionarios",
+            "consultar_resumo_vendas",
+            "listar_vendas",
+        },
+        "caixa": {
+            "consultar_caixa",
+            "listar_movimentacoes_caixa",
+        },
+        "custos": {
+            "consultar_resumo_custos",
+            "listar_custos",
+        },
+        "clientes": {
+            "consultar_resumo_clientes",
+            "consultar_ranking_clientes",
+        },
+        "admin": {
+            "admin_resumo_plataforma",
+            "admin_listar_empresas",
+            "admin_consultar_empresa",
+            "admin_ranking_empresas",
+            "admin_empresas_sem_vendas",
+        },
+    }
+
+    if any(
+        termo in texto
+        for termo in (
+            "venda",
+            "vendi",
+            "faturei",
+            "faturamento",
+            "ticket",
+            "pagamento",
+        )
+    ):
+        nomes.update(
+            grupos["vendas"]
+        )
+
+    if any(
+        termo in texto
+        for termo in (
+            "produto",
+            "estoque",
+            "preço",
+            "preco",
+            "código",
+            "codigo",
+            "esgotado",
+        )
+    ):
+        nomes.update(
+            grupos["produtos"]
+        )
+
+    if any(
+        termo in texto
+        for termo in (
+            "funcionário",
+            "funcionario",
+            "vendedor",
+            "comissão",
+            "comissao",
+            "equipe",
+        )
+    ):
+        nomes.update(
+            grupos["equipe"]
+        )
+
+    if "caixa" in texto:
+        nomes.update(
+            grupos["caixa"]
+        )
+
+    if any(
+        termo in texto
+        for termo in (
+            "custo",
+            "despesa",
+            "conta vencida",
+            "conta pendente",
+            "fornecedor",
+        )
+    ):
+        nomes.update(
+            grupos["custos"]
+        )
+
+    if "cliente" in texto:
+        nomes.update(
+            grupos["clientes"]
+        )
+
+    if (
+        nivel == "master"
+        and any(
+            termo in texto
+            for termo in (
+                "empresa",
+                "plataforma",
+                "plano",
+                "master",
+            )
+        )
+    ):
+        nomes.update(
+            grupos["admin"]
+        )
+
+    if any(
+        termo in texto
+        for termo in (
+            "visão geral",
+            "visao geral",
+            "resumo geral",
+            "como está a empresa",
+            "como esta a empresa",
+        )
+    ):
+        nomes.add(
+            "consultar_visao_geral"
+        )
+
+    if not nomes:
+        nomes.update({
+            "consultar_visao_geral",
+            "consultar_resumo_vendas",
+            "buscar_produto",
+        })
+
+    if nivel == "funcionario":
+        nomes.difference_update({
+            "consultar_ranking_funcionarios",
+            "listar_movimentacoes_caixa",
+            "consultar_resumo_custos",
+            "listar_custos",
+            "consultar_resumo_clientes",
+            "consultar_ranking_clientes",
+        })
+
+    if nivel != "master":
+        nomes.difference_update(
+            grupos["admin"]
+        )
+
+    selecionadas = [
+        ferramenta
+        for ferramenta in FERRAMENTAS
+        if ferramenta.get("name") in nomes
+    ]
+
+    return (
+        selecionadas
+        if selecionadas
+        else FERRAMENTAS[:3]
+    )
 
 
 def _json(dados):
@@ -1010,6 +1356,19 @@ def executar_ferramenta(
                 )
             )
 
+            custos = None
+            clientes = None
+
+            if _somente_gerente(usuario):
+                custos = ConsultasCustosNami.resumo(
+                    empresa_id=empresa_id,
+                    periodo="mes",
+                )
+
+                clientes = ConsultasClientesNami.resumo(
+                    empresa_id=empresa_id,
+                )
+
             return _sucesso({
                 "vendas_hoje": vendas_hoje,
                 "vendas_mes": vendas_mes,
@@ -1018,9 +1377,96 @@ def executar_ferramenta(
                     produtos_vendidos
                 ),
                 "caixa": caixa,
+                "custos_mes": custos,
+                "clientes": clientes,
             })
 
-                # ======================================
+        # ======================================
+        # CUSTOS EMPRESARIAIS
+        # ======================================
+
+        if nome == "consultar_resumo_custos":
+            if not _somente_gerente(usuario):
+                return _erro(
+                    "Somente o gerente pode consultar "
+                    "os custos empresariais."
+                )
+
+            dados = ConsultasCustosNami.resumo(
+                empresa_id=empresa_id,
+                periodo=periodo,
+                data_inicio=data_inicio,
+                data_fim=data_fim,
+            )
+
+            return _sucesso(dados)
+
+        if nome == "listar_custos":
+            if not _somente_gerente(usuario):
+                return _erro(
+                    "Somente o gerente pode consultar "
+                    "as despesas empresariais."
+                )
+
+            dados = ConsultasCustosNami.listar(
+                empresa_id=empresa_id,
+                situacao=argumentos.get(
+                    "situacao",
+                    "todas",
+                ),
+                periodo=periodo,
+                data_inicio=data_inicio,
+                data_fim=data_fim,
+                limite=argumentos.get(
+                    "limite",
+                    20,
+                ),
+            )
+
+            return _sucesso(dados)
+
+        # ======================================
+        # CLIENTES
+        # ======================================
+
+        if nome == "consultar_resumo_clientes":
+            if not _somente_gerente(usuario):
+                return _erro(
+                    "Somente o gerente pode consultar "
+                    "os dados gerais dos clientes."
+                )
+
+            dados = ConsultasClientesNami.resumo(
+                empresa_id=empresa_id,
+            )
+
+            return _sucesso(dados)
+
+        if nome == "consultar_ranking_clientes":
+            if not _somente_gerente(usuario):
+                return _erro(
+                    "Somente o gerente pode consultar "
+                    "o ranking de clientes."
+                )
+
+            dados = ConsultasClientesNami.ranking(
+                empresa_id=empresa_id,
+                periodo=periodo,
+                data_inicio=data_inicio,
+                data_fim=data_fim,
+                ordem=argumentos.get(
+                    "ordem",
+                    "maior_valor",
+                ),
+                limite=argumentos.get(
+                    "limite",
+                    10,
+                ),
+            )
+
+            return _sucesso(dados)
+
+        # ======================================
         # ADMIN — RESUMO DA PLATAFORMA
         # ======================================
 

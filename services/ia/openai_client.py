@@ -7,8 +7,8 @@ from datetime import datetime
 from openai import OpenAI
 
 from services.ia.tools import (
-    FERRAMENTAS,
     executar_ferramenta,
+    selecionar_ferramentas,
 )
 
 
@@ -426,12 +426,17 @@ def perguntar_openai(
         "gpt-4.1-mini"
     ).strip()
 
+    ferramentas = selecionar_ferramentas(
+        mensagem=mensagem,
+        nivel=usuario.get("nivel"),
+    )
+
     try:
         resposta = client.responses.create(
             model=modelo,
             instructions=instrucoes,
             input=entrada,
-            tools=FERRAMENTAS,
+            tools=ferramentas,
             tool_choice="auto",
             max_output_tokens=900,
         )
@@ -497,7 +502,7 @@ def perguntar_openai(
                 model=modelo,
                 instructions=instrucoes,
                 input=entrada,
-                tools=FERRAMENTAS,
+                tools=ferramentas,
                 tool_choice="auto",
                 max_output_tokens=900,
             )

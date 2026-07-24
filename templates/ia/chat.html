@@ -1,55 +1,274 @@
 {% extends "layout.html" %}
 
 {% block css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/ia.css') }}">
+<link
+    rel="stylesheet"
+    href="{{ url_for(
+        'static',
+        filename='css/ia.css'
+    ) }}"
+>
 {% endblock %}
 
 {% block content %}
 
-<div class="ia-container">
+<section class="nami-page">
 
-    <div class="ia-header">
-        <h1>Assistente Nami</h1>
-        <p>Seu assistente inteligente para o PDV.</p>
-    </div>
+    <div class="ia-container">
 
-    <div id="chat" class="chat">
+        <!-- =====================================
+             CABEÇALHO
+        ====================================== -->
 
-        <div class="mensagem ia">
-            🐱 Olá! Eu sou a Nami, sua assistente inteligente.
+        <header class="ia-header">
 
-            <br><br>
+            <div class="ia-header-reflexo"></div>
 
-            Posso ajudar com:
+            <div class="ia-header-conteudo">
 
-            <ul>
-                <li>Vendas</li>
-                <li>Estoque</li>
-                <li>Caixa</li>
-                <li>Produtos</li>
-                <li>Relatórios</li>
-            </ul>
+                <div class="ia-status">
+                    <span class="ia-status-ponto"></span>
+                    Assistente online
+                </div>
 
-        </div>
+                <h1>
+                    Assistente
+                    <span>Nami</span>
+                </h1>
 
-    </div>
+                <p>
+                    Inteligência integrada ao seu Nexus PDV.
+                </p>
 
-    <div class="chat-input">
+                <div class="ia-recursos">
 
-        <input
-            type="text"
-            id="pergunta"
-            placeholder="Digite sua pergunta..."
+                    <span>Vendas</span>
+                    <span>Estoque</span>
+                    <span>Clientes</span>
+                    <span>Custos</span>
+
+                </div>
+
+            </div>
+
+            <div class="nami-mascote-box">
+
+                <div class="nami-orbita orbita-um"></div>
+                <div class="nami-orbita orbita-dois"></div>
+
+                <div class="nami-brilho"></div>
+
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='img/mascote-nami.png'
+                    ) }}"
+                    alt="Nami, assistente do Nexus PDV"
+                    class="nami-mascote"
+                >
+
+                <span class="nami-particula particula-um"></span>
+                <span class="nami-particula particula-dois"></span>
+                <span class="nami-particula particula-tres"></span>
+
+            </div>
+
+            <div class="ia-header-marca">
+                NAMI
+            </div>
+
+        </header>
+
+        <!-- =====================================
+             ÁREA DO CHAT
+        ====================================== -->
+
+        <main
+            id="chat"
+            class="chat"
+            aria-live="polite"
         >
 
-        <button id="enviar">
-            Enviar
-        </button>
+            <div class="mensagem ia mensagem-boas-vindas">
+
+                <div class="mensagem-avatar">
+
+                    <img
+                        src="{{ url_for(
+                            'static',
+                            filename='img/mascote-nami.png'
+                        ) }}"
+                        alt="Nami"
+                    >
+
+                    <span></span>
+
+                </div>
+
+                <div class="mensagem-conteudo">
+
+                    <div class="mensagem-identidade">
+
+                        <strong>Nami</strong>
+
+                        <span>
+                            Assistente Nexus
+                        </span>
+
+                    </div>
+
+                    <div class="mensagem-texto">
+
+                        <h2>
+                            Olá! Eu sou a Nami. 🐱
+                        </h2>
+
+                        <p>
+                            Posso consultar informações reais do seu
+                            sistema e ajudar você a entender melhor
+                            sua empresa.
+                        </p>
+
+                        <div class="nami-sugestoes">
+
+                            <button
+                                type="button"
+                                class="nami-sugestao"
+                                data-pergunta="Quanto faturei este mês?"
+                            >
+                                <span>↗</span>
+
+                                <div>
+                                    <strong>Faturamento</strong>
+                                    <small>
+                                        Quanto faturei este mês?
+                                    </small>
+                                </div>
+                            </button>
+
+                            <button
+                                type="button"
+                                class="nami-sugestao"
+                                data-pergunta="Quais produtos estão com estoque baixo?"
+                            >
+                                <span>◫</span>
+
+                                <div>
+                                    <strong>Estoque</strong>
+                                    <small>
+                                        Produtos com estoque baixo
+                                    </small>
+                                </div>
+                            </button>
+
+                            <button
+                                type="button"
+                                class="nami-sugestao"
+                                data-pergunta="Quais despesas estão vencidas?"
+                            >
+                                <span>◷</span>
+
+                                <div>
+                                    <strong>Custos</strong>
+                                    <small>
+                                        Despesas vencidas
+                                    </small>
+                                </div>
+                            </button>
+
+                            <button
+                                type="button"
+                                class="nami-sugestao"
+                                data-pergunta="Me dê uma visão geral da empresa."
+                            >
+                                <span>✦</span>
+
+                                <div>
+                                    <strong>Visão geral</strong>
+                                    <small>
+                                        Resumo completo da empresa
+                                    </small>
+                                </div>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- =====================================
+             CAMPO DE ENVIO
+        ====================================== -->
+
+        <footer class="chat-input">
+
+            <div class="chat-input-brilho"></div>
+
+            <div class="chat-input-icone">
+                ✦
+            </div>
+
+            <input
+                type="text"
+                id="pergunta"
+                maxlength="1000"
+                autocomplete="off"
+                placeholder="Pergunte alguma coisa para a Nami..."
+                aria-label="Mensagem para a Nami"
+            >
+
+            <button
+                type="button"
+                id="enviar"
+            >
+                <span>Enviar</span>
+                <strong>➜</strong>
+            </button>
+
+        </footer>
+
+        <p class="nami-aviso">
+            A Nami consulta apenas as informações permitidas
+            para o seu perfil.
+        </p>
 
     </div>
 
-</div>
+</section>
 
-<script src="{{ url_for('static', filename='js/ia.js') }}"></script>
+<script>
+    document
+        .querySelectorAll("[data-pergunta]")
+        .forEach(function (botao) {
+            botao.addEventListener(
+                "click",
+                function () {
+                    const input =
+                        document.getElementById("pergunta");
+
+                    if (!input) {
+                        return;
+                    }
+
+                    input.value =
+                        botao.dataset.pergunta || "";
+
+                    input.focus();
+                }
+            );
+        });
+</script>
+
+<script
+    src="{{ url_for(
+        'static',
+        filename='js/ia.js'
+    ) }}"
+></script>
 
 {% endblock %}

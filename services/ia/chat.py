@@ -8,6 +8,10 @@ from services.ia.prompts import (
     PROMPT_SISTEMA,
 )
 
+from services.ia.fast_router import (
+    tentar_resposta_rapida,
+)
+
 
 class AssistenteNexus:
 
@@ -56,12 +60,18 @@ class AssistenteNexus:
             chave_memoria
         )
 
-        resposta = perguntar_openai(
+        resposta = tentar_resposta_rapida(
             mensagem=mensagem,
-            contexto=PROMPT_SISTEMA,
-            historico=historico,
             usuario=usuario,
         )
+
+        if resposta is None:
+            resposta = perguntar_openai(
+                mensagem=mensagem,
+                contexto=PROMPT_SISTEMA,
+                historico=historico,
+                usuario=usuario,
+            )
 
         if not resposta:
             resposta = (
