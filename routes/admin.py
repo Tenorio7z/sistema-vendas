@@ -17,6 +17,8 @@ from services.onboarding_empresa_service import (
     OnboardingEmpresaService,
 )
 
+from services.modulos_empresa_service import ModulosEmpresaService
+
 
 def registrar_rotas(app):
 
@@ -218,6 +220,15 @@ def registrar_rotas(app):
                 None,
             )
 
+            for empresa in empresas:
+
+                empresa["modulos_ativos"] = (
+                ModulosEmpresaService.listar(
+                    empresa["empresa_id"]
+                )
+            )   
+            
+            
             return render_template(
                 "admin.html",
 
@@ -241,6 +252,8 @@ def registrar_rotas(app):
                 ),
 
                 ultimo_convite=ultimo_convite,
+                
+                catalogo_modulos=ModulosEmpresaService.catalogo(),
             )
 
         except Exception:
@@ -626,13 +639,10 @@ def registrar_rotas(app):
     # =====================================================
 
     @app.route(
-        (
-            "/alterar_modulo_emprestimos/"
-            "<int:empresa_id>"
-        ),
-        methods=["POST"],
+    "/admin/empresas/<int:empresa_id>/modulos",
+    methods=["POST"],
     )
-    def alterar_modulo_emprestimos(
+    def alterar_modulos_empresa(
         empresa_id,
     ):
 
@@ -641,83 +651,41 @@ def registrar_rotas(app):
         if bloqueio:
             return bloqueio
 
-        valores_modulo = request.form.getlist(
-            "emprestimos_ativo"
+        modulos = request.form.getlist(
+            "modulos"
         )
-
-        emprestimos_ativo = (
-            "1" in valores_modulo
-        )
-
-        conn = conectar()
-        cursor = criar_cursor(conn)
 
         try:
-            cursor.execute(
-                """
-                UPDATE empresa
 
-                SET emprestimos_ativo = %s
-
-                WHERE id = %s
-
-                RETURNING nome
-                """,
-                (
-                    emprestimos_ativo,
+            modulos_ativos = (
+                ModulosEmpresaService.salvar(
                     empresa_id,
-                ),
-            )
-
-            empresa = cursor.fetchone()
-
-            if not empresa:
-                conn.rollback()
-
-                flash(
-                    "Empresa não encontrada.",
-                    "erro",
+                    modulos,
                 )
-
-                return redirect(
-                    url_for("admin")
-                )
-
-            conn.commit()
-
-            estado = (
-                "ativado"
-                if emprestimos_ativo
-                else "desativado"
             )
 
             flash(
                 (
-                    f"Módulo de empréstimos {estado} "
-                    f"para {empresa['nome']}."
+                    "Módulos atualizados com sucesso. "
+                    f"{len(modulos_ativos)} módulo(s) ativo(s)."
                 ),
                 "sucesso",
             )
 
         except Exception:
-            conn.rollback()
 
             app.logger.exception(
                 (
-                    "Erro ao alterar módulo "
+                    "Erro ao atualizar os módulos "
                     "da empresa %s."
                 ),
                 empresa_id,
             )
 
             flash(
-                "Não foi possível alterar o módulo.",
+                "Não foi possível atualizar os módulos.",
                 "erro",
             )
-
-        finally:
-            cursor.close()
-            conn.close()
 
         return redirect(
             url_for("admin")

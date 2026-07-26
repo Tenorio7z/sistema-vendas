@@ -297,6 +297,18 @@ def registrar_rotas(app):
                     ""
                 ).strip()
 
+                setor_preparo = request.form.get(
+                    "setor_preparo",
+                    "cozinha",
+                ).strip().lower()
+
+                if setor_preparo not in {
+                    "cozinha",
+                    "bar",
+                    "direto",
+                }:
+                    setor_preparo = "cozinha"
+
                 if not nome:
                     flash(
                         "Informe o nome do produto.",
@@ -381,9 +393,11 @@ def registrar_rotas(app):
                         codigo_barras,
                         empresa_id,
                         imagem,
-                        imagem_mime
+                        imagem_mime,
+                        setor_preparo
                     )
                     VALUES (
+                        %s,
                         %s,
                         %s,
                         %s,
@@ -405,6 +419,7 @@ def registrar_rotas(app):
                             else None
                         ),
                         imagem_mime,
+                        setor_preparo,
                     )
                 )
 
@@ -430,6 +445,7 @@ def registrar_rotas(app):
                     preco,
                     estoque,
                     codigo_barras,
+                    setor_preparo,
                     empresa_id,
 
                     CASE
@@ -669,6 +685,18 @@ def registrar_rotas(app):
                     ""
                 ).strip()
 
+                setor_preparo = request.form.get(
+                    "setor_preparo",
+                    "cozinha",
+                ).strip().lower()
+
+                if setor_preparo not in {
+                    "cozinha",
+                    "bar",
+                    "direto",
+                }:
+                    setor_preparo = "cozinha"
+
                 if not nome:
                     flash(
                         "Informe o nome do produto.",
@@ -731,7 +759,8 @@ def registrar_rotas(app):
                         nome = %s,
                         preco = %s,
                         estoque = %s,
-                        codigo_barras = %s
+                        codigo_barras = %s,
+                        setor_preparo = %s
 
                     WHERE id = %s
                       AND empresa_id = %s
@@ -741,6 +770,7 @@ def registrar_rotas(app):
                         preco,
                         estoque,
                         codigo_barras,
+                        setor_preparo,
                         id,
                         empresa_id,
                     )
@@ -775,6 +805,7 @@ def registrar_rotas(app):
                     preco,
                     estoque,
                     codigo_barras,
+                    setor_preparo,
                     empresa_id,
 
                     CASE

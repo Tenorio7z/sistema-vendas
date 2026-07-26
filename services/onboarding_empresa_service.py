@@ -15,6 +15,7 @@ from database import (
     criar_cursor,
 )
 
+from services.modulos_empresa_service import ModulosEmpresaService
 
 class OnboardingEmpresaErro(ValueError):
     pass
@@ -1483,7 +1484,7 @@ class OnboardingEmpresaService:
         solicitacao_id,
         usuario_id,
         plano,
-        emprestimos_ativo=False,
+        modulos=None,
         dias_teste=0,
         observacoes_admin=None,
         url_login=None,
@@ -1518,8 +1519,12 @@ class OnboardingEmpresaService:
             500,
         ) or None
 
-        emprestimos_ativo = bool(
-            emprestimos_ativo
+        modulos = ModulosEmpresaService.normalizar(
+            modulos or ModulosEmpresaService.MODULOS_PADRAO
+        )
+
+        emprestimos_ativo = (
+            "emprestimos" in modulos
         )
 
         if plano not in ("comum", "premium"):
@@ -1657,6 +1662,12 @@ class OnboardingEmpresaService:
 
             empresa = cursor.fetchone()
             empresa_id = empresa["id"]
+            
+            ModulosEmpresaService.salvar_com_cursor(
+                cursor,
+                empresa_id,
+                modulos,
+            )
 
             # ==========================================
             # CRIAR USUÁRIO GERENTE
@@ -1839,6 +1850,7 @@ class OnboardingEmpresaService:
                     "status": "aprovada",
                     "plano": plano,
                     "emprestimos_ativo": emprestimos_ativo,
+                    "modulos": sorted(modulos),
                     "dias_teste": dias_teste,
                     "empresa_id": empresa_id,
                     "gerente_id": gerente_id,
@@ -1860,6 +1872,7 @@ class OnboardingEmpresaService:
 
                 "plano": plano,
                 "emprestimos_ativo": emprestimos_ativo,
+                "modulos": sorted(modulos),
                 "dias_teste": dias_teste,
 
                 "mensagem_whatsapp_id": mensagem_id,

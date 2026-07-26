@@ -199,6 +199,12 @@
 
             <input type="text" name="codigo_barras" placeholder="Código de barras" maxlength="100">
 
+            <select name="setor_preparo" required>
+                <option value="cozinha">Produção: cozinha</option>
+                <option value="bar">Produção: bar</option>
+                <option value="direto">Entrega direta</option>
+            </select>
+
             <button type="submit" class="btn" id="salvarProduto">
                 Salvar Produto
             </button>

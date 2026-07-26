@@ -1,0 +1,1062 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/comanda.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<main class="comanda-page">
+
+    <!-- CABEÇALHO -->
+    <header class="comanda-header">
+
+        <div class="comanda-header-identidade">
+
+            <a
+                href="{{ url_for('mesas') }}"
+                class="comanda-voltar"
+                aria-label="Voltar para mesas"
+            >
+                ←
+            </a>
+
+            <div>
+
+                <span class="comanda-kicker">
+                    COMANDA #{{ comanda["id"] }}
+                </span>
+
+                <h1>
+                    Mesa {{ comanda["mesa_numero"] }}
+
+                    {% if comanda["mesa_nome"] %}
+                        — {{ comanda["mesa_nome"] }}
+                    {% endif %}
+                </h1>
+
+                <p>
+                    {% if comanda["identificacao"] %}
+                        {{ comanda["identificacao"] }}
+                    {% else %}
+                        Atendimento sem identificação
+                    {% endif %}
+
+                    {% if comanda["funcionario_nome"] %}
+                        · Responsável:
+                        {{ comanda["funcionario_nome"] }}
+                    {% endif %}
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="comanda-header-status">
+
+            <span class="status-comanda status-{{ comanda['status'] }}">
+
+                {% if comanda["status"] == "aberta" %}
+                    Em atendimento
+                {% elif comanda["status"] == "aguardando_pagamento" %}
+                    Aguardando pagamento
+                {% elif comanda["status"] == "fechada" %}
+                    Finalizada
+                {% else %}
+                    Cancelada
+                {% endif %}
+
+            </span>
+
+            <span class="comanda-header-marca">
+                ORDER
+            </span>
+
+        </div>
+
+    </header>
+
+    <!-- RESUMO -->
+    <section class="comanda-resumo">
+
+        <article>
+            <small>Pessoas</small>
+
+            <strong>
+                {{ comanda["quantidade_pessoas"] }}
+            </strong>
+        </article>
+
+        <article>
+            <small>Cliente</small>
+
+            <strong>
+                {{ comanda["cliente_nome"] or "Não vinculado" }}
+            </strong>
+        </article>
+
+        <article>
+            <small>Itens ativos</small>
+
+            <strong>
+                {{
+                    itens
+                    | rejectattr("status", "equalto", "cancelado")
+                    | list
+                    | length
+                }}
+            </strong>
+        </article>
+
+        <article>
+            <small>Aberta em</small>
+
+            <strong>
+                {% if comanda["aberta_em"] %}
+                    {{ comanda["aberta_em"].strftime("%d/%m/%Y %H:%M") }}
+                {% else %}
+                    —
+                {% endif %}
+            </strong>
+        </article>
+
+    </section>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <section class="comanda-layout">
+
+        <!-- CATÁLOGO -->
+        <section class="comanda-catalogo">
+
+            <header class="secao-header">
+
+                <div>
+                    <span class="comanda-kicker">
+                        CATÁLOGO
+                    </span>
+
+                    <h2>Adicionar produtos</h2>
+
+                    <p>
+                        Selecione um produto para incluir na comanda.
+                    </p>
+                </div>
+
+                <span class="secao-contador">
+                    {{ produtos|length }}
+                    produto{% if produtos|length != 1 %}s{% endif %}
+                </span>
+
+            </header>
+
+            <div class="catalogo-busca">
+
+                <span>⌕</span>
+
+                <input
+                    type="search"
+                    id="buscarProdutoComanda"
+                    placeholder="Pesquisar produto..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+            <div class="catalogo-produtos" id="catalogoProdutos">
+
+                {% for produto in produtos %}
+
+                    <article
+                        class="produto-comanda-card"
+                        data-produto-card
+                        data-pesquisa="{{ produto['nome']|lower|e }}"
+                    >
+
+                        <div class="produto-comanda-icone">
+                            ◇
+                        </div>
+
+                        <div class="produto-comanda-info">
+
+                            <h3>
+                                {{ produto["nome"] }}
+                            </h3>
+
+                            <span>
+                                Estoque: {{ produto["estoque"] }}
+                            </span>
+
+                        </div>
+
+                        <div class="produto-comanda-preco">
+
+                            <strong>
+                                R$
+                                {{
+                                    "%.2f"|format(
+                                        (produto["preco"] or 0)|float
+                                    )
+                                }}
+                            </strong>
+
+                            {% if comanda["status"] == "aberta" %}
+
+                                <button
+                                    type="button"
+                                    data-selecionar-produto
+                                    data-produto-id="{{ produto['id'] }}"
+                                    data-produto-nome="{{ produto['nome']|e }}"
+                                    data-produto-preco="{{ (produto['preco'] or 0)|float }}"
+                                    data-produto-estoque="{{ produto['estoque'] }}"
+                                    aria-label="Adicionar {{ produto['nome'] }}"
+                                >
+                                    +
+                                </button>
+
+                            {% endif %}
+
+                        </div>
+
+                    </article>
+
+                {% else %}
+
+                    <div class="catalogo-vazio">
+
+                        <span>◇</span>
+
+                        <h3>Nenhum produto disponível</h3>
+
+                        <p>
+                            Cadastre produtos ou verifique o estoque.
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+            <div
+                class="catalogo-sem-resultado"
+                id="catalogoSemResultado"
+                hidden
+            >
+                Nenhum produto encontrado.
+            </div>
+
+        </section>
+
+        <!-- PEDIDO ATUAL -->
+        <aside class="comanda-pedido">
+
+            <header class="secao-header">
+
+                <div>
+                    <span class="comanda-kicker">
+                        PEDIDO ATUAL
+                    </span>
+
+                    <h2>Itens da comanda</h2>
+                </div>
+
+                <span class="secao-contador">
+                    {{ itens|length }}
+                    lançamento{% if itens|length != 1 %}s{% endif %}
+                </span>
+
+            </header>
+
+            <div class="comanda-itens">
+
+                {% for item in itens %}
+
+                    <article class="
+                        comanda-item
+                        item-{{ item['status'] }}
+                        {% if item['pedido_id'] %}
+                            item-enviado
+                        {% else %}
+                            item-rascunho
+                        {% endif %}
+                    ">
+
+                        <div class="comanda-item-topo">
+
+                            <div>
+
+                                <span class="item-status">
+
+                                    {% if item["status"] == "pendente" %}
+                                        Pendente
+                                    {% elif item["status"] == "preparando" %}
+                                        Preparando
+                                    {% elif item["status"] == "pronto" %}
+                                        Pronto
+                                    {% elif item["status"] == "entregue" %}
+                                        Entregue
+                                    {% else %}
+                                        Cancelado
+                                    {% endif %}
+
+                                </span>
+
+                                {% if item["pedido_id"] %}
+
+                                    <span class="item-envio-status">
+                                        Pedido enviado
+                                    </span>
+
+                                {% elif item["status"] != "cancelado" %}
+
+                                    <span class="
+                                        item-envio-status
+                                        item-envio-rascunho
+                                    ">
+                                        Ainda não enviado
+                                    </span>
+
+                                {% endif %}
+
+                                <h3>
+                                    {{ item["produto_nome"] }}
+                                </h3>
+
+                            </div>
+
+                            <strong class="item-subtotal">
+
+                                {% if item["status"] == "cancelado" %}
+                                    - R$
+                                {% else %}
+                                    R$
+                                {% endif %}
+
+                                {{
+                                    "%.2f"|format(
+                                        (item["subtotal"] or 0)|float
+                                    )
+                                }}
+
+                            </strong>
+
+                        </div>
+
+                        <div class="comanda-item-detalhes">
+
+                            <span>
+                                {{
+                                    "%.3f"|format(
+                                        (item["quantidade"] or 0)|float
+                                    )
+                                }}x
+                            </span>
+
+                            <span>
+                                R$
+                                {{
+                                    "%.2f"|format(
+                                        (item["valor_unitario"] or 0)|float
+                                    )
+                                }}
+                                cada
+                            </span>
+
+                        </div>
+
+                        {% if item["observacoes"] %}
+
+                            <p class="item-observacoes">
+                                {{ item["observacoes"] }}
+                            </p>
+
+                        {% endif %}
+
+                        <!--
+                            O garçom só pode alterar itens que ainda
+                            não foram enviados para produção.
+                        -->
+                        {% if (
+                            comanda["status"] == "aberta"
+                            and item["status"] != "cancelado"
+                            and not item["pedido_id"]
+                        ) %}
+
+                            <div class="comanda-item-acoes">
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'quantidade_item_comanda',
+                                        comanda_id=comanda['id'],
+                                        item_id=item['id']
+                                    ) }}"
+                                    class="quantidade-form"
+                                >
+
+                                    <button
+                                        type="button"
+                                        data-quantidade-menos
+                                        aria-label="Diminuir quantidade"
+                                    >
+                                        −
+                                    </button>
+
+                                    <input
+                                        type="number"
+                                        name="quantidade"
+                                        value="{{ item['quantidade'] }}"
+                                        min="0.001"
+                                        step="0.001"
+                                        required
+                                    >
+
+                                    <button
+                                        type="button"
+                                        data-quantidade-mais
+                                        aria-label="Aumentar quantidade"
+                                    >
+                                        +
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        class="salvar-quantidade"
+                                    >
+                                        Salvar
+                                    </button>
+
+                                </form>
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'status_item_comanda',
+                                        comanda_id=comanda['id'],
+                                        item_id=item['id']
+                                    ) }}"
+                                    onsubmit="return confirm(
+                                        'Deseja cancelar este item?'
+                                    )"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="status"
+                                        value="cancelado"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="cancelar-item"
+                                        aria-label="Cancelar item"
+                                    >
+                                        ×
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        {% endif %}
+
+                    </article>
+
+                {% else %}
+
+                    <div class="comanda-itens-vazio">
+
+                        <span>◇</span>
+
+                        <h3>Comanda vazia</h3>
+
+                        <p>
+                            Adicione produtos usando o catálogo.
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- TOTAIS -->
+            <section class="comanda-totais">
+
+                <div>
+                    <span>Subtotal</span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"|format(
+                                (comanda["subtotal"] or 0)|float
+                            )
+                        }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Desconto</span>
+
+                    <strong class="valor-desconto">
+                        - R$
+                        {{
+                            "%.2f"|format(
+                                (comanda["desconto_valor"] or 0)|float
+                            )
+                        }}
+                    </strong>
+                </div>
+
+                <div class="comanda-total-final">
+                    <span>Total da comanda</span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"|format(
+                                (comanda["total"] or 0)|float
+                            )
+                        }}
+                    </strong>
+                </div>
+
+            </section>
+
+            <!-- CONTAGEM DE ITENS AINDA NÃO ENVIADOS -->
+            {% set novos = namespace(total=0) %}
+
+            {% for item in itens %}
+
+                {% if (
+                    not item["pedido_id"]
+                    and item["status"] != "cancelado"
+                ) %}
+                    {% set novos.total = novos.total + 1 %}
+                {% endif %}
+
+            {% endfor %}
+
+            {% if comanda["status"] == "aberta" %}
+
+                {% if novos.total > 0 %}
+
+                    <div class="comanda-enviar-box">
+
+                        <div>
+
+                            <span>NOVOS ITENS</span>
+
+                            <strong>
+                                {{ novos.total }}
+                                item{% if novos.total != 1 %}s{% endif %}
+                                aguardando envio
+                            </strong>
+
+                            <small>
+                                O pedido será enviado para cozinha,
+                                bar e caixa.
+                            </small>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn-enviar-pedido"
+                            id="btnEnviarPedido"
+                            data-url="{{ url_for(
+                                'enviar_pedido_comanda',
+                                comanda_id=comanda['id']
+                            ) }}"
+                        >
+
+                            <span class="texto-botao">
+                                Enviar pedido
+                            </span>
+
+                            <span class="contador-botao">
+                                {{ novos.total }}
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="comanda-enviado-box">
+
+                        <span>✓</span>
+
+                        <div>
+                            <strong>
+                                Todos os itens foram enviados
+                            </strong>
+
+                            <small>
+                                Adicione novos produtos para criar
+                                outra rodada do pedido.
+                            </small>
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            {% endif %}
+
+        </aside>
+
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section class="comanda-historico">
+
+        <header class="secao-header">
+
+            <div>
+                <span class="comanda-kicker">
+                    AUDITORIA
+                </span>
+
+                <h2>Histórico da comanda</h2>
+            </div>
+
+        </header>
+
+        <div class="historico-lista">
+
+            {% for registro in historico %}
+
+                <article>
+
+                    <span class="historico-ponto"></span>
+
+                    <div>
+                        <strong>
+                            {{ registro["descricao"] }}
+                        </strong>
+
+                        <small>
+                            {{
+                                registro["criado_em"]
+                                .strftime("%d/%m/%Y %H:%M")
+                            }}
+                        </small>
+                    </div>
+
+                </article>
+
+            {% else %}
+
+                <p class="historico-vazio">
+                    Nenhuma movimentação registrada.
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</main>
+
+<!-- MODAL PARA ADICIONAR PRODUTO -->
+<div
+    class="comanda-modal"
+    id="modalAdicionarProduto"
+    aria-hidden="true"
+>
+
+    <div
+        class="comanda-modal-backdrop"
+        data-fechar-modal-produto
+    ></div>
+
+    <section
+        class="comanda-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalProdutoNome"
+    >
+
+        <header>
+
+            <div>
+                <span class="comanda-kicker">
+                    NOVO ITEM
+                </span>
+
+                <h2 id="modalProdutoNome">
+                    Adicionar produto
+                </h2>
+
+                <p id="modalProdutoDetalhes"></p>
+            </div>
+
+            <button
+                type="button"
+                data-fechar-modal-produto
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+        </header>
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'adicionar_item_comanda',
+                comanda_id=comanda['id']
+            ) }}"
+        >
+
+            <input
+                type="hidden"
+                name="produto_id"
+                id="modalProdutoId"
+            >
+
+            <label>
+
+                <span>Quantidade *</span>
+
+                <input
+                    type="number"
+                    name="quantidade"
+                    id="modalProdutoQuantidade"
+                    value="1"
+                    min="0.001"
+                    step="0.001"
+                    required
+                >
+
+            </label>
+
+            <label>
+
+                <span>Observações do item</span>
+
+                <textarea
+                    name="observacoes"
+                    maxlength="1000"
+                    placeholder="Ex.: sem cebola, ponto da carne..."
+                ></textarea>
+
+            </label>
+
+            <footer>
+
+                <button
+                    type="button"
+                    class="btn-modal-cancelar"
+                    data-fechar-modal-produto
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-modal-adicionar"
+                >
+                    Adicionar à comanda
+                </button>
+
+            </footer>
+
+        </form>
+
+    </section>
+
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    const busca = document.getElementById(
+        "buscarProdutoComanda"
+    );
+
+    const produtos = Array.from(
+        document.querySelectorAll("[data-produto-card]")
+    );
+
+    const semResultado = document.getElementById(
+        "catalogoSemResultado"
+    );
+
+    const modal = document.getElementById(
+        "modalAdicionarProduto"
+    );
+
+    function abrirModalProduto(botao) {
+        if (!modal) {
+            return;
+        }
+
+        const nome = botao.dataset.produtoNome || "";
+        const preco = Number(
+            botao.dataset.produtoPreco || 0
+        );
+
+        const estoque = botao.dataset.produtoEstoque || "0";
+
+        document.getElementById(
+            "modalProdutoId"
+        ).value = botao.dataset.produtoId;
+
+        document.getElementById(
+            "modalProdutoNome"
+        ).textContent = nome;
+
+        document.getElementById(
+            "modalProdutoDetalhes"
+        ).textContent = (
+            preco.toLocaleString(
+                "pt-BR",
+                {
+                    style: "currency",
+                    currency: "BRL"
+                }
+            )
+            + " · Estoque: "
+            + estoque
+        );
+
+        document.getElementById(
+            "modalProdutoQuantidade"
+        ).value = "1";
+
+        modal.classList.add("aberto");
+        modal.setAttribute("aria-hidden", "false");
+
+        document.body.classList.add("modal-aberto");
+
+        window.setTimeout(function () {
+            document.getElementById(
+                "modalProdutoQuantidade"
+            ).focus();
+        }, 100);
+    }
+
+    function fecharModalProduto() {
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("aberto");
+        modal.setAttribute("aria-hidden", "true");
+
+        document.body.classList.remove("modal-aberto");
+    }
+
+    function filtrarProdutos() {
+        if (!busca) {
+            return;
+        }
+
+        const termo = busca.value
+            .trim()
+            .toLowerCase();
+
+        let visiveis = 0;
+
+        produtos.forEach(function (produto) {
+            const pesquisa = (
+                produto.dataset.pesquisa || ""
+            );
+
+            const mostrar = (
+                !termo
+                || pesquisa.includes(termo)
+            );
+
+            produto.hidden = !mostrar;
+
+            if (mostrar) {
+                visiveis += 1;
+            }
+        });
+
+        if (semResultado) {
+            semResultado.hidden = visiveis > 0;
+        }
+    }
+
+    document.addEventListener(
+        "click",
+        function (evento) {
+            const selecionar = evento.target.closest(
+                "[data-selecionar-produto]"
+            );
+
+            if (selecionar) {
+                abrirModalProduto(selecionar);
+                return;
+            }
+
+            if (
+                evento.target.closest(
+                    "[data-fechar-modal-produto]"
+                )
+            ) {
+                fecharModalProduto();
+                return;
+            }
+
+            const menos = evento.target.closest(
+                "[data-quantidade-menos]"
+            );
+
+            if (menos) {
+                const formulario = menos.closest(
+                    ".quantidade-form"
+                );
+
+                const campo = formulario.querySelector(
+                    "input[name='quantidade']"
+                );
+
+                const atual = Number(campo.value || 1);
+
+                campo.value = Math.max(
+                    0.001,
+                    atual - 1
+                ).toFixed(3);
+
+                return;
+            }
+
+            const mais = evento.target.closest(
+                "[data-quantidade-mais]"
+            );
+
+            if (mais) {
+                const formulario = mais.closest(
+                    ".quantidade-form"
+                );
+
+                const campo = formulario.querySelector(
+                    "input[name='quantidade']"
+                );
+
+                const atual = Number(campo.value || 0);
+
+                campo.value = (
+                    atual + 1
+                ).toFixed(3);
+            }
+        }
+    );
+
+    if (busca) {
+        busca.addEventListener(
+            "input",
+            filtrarProdutos
+        );
+    }
+
+    document.addEventListener(
+        "keydown",
+        function (evento) {
+            if (evento.key === "Escape") {
+                fecharModalProduto();
+            }
+        }
+    );
+
+    const btnEnviarPedido = document.getElementById(
+        "btnEnviarPedido"
+    );
+
+    if (btnEnviarPedido) {
+        btnEnviarPedido.addEventListener(
+            "click",
+            async function () {
+                const confirmar = window.confirm(
+                    "Enviar os novos itens para produção?"
+                );
+
+                if (!confirmar) {
+                    return;
+                }
+
+                const texto = btnEnviarPedido.querySelector(
+                    ".texto-botao"
+                );
+
+                const textoOriginal = texto.textContent;
+
+                btnEnviarPedido.disabled = true;
+                btnEnviarPedido.classList.add("carregando");
+
+                texto.textContent = "Enviando...";
+
+                try {
+                    const resposta = await fetch(
+                        btnEnviarPedido.dataset.url,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-Requested-With": "XMLHttpRequest"
+                            },
+                            body: JSON.stringify({})
+                        }
+                    );
+
+                    const tipoResposta = (
+                        resposta.headers.get("content-type")
+                        || ""
+                    );
+
+                    if (!tipoResposta.includes("application/json")) {
+                        throw new Error(
+                            "O servidor não retornou uma resposta válida."
+                        );
+                    }
+
+                    const dados = await resposta.json();
+
+                    if (!resposta.ok || !dados.ok) {
+                        throw new Error(
+                            dados.erro
+                            || "Não foi possível enviar o pedido."
+                        );
+                    }
+
+                    texto.textContent = "Pedido enviado ✓";
+
+                    window.setTimeout(
+                        function () {
+                            window.location.reload();
+                        },
+                        650
+                    );
+                } catch (erro) {
+                    window.alert(
+                        erro.message
+                        || "Erro ao enviar o pedido."
+                    );
+
+                    btnEnviarPedido.disabled = false;
+
+                    btnEnviarPedido.classList.remove(
+                        "carregando"
+                    );
+
+                    texto.textContent = textoOriginal;
+                }
+            }
+        );
+    }
+})();
+</script>
+
+{% endblock %}

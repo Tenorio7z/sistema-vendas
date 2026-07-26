@@ -1,10 +1,7 @@
 {% extends "layout.html" %}
 
 {% block css %}
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/onboarding_admin.css') }}"
->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/onboarding_admin.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -34,30 +31,27 @@
             <span class="status-badge status-{{ solicitacao['status'] }}">
 
                 {% if solicitacao["status"] == "aguardando" %}
-                    Aguardando aprovação
+                Aguardando aprovação
 
                 {% elif solicitacao["status"] == "em_analise" %}
-                    Em análise
+                Em análise
 
                 {% elif solicitacao["status"] == "aprovada" %}
-                    Aprovada
+                Aprovada
 
                 {% elif solicitacao["status"] == "rejeitada" %}
-                    Rejeitada
+                Rejeitada
 
                 {% elif solicitacao["status"] == "cancelada" %}
-                    Cancelada
+                Cancelada
 
                 {% else %}
-                    {{ solicitacao["status"] }}
+                {{ solicitacao["status"] }}
                 {% endif %}
 
             </span>
 
-            <a
-                href="{{ url_for('onboarding_solicitacoes') }}"
-                class="btn-secundario"
-            >
+            <a href="{{ url_for('onboarding_solicitacoes') }}" class="btn-secundario">
                 ← Voltar
             </a>
 
@@ -201,13 +195,11 @@
 
                         <span>Autorizou contato pelo WhatsApp</span>
 
-                        <strong
-                            class="{% if solicitacao['aceitou_whatsapp'] %}texto-verde{% endif %}"
-                        >
+                        <strong class="{% if solicitacao['aceitou_whatsapp'] %}texto-verde{% endif %}">
                             {% if solicitacao["aceitou_whatsapp"] %}
-                                Sim
+                            Sim
                             {% else %}
-                                Não
+                            Não
                             {% endif %}
                         </strong>
 
@@ -253,13 +245,11 @@
 
                         <span>Termos aceitos</span>
 
-                        <strong
-                            class="{% if solicitacao['aceitou_termos'] %}texto-verde{% endif %}"
-                        >
+                        <strong class="{% if solicitacao['aceitou_termos'] %}texto-verde{% endif %}">
                             {% if solicitacao["aceitou_termos"] %}
-                                Sim
+                            Sim
                             {% else %}
-                                Não
+                            Não
                             {% endif %}
                         </strong>
 
@@ -271,11 +261,11 @@
 
                         <strong>
                             {% if solicitacao["criada_em"] %}
-                                {{ solicitacao["criada_em"].strftime(
-                                    "%d/%m/%Y às %H:%M"
-                                ) }}
+                            {{ solicitacao["criada_em"].strftime(
+                            "%d/%m/%Y às %H:%M"
+                            ) }}
                             {% else %}
-                                Não informada
+                            Não informada
                             {% endif %}
                         </strong>
 
@@ -335,355 +325,339 @@
 
             {% if solicitacao["status"] in ["aguardando", "em_analise"] %}
 
-                {% if solicitacao["status"] == "aguardando" %}
+            {% if solicitacao["status"] == "aguardando" %}
 
-                <section class="decisao-card decisao-analise">
+            <section class="decisao-card decisao-analise">
 
-                    <span class="decisao-kicker">
-                        PRIMEIRO PASSO
-                    </span>
+                <span class="decisao-kicker">
+                    PRIMEIRO PASSO
+                </span>
 
-                    <h2>
-                        Iniciar análise
-                    </h2>
+                <h2>
+                    Iniciar análise
+                </h2>
 
-                    <p>
-                        Registre que esta solicitação começou a ser
-                        verificada pelo administrador.
-                    </p>
+                <p>
+                    Registre que esta solicitação começou a ser
+                    verificada pelo administrador.
+                </p>
 
-                    <form
-                        method="POST"
-                        action="{{ url_for(
+                <form method="POST" action="{{ url_for(
                             'onboarding_solicitacao_analisar',
                             solicitacao_id=solicitacao['id']
-                        ) }}"
-                    >
+                        ) }}">
 
-                        <button
-                            type="submit"
-                            class="btn-analise"
-                        >
-                            Marcar como em análise
-                        </button>
+                    <button type="submit" class="btn-analise">
+                        Marcar como em análise
+                    </button>
 
-                    </form>
+                </form>
 
-                </section>
+            </section>
 
-                {% endif %}
+            {% endif %}
 
-                <!-- =================================
+            <!-- =================================
                      APROVAR
                 ================================== -->
 
-                <section class="decisao-card decisao-aprovar">
+            <section class="decisao-card decisao-aprovar">
 
-                    <span class="decisao-kicker">
-                        LIBERAR ACESSO
-                    </span>
+                <span class="decisao-kicker">
+                    LIBERAR ACESSO
+                </span>
 
-                    <h2>
-                        Aprovar empresa
-                    </h2>
+                <h2>
+                    Aprovar empresa
+                </h2>
 
-                    <p>
-                        Configure o plano e os módulos antes de criar
-                        a empresa e o usuário gerente.
-                    </p>
+                <p>
+                    Configure o plano e os módulos antes de criar
+                    a empresa e o usuário gerente.
+                </p>
 
-                    <form
-                        method="POST"
-                        action="{{ url_for(
+                <form method="POST" action="{{ url_for(
                             'onboarding_solicitacao_aprovar',
                             solicitacao_id=solicitacao['id']
-                        ) }}"
-                        class="form-decisao"
-                        onsubmit="return confirmarAprovacao(this)"
-                    >
+                        ) }}" class="form-decisao" onsubmit="return confirmarAprovacao(this)">
 
-                        <label class="decisao-campo">
+                    <label class="decisao-campo">
 
-                            <span>Plano da empresa</span>
+                        <span>Plano da empresa</span>
 
-                            <select
-                                name="plano"
-                                required
-                            >
-                                <option value="">
-                                    Selecione
-                                </option>
+                        <select name="plano" required>
+                            <option value="">
+                                Selecione
+                            </option>
 
-                                <option
-                                    value="comum"
-                                    {% if solicitacao["plano_aprovado"] == "comum" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Comum
-                                </option>
+                            <option value="comum" {% if solicitacao["plano_aprovado"]=="comum" %} selected {% endif %}>
+                                Comum
+                            </option>
 
-                                <option
-                                    value="premium"
-                                    {% if solicitacao["plano_aprovado"] == "premium" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Premium
-                                </option>
-                            </select>
+                            <option value="premium" {% if solicitacao["plano_aprovado"]=="premium" %} selected {% endif
+                                %}>
+                                Premium
+                            </option>
+                        </select>
 
-                        </label>
+                    </label>
 
-                        <label class="decisao-campo">
+                    <label class="decisao-campo">
 
-                            <span>Período de teste</span>
+                        <span>Período de teste</span>
 
-                            <div class="campo-com-sufixo">
+                        <div class="campo-com-sufixo">
 
-                                <input
-                                    type="number"
-                                    name="dias_teste"
-                                    value="{{ solicitacao['dias_teste'] or 0 }}"
-                                    min="0"
-                                    max="365"
-                                    step="1"
-                                    required
-                                >
+                            <input type="number" name="dias_teste" value="{{ solicitacao['dias_teste'] or 0 }}" min="0"
+                                max="365" step="1" required>
 
-                                <span>dias</span>
+                            <span>dias</span>
 
-                            </div>
+                        </div>
 
-                        </label>
+                    </label>
 
-                        <label class="modulo-opcao">
+                    <section class="seletor-modulos">
 
-                            <input
-                                type="checkbox"
-                                name="emprestimos_ativo"
-                                value="1"
-                                {% if solicitacao["emprestimos_ativo"] %}
-                                    checked
-                                {% endif %}
-                            >
+                        <div class="seletor-modulos-cabecalho">
 
-                            <span class="modulo-check">
-                                ✓
+                            <span class="decisao-kicker">
+                                MÓDULOS DA EMPRESA
                             </span>
 
-                            <span>
+                            <h3>
+                                Escolha as funções liberadas
+                            </h3>
 
-                                <strong>
-                                    Módulo de empréstimos
-                                </strong>
+                            <p>
+                                Selecione o que aparecerá para esta empresa.
+                                Dependências serão ativadas automaticamente.
+                            </p>
 
-                                <small>
-                                    Libera clientes, contratos, parcelas
-                                    e cobranças.
-                                </small>
+                        </div>
 
-                            </span>
+                        <div class="seletor-modulos-grid">
 
-                        </label>
+                            {% for codigo, modulo in catalogo_modulos.items() %}
 
-                        <label class="decisao-campo">
+                            <label class="modulo-opcao">
 
-                            <span>Observações administrativas</span>
+                                <input type="checkbox" name="modulos" value="{{ codigo }}" {% if codigo in [ "vendas"
+                                    , "produtos" , "clientes" , "caixa" , "estatisticas" , "custos" , "nami" ] %}
+                                    checked {% elif ( codigo=="emprestimos" and solicitacao["emprestimos_ativo"] ) %}
+                                    checked {% endif %}>
 
-                            <textarea
-                                name="observacoes_admin"
-                                placeholder="Anotações internas sobre esta aprovação..."
-                            >{{ solicitacao["observacoes_admin"] or "" }}</textarea>
+                                <span class="modulo-check">
+                                    ✓
+                                </span>
 
-                        </label>
+                                <span class="modulo-conteudo">
 
-                        <button
-                            type="submit"
-                            class="btn-aprovar"
-                        >
-                            <span>✓</span>
-                            Aprovar e criar empresa
-                        </button>
+                                    <strong>
+                                        {{ modulo["nome"] }}
+                                    </strong>
 
-                    </form>
+                                    <small>
+                                        {{ modulo["descricao"] }}
+                                    </small>
 
-                </section>
+                                    {% if modulo["dependencias"] %}
 
-                <!-- =================================
+                                    <em>
+                                        Também libera:
+                                        {{ modulo["dependencias"]|join(", ") }}
+                                    </em>
+
+                                    {% endif %}
+
+                                </span>
+
+                            </label>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </section>
+
+                    <label class="decisao-campo">
+
+                        <span>Observações administrativas</span>
+
+                        <textarea name="observacoes_admin"
+                            placeholder="Anotações internas sobre esta aprovação...">{{ solicitacao["observacoes_admin"] or "" }}</textarea>
+
+                    </label>
+
+                    <button type="submit" class="btn-aprovar">
+                        <span>✓</span>
+                        Aprovar e criar empresa
+                    </button>
+
+                </form>
+
+            </section>
+
+            <!-- =================================
                      REJEITAR
                 ================================== -->
 
-                <section class="decisao-card decisao-rejeitar">
+            <section class="decisao-card decisao-rejeitar">
 
-                    <span class="decisao-kicker">
-                        RECUSAR SOLICITAÇÃO
-                    </span>
+                <span class="decisao-kicker">
+                    RECUSAR SOLICITAÇÃO
+                </span>
 
-                    <h2>
-                        Rejeitar cadastro
-                    </h2>
+                <h2>
+                    Rejeitar cadastro
+                </h2>
 
-                    <form
-                        method="POST"
-                        action="{{ url_for(
+                <form method="POST" action="{{ url_for(
                             'onboarding_solicitacao_rejeitar',
                             solicitacao_id=solicitacao['id']
-                        ) }}"
-                        class="form-decisao"
-                        onsubmit="return confirmarRejeicao(this)"
-                    >
+                        ) }}" class="form-decisao" onsubmit="return confirmarRejeicao(this)">
 
-                        <label class="decisao-campo">
+                    <label class="decisao-campo">
 
-                            <span>Motivo da rejeição</span>
+                        <span>Motivo da rejeição</span>
 
-                            <textarea
-                                name="motivo"
-                                minlength="5"
-                                required
-                                placeholder="Explique por que o cadastro não será aprovado..."
-                            ></textarea>
+                        <textarea name="motivo" minlength="5" required
+                            placeholder="Explique por que o cadastro não será aprovado..."></textarea>
 
-                        </label>
+                    </label>
 
-                        <label class="decisao-campo">
+                    <label class="decisao-campo">
 
-                            <span>Observação interna</span>
+                        <span>Observação interna</span>
 
-                            <textarea
-                                name="observacoes_admin"
-                                placeholder="Esta informação não será enviada ao cliente..."
-                            ></textarea>
+                        <textarea name="observacoes_admin"
+                            placeholder="Esta informação não será enviada ao cliente..."></textarea>
 
-                        </label>
+                    </label>
 
-                        <button
-                            type="submit"
-                            class="btn-rejeitar"
-                        >
-                            Rejeitar solicitação
-                        </button>
+                    <button type="submit" class="btn-rejeitar">
+                        Rejeitar solicitação
+                    </button>
 
-                    </form>
+                </form>
 
-                </section>
+            </section>
 
             {% elif solicitacao["status"] == "aprovada" %}
 
-                <!-- =================================
+            <!-- =================================
                      RESULTADO APROVADO
                 ================================== -->
 
-                <section class="decisao-card resultado-aprovado">
+            <section class="decisao-card resultado-aprovado">
 
-                    <div class="resultado-icone">
-                        ✓
+                <div class="resultado-icone">
+                    ✓
+                </div>
+
+                <span class="decisao-kicker">
+                    ACESSO LIBERADO
+                </span>
+
+                <h2>
+                    Empresa aprovada
+                </h2>
+
+                <p>
+                    A conta foi criada e já pode acessar o Nexus PDV.
+                </p>
+
+                <div class="resultado-dados">
+
+                    <div>
+                        <span>Empresa</span>
+
+                        <strong>
+                            {{ solicitacao["empresa_criada_nome"] or solicitacao["nome_empresa"] }}
+                        </strong>
                     </div>
 
-                    <span class="decisao-kicker">
-                        ACESSO LIBERADO
-                    </span>
+                    <div>
+                        <span>Plano</span>
 
-                    <h2>
-                        Empresa aprovada
-                    </h2>
-
-                    <p>
-                        A conta foi criada e já pode acessar o Nexus PDV.
-                    </p>
-
-                    <div class="resultado-dados">
-
-                        <div>
-                            <span>Empresa</span>
-
-                            <strong>
-                                {{ solicitacao["empresa_criada_nome"] or solicitacao["nome_empresa"] }}
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>Plano</span>
-
-                            <strong>
-                                {{ solicitacao["plano_aprovado"]|title }}
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>Usuário</span>
-
-                            <strong>
-                                {{ solicitacao["usuario_criado_nome"] or solicitacao["usuario"] }}
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>Empréstimos</span>
-
-                            <strong>
-                                {% if solicitacao["emprestimos_ativo"] %}
-                                    Ativado
-                                {% else %}
-                                    Desativado
-                                {% endif %}
-                            </strong>
-                        </div>
-
+                        <strong>
+                            {{ solicitacao["plano_aprovado"]|title }}
+                        </strong>
                     </div>
 
-                </section>
+                    <div>
+                        <span>Usuário</span>
+
+                        <strong>
+                            {{ solicitacao["usuario_criado_nome"] or solicitacao["usuario"] }}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Empréstimos</span>
+
+                        <strong>
+                            {% if solicitacao["emprestimos_ativo"] %}
+                            Ativado
+                            {% else %}
+                            Desativado
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </section>
 
             {% elif solicitacao["status"] == "rejeitada" %}
 
-                <!-- =================================
+            <!-- =================================
                      RESULTADO REJEITADO
                 ================================== -->
 
-                <section class="decisao-card resultado-rejeitado">
+            <section class="decisao-card resultado-rejeitado">
 
-                    <div class="resultado-icone">
-                        ×
-                    </div>
+                <div class="resultado-icone">
+                    ×
+                </div>
 
-                    <span class="decisao-kicker">
-                        SOLICITAÇÃO ENCERRADA
-                    </span>
+                <span class="decisao-kicker">
+                    SOLICITAÇÃO ENCERRADA
+                </span>
 
-                    <h2>
-                        Cadastro rejeitado
-                    </h2>
+                <h2>
+                    Cadastro rejeitado
+                </h2>
 
-                    <div class="motivo-rejeicao">
+                <div class="motivo-rejeicao">
 
-                        <span>Motivo informado</span>
+                    <span>Motivo informado</span>
 
-                        <p>
-                            {{ solicitacao["motivo_rejeicao"] }}
-                        </p>
+                    <p>
+                        {{ solicitacao["motivo_rejeicao"] }}
+                    </p>
 
-                    </div>
+                </div>
 
-                </section>
+            </section>
 
             {% else %}
 
-                <section class="decisao-card">
+            <section class="decisao-card">
 
-                    <span class="decisao-kicker">
-                        SOLICITAÇÃO ENCERRADA
-                    </span>
+                <span class="decisao-kicker">
+                    SOLICITAÇÃO ENCERRADA
+                </span>
 
-                    <h2>
-                        {{ solicitacao["status"]|replace("_", " ")|title }}
-                    </h2>
+                <h2>
+                    {{ solicitacao["status"]|replace("_", " ")|title }}
+                </h2>
 
-                    <p>
-                        Esta solicitação não possui ações disponíveis.
-                    </p>
+                <p>
+                    Esta solicitação não possui ações disponíveis.
+                </p>
 
-                </section>
+            </section>
 
             {% endif %}
 

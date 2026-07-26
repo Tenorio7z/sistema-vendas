@@ -53,6 +53,35 @@
                     placeholder="Código de barras">
             </div>
 
+            <div class="form-group">
+
+                <label>Setor de preparo</label>
+
+                <select name="setor_preparo" required>
+                    <option
+                        value="cozinha"
+                        {% if produto["setor_preparo"] == "cozinha" %}selected{% endif %}
+                    >
+                        Cozinha
+                    </option>
+
+                    <option
+                        value="bar"
+                        {% if produto["setor_preparo"] == "bar" %}selected{% endif %}
+                    >
+                        Bar
+                    </option>
+
+                    <option
+                        value="direto"
+                        {% if produto["setor_preparo"] == "direto" %}selected{% endif %}
+                    >
+                        Entrega direta
+                    </option>
+                </select>
+
+            </div>
+
             <div class="acoes-editar">
 
                 <button type="submit" class="btn-salvar">

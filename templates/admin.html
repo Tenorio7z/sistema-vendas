@@ -1,10 +1,7 @@
 {% extends "layout.html" %}
 
 {% block css %}
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/admin.css') }}"
->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -25,10 +22,7 @@
 
         <div class="admin-header-actions">
 
-            <a
-                href="{{ url_for('onboarding_solicitacoes') }}"
-                class="btn-solicitacoes-admin"
-            >
+            <a href="{{ url_for('onboarding_solicitacoes') }}" class="btn-solicitacoes-admin">
                 <span class="solicitacoes-icon">
                     ♙
                 </span>
@@ -94,11 +88,7 @@
 
         </div>
 
-        <form
-            method="POST"
-            action="{{ url_for('criar_convite_empresa') }}"
-            class="admin-form-grid convite-form"
-        >
+        <form method="POST" action="{{ url_for('criar_convite_empresa') }}" class="admin-form-grid convite-form">
 
             <div class="form-group">
 
@@ -106,15 +96,8 @@
                     Nome do responsável
                 </label>
 
-                <input
-                    type="text"
-                    id="nome_destinatario"
-                    name="nome_destinatario"
-                    maxlength="160"
-                    placeholder="Ex.: Victor Tenorio"
-                    autocomplete="name"
-                    required
-                >
+                <input type="text" id="nome_destinatario" name="nome_destinatario" maxlength="160"
+                    placeholder="Ex.: Victor Tenorio" autocomplete="name" required>
 
             </div>
 
@@ -124,15 +107,8 @@
                     WhatsApp
                 </label>
 
-                <input
-                    type="tel"
-                    id="telefone_destinatario"
-                    name="telefone_destinatario"
-                    maxlength="30"
-                    placeholder="Ex.: (11) 99999-9999"
-                    autocomplete="tel"
-                    required
-                >
+                <input type="tel" id="telefone_destinatario" name="telefone_destinatario" maxlength="30"
+                    placeholder="Ex.: (11) 99999-9999" autocomplete="tel" required>
 
             </div>
 
@@ -142,14 +118,8 @@
                     E-mail
                 </label>
 
-                <input
-                    type="email"
-                    id="email_destinatario"
-                    name="email_destinatario"
-                    maxlength="180"
-                    placeholder="cliente@empresa.com"
-                    autocomplete="email"
-                >
+                <input type="email" id="email_destinatario" name="email_destinatario" maxlength="180"
+                    placeholder="cliente@empresa.com" autocomplete="email">
 
             </div>
 
@@ -159,11 +129,7 @@
                     Validade do convite
                 </label>
 
-                <select
-                    id="validade_horas"
-                    name="validade_horas"
-                    required
-                >
+                <select id="validade_horas" name="validade_horas" required>
                     <option value="24">
                         24 horas
                     </option>
@@ -200,11 +166,7 @@
 
             </div>
 
-            <button
-                type="submit"
-                class="btn-primary btn-full"
-                id="btnGerarConvite"
-            >
+            <button type="submit" class="btn-primary btn-full" id="btnGerarConvite">
                 Gerar link de cadastro
             </button>
 
@@ -229,9 +191,9 @@
 
                     <p>
                         {% if ultimo_convite.nome_destinatario %}
-                            Envie para {{ ultimo_convite.nome_destinatario }}.
+                        Envie para {{ ultimo_convite.nome_destinatario }}.
                         {% else %}
-                            Copie e envie o endereço ao cliente.
+                        Copie e envie o endereço ao cliente.
                         {% endif %}
                     </p>
                 </div>
@@ -240,18 +202,9 @@
 
             <div class="convite-link-box">
 
-                <input
-                    type="text"
-                    id="linkConviteGerado"
-                    value="{{ ultimo_convite.link }}"
-                    readonly
-                >
+                <input type="text" id="linkConviteGerado" value="{{ ultimo_convite.link }}" readonly>
 
-                <button
-                    type="button"
-                    id="copiarLinkConvite"
-                    class="btn-copiar-convite"
-                >
+                <button type="button" id="copiarLinkConvite" class="btn-copiar-convite">
                     Copiar link
                 </button>
 
@@ -260,24 +213,15 @@
             <div class="convite-gerado-acoes">
 
                 {% if ultimo_convite.telefone_destinatario %}
-                <button
-                    type="button"
-                    class="btn-whatsapp-convite"
-                    id="enviarConviteWhatsApp"
+                <button type="button" class="btn-whatsapp-convite" id="enviarConviteWhatsApp"
                     data-telefone="{{ ultimo_convite.telefone_destinatario }}"
-                    data-nome="{{ ultimo_convite.nome_destinatario }}"
-                    data-link="{{ ultimo_convite.link }}"
-                >
+                    data-nome="{{ ultimo_convite.nome_destinatario }}" data-link="{{ ultimo_convite.link }}">
                     Enviar pelo WhatsApp
                 </button>
                 {% endif %}
 
-                <a
-                    href="{{ ultimo_convite.link }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="btn-visualizar-convite"
-                >
+                <a href="{{ ultimo_convite.link }}" target="_blank" rel="noopener noreferrer"
+                    class="btn-visualizar-convite">
                     Visualizar formulário
                 </a>
 
@@ -305,10 +249,7 @@
             <p>Usuários gerentes</p>
         </div>
 
-        <a
-            href="{{ url_for('onboarding_solicitacoes') }}"
-            class="stat-card stat-card-solicitacoes"
-        >
+        <a href="{{ url_for('onboarding_solicitacoes') }}" class="stat-card stat-card-solicitacoes">
 
             <div class="stat-card-conteudo">
 
@@ -354,12 +295,7 @@
 
     <div class="busca-box">
 
-        <input
-            type="search"
-            id="buscaEmpresa"
-            placeholder="Buscar empresa..."
-            autocomplete="off"
-        >
+        <input type="search" id="buscaEmpresa" placeholder="Buscar empresa..." autocomplete="off">
 
     </div>
 
@@ -371,19 +307,13 @@
 
         {% for empresa in empresas %}
 
-        <article
-            class="company-card"
-            data-empresa="{{ empresa['nome']|lower }}"
-            data-usuario="{{ empresa['usuario']|lower }}"
-        >
+        <article class="company-card" data-empresa="{{ empresa['nome']|lower }}"
+            data-usuario="{{ empresa['usuario']|lower }}">
 
             <div class="company-header">
 
                 <div class="company-icon">
-                    <img
-                        src="{{ url_for('static', filename='img/empresa.png') }}"
-                        alt=""
-                    >
+                    <img src="{{ url_for('static', filename='img/empresa.png') }}" alt="">
                 </div>
 
                 <div class="company-info">
@@ -422,55 +352,87 @@
 
             </div>
 
-            <form
-                method="POST"
-                action="{{ url_for(
-                    'alterar_modulo_emprestimos',
-                    empresa_id=empresa['empresa_id']
-                ) }}"
-                class="nexus-empresa-modulo"
-            >
+            <form method="POST" action="{{ url_for(
+        'alterar_modulos_empresa',
+        empresa_id=empresa['empresa_id']
+    ) }}" class="empresa-modulos-form">
 
-                <input
-                    type="hidden"
-                    name="emprestimos_ativo"
-                    value="0"
-                >
+                <div class="empresa-modulos-cabecalho">
 
-                <label class="nexus-empresa-modulo-opcao">
+                    <div>
 
-                    <input
-                        class="nexus-empresa-modulo-input"
-                        type="checkbox"
-                        name="emprestimos_ativo"
-                        value="1"
-                        {% if empresa["emprestimos_ativo"] %}
-                            checked
-                        {% endif %}
-                        onchange="this.form.submit()"
-                    >
-
-                    <span class="nexus-empresa-modulo-controle">
-                        <span></span>
-                    </span>
-
-                    <span class="nexus-empresa-modulo-info">
+                        <span class="empresa-modulos-kicker">
+                            RECURSOS CONTRATADOS
+                        </span>
 
                         <strong>
-                            Empréstimos
+                            Módulos da empresa
                         </strong>
 
                         <small>
-                            {% if empresa["emprestimos_ativo"] %}
-                                Módulo ativado
-                            {% else %}
-                                Módulo desativado
-                            {% endif %}
+                            Escolha as páginas e funções disponíveis.
                         </small>
 
+                    </div>
+
+                    <span class="empresa-modulos-quantidade">
+                        {{ empresa["modulos_ativos"]|length }}
+                        ativos
                     </span>
 
-                </label>
+                </div>
+
+                <div class="empresa-modulos-grid">
+
+                    {% for codigo, modulo in catalogo_modulos.items() %}
+
+                    <label class="empresa-modulo-item">
+
+                        <input type="checkbox" name="modulos" value="{{ codigo }}" {% if codigo in
+                            empresa["modulos_ativos"] %} checked {% endif %}>
+
+                        <span class="empresa-modulo-switch">
+                            <span></span>
+                        </span>
+
+                        <span class="empresa-modulo-texto">
+
+                            <strong>
+                                {{ modulo["nome"] }}
+                            </strong>
+
+                            <small>
+                                {{ modulo["descricao"] }}
+                            </small>
+
+                            {% if modulo["dependencias"] %}
+
+                            <em>
+                                Inclui:
+                                {{ modulo["dependencias"]|join(", ") }}
+                            </em>
+
+                            {% endif %}
+
+                        </span>
+
+                    </label>
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="empresa-modulos-rodape">
+
+                    <span>
+                        Mesas ativa automaticamente Vendas, Produtos e Caixa.
+                    </span>
+
+                    <button type="submit" class="btn-salvar-modulos">
+                        Salvar módulos
+                    </button>
+
+                </div>
 
             </form>
 
@@ -494,60 +456,33 @@
 
                 <div class="dropdown">
 
-                    <button
-                        type="button"
-                        class="menu-btn"
-                        aria-label="Abrir opções da empresa"
-                        aria-expanded="false"
-                    >
+                    <button type="button" class="menu-btn" aria-label="Abrir opções da empresa" aria-expanded="false">
                         ⋮
                     </button>
 
                     <div class="dropdown-content">
 
-                        <form
-                            method="POST"
-                            action="{{ url_for(
+                        <form method="POST" action="{{ url_for(
                                 'alterar_plano_empresa',
                                 empresa_id=empresa['empresa_id']
-                            ) }}"
-                            class="form-alterar-plano"
-                        >
+                            ) }}" class="form-alterar-plano">
 
-                            <label
-                                for="planoEmpresa{{ empresa['empresa_id'] }}"
-                            >
+                            <label for="planoEmpresa{{ empresa['empresa_id'] }}">
                                 Alterar plano
                             </label>
 
-                            <select
-                                id="planoEmpresa{{ empresa['empresa_id'] }}"
-                                name="plano"
-                                aria-label="Alterar plano da empresa {{ empresa['nome'] }}"
-                            >
-                                <option
-                                    value="comum"
-                                    {% if empresa["plano"] == "comum" %}
-                                        selected
-                                    {% endif %}
-                                >
+                            <select id="planoEmpresa{{ empresa['empresa_id'] }}" name="plano"
+                                aria-label="Alterar plano da empresa {{ empresa['nome'] }}">
+                                <option value="comum" {% if empresa["plano"]=="comum" %} selected {% endif %}>
                                     Comum
                                 </option>
 
-                                <option
-                                    value="premium"
-                                    {% if empresa["plano"] == "premium" %}
-                                        selected
-                                    {% endif %}
-                                >
+                                <option value="premium" {% if empresa["plano"]=="premium" %} selected {% endif %}>
                                     Premium
                                 </option>
                             </select>
 
-                            <button
-                                type="submit"
-                                class="btn-salvar-plano"
-                            >
+                            <button type="submit" class="btn-salvar-plano">
                                 Salvar plano
                             </button>
 
@@ -555,40 +490,30 @@
 
                         {% if empresa["status"] == "ativo" %}
 
-                        <a
-                            href="{{ url_for(
+                        <a href="{{ url_for(
                                 'bloquear_usuario',
                                 id=empresa['id']
-                            ) }}"
-                            class="acao-bloquear"
-                        >
+                            ) }}" class="acao-bloquear">
                             Bloquear acesso
                         </a>
 
                         {% else %}
 
-                        <a
-                            href="{{ url_for(
+                        <a href="{{ url_for(
                                 'liberar_usuario',
                                 id=empresa['id']
-                            ) }}"
-                            class="acao-liberar"
-                        >
+                            ) }}" class="acao-liberar">
                             Liberar acesso
                         </a>
 
                         {% endif %}
 
-                        <a
-                            href="{{ url_for(
+                        <a href="{{ url_for(
                                 'excluir_empresa',
                                 id=empresa['id']
-                            ) }}"
-                            class="acao-excluir"
-                            onclick="return confirm(
+                            ) }}" class="acao-excluir" onclick="return confirm(
                                 'Deseja realmente excluir esta empresa?'
-                            )"
-                        >
+                            )">
                             Excluir empresa
                         </a>
 

@@ -5,3 +5,10 @@ __pycache__/
 *.pyc
 .venv/
 database/*.db
+# Python
+__pycache__/
+*.py[cod]
+
+# Arquivos gerados
+cupons/
+*.pdf

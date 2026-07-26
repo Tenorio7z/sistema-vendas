@@ -1,0 +1,1652 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/mesas.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<main class="mesas-page">
+
+    <!-- =================================================
+         CABEÇALHO
+    ================================================== -->
+
+    <header class="mesas-header">
+
+        <div class="mesas-header-conteudo">
+
+            <span class="mesas-kicker">
+                ATENDIMENTO
+            </span>
+
+            <h1>
+                Mesas e comandas
+            </h1>
+
+            <p>
+                Acompanhe ocupações, comandas e valores em aberto.
+            </p>
+
+        </div>
+
+        <div class="mesas-header-acoes">
+
+            <a
+                href="{{ url_for(
+                    'painel_producao',
+                    setor='cozinha'
+                ) }}"
+                class="btn-mesas-secundario"
+            >
+                Cozinha
+            </a>
+
+            <a
+                href="{{ url_for(
+                    'painel_producao',
+                    setor='bar'
+                ) }}"
+                class="btn-mesas-secundario"
+            >
+                Bar
+            </a>
+
+            <button
+                type="button"
+                class="btn-mesas-secundario"
+                onclick="recarregarMesas()"
+            >
+                ↻ Atualizar
+            </button>
+
+            <button
+                type="button"
+                class="btn-mesas-principal"
+                data-modal-abrir="modalNovaMesa"
+            >
+                + Nova mesa
+            </button>
+
+        </div>
+
+        <span class="mesas-header-marca">
+            TABLE
+        </span>
+
+    </header>
+
+    <!-- =================================================
+         RESUMO
+    ================================================== -->
+
+    <section class="mesas-resumo">
+
+        <article class="resumo-card resumo-total">
+
+            <span class="resumo-icone">
+                ▦
+            </span>
+
+            <div>
+                <small>Total de mesas</small>
+
+                <strong>
+                    {{ resumo["total"] or 0 }}
+                </strong>
+            </div>
+
+        </article>
+
+        <article class="resumo-card resumo-livres">
+
+            <span class="resumo-icone">
+                ✓
+            </span>
+
+            <div>
+                <small>Mesas livres</small>
+
+                <strong>
+                    {{ resumo["livres"] or 0 }}
+                </strong>
+            </div>
+
+        </article>
+
+        <article class="resumo-card resumo-ocupadas">
+
+            <span class="resumo-icone">
+                ●
+            </span>
+
+            <div>
+                <small>Ocupadas</small>
+
+                <strong>
+                    {{ resumo["ocupadas"] or 0 }}
+                </strong>
+            </div>
+
+        </article>
+
+        <article class="resumo-card resumo-aberto">
+
+            <span class="resumo-icone">
+                R$
+            </span>
+
+            <div>
+                <small>Total em aberto</small>
+
+                <strong>
+                    R$
+                    {{
+                        "%.2f"|format(
+                            (resumo["total_em_aberto"] or 0)|float
+                        )
+                    }}
+                </strong>
+            </div>
+
+        </article>
+
+    </section>
+
+    <!-- =================================================
+         FILTROS
+    ================================================== -->
+
+    <section class="mesas-filtros">
+
+        <div class="mesas-busca">
+
+            <span aria-hidden="true">
+                ⌕
+            </span>
+
+            <input
+                type="search"
+                id="buscarMesa"
+                placeholder="Buscar pelo número ou nome da mesa..."
+                autocomplete="off"
+            >
+
+        </div>
+
+        <div class="mesas-filtro-status">
+
+            <button
+                type="button"
+                class="filtro-status ativo"
+                data-status="todas"
+            >
+                Todas
+            </button>
+
+            <button
+                type="button"
+                class="filtro-status"
+                data-status="livre"
+            >
+                Livres
+            </button>
+
+            <button
+                type="button"
+                class="filtro-status"
+                data-status="ocupada"
+            >
+                Ocupadas
+            </button>
+
+            <button
+                type="button"
+                class="filtro-status"
+                data-status="reservada"
+            >
+                Reservadas
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- =================================================
+         LISTA DE MESAS
+    ================================================== -->
+
+    <section
+        class="mesas-grid"
+        id="mesasGrid"
+    >
+
+        {% for mesa in mesas %}
+
+        <article
+            class="mesa-card mesa-{{ mesa['status'] }}"
+            data-mesa-card
+            data-status="{{ mesa['status'] }}"
+            data-pesquisa="{{
+                (
+                    mesa['numero']
+                    ~ ' '
+                    ~ (mesa['nome'] or '')
+                )|lower|e
+            }}"
+        >
+
+            <div class="mesa-card-topo">
+
+                <div class="mesa-identidade">
+
+                    <span class="mesa-numero">
+                        {{ mesa["numero"] }}
+                    </span>
+
+                    <div>
+
+                        <span class="mesa-label">
+                            MESA
+                        </span>
+
+                        <h2>
+                            {{
+                                mesa["nome"]
+                                or "Mesa " ~ mesa["numero"]
+                            }}
+                        </h2>
+
+                    </div>
+
+                </div>
+
+                <span class="mesa-status">
+                    {% if mesa["status"] == "livre" %}
+                        Livre
+                    {% elif mesa["status"] == "ocupada" %}
+                        Ocupada
+                    {% elif mesa["status"] == "reservada" %}
+                        Reservada
+                    {% else %}
+                        Inativa
+                    {% endif %}
+                </span>
+
+            </div>
+
+            <div class="mesa-informacoes">
+
+                <span>
+                    <small>Capacidade</small>
+
+                    <strong>
+                        {{ mesa["capacidade"] }}
+                        pessoa{% if mesa["capacidade"] != 1 %}s{% endif %}
+                    </strong>
+                </span>
+
+                {% if mesa["comanda_id"] %}
+
+                <span>
+                    <small>Comanda</small>
+
+                    <strong>
+                        #{{ mesa["comanda_id"] }}
+                    </strong>
+                </span>
+
+                <span>
+                    <small>Itens</small>
+
+                    <strong>
+                        {{ mesa["quantidade_itens"] or 0 }}
+                    </strong>
+                </span>
+
+                {% else %}
+
+                <span>
+                    <small>Situação</small>
+
+                    <strong>
+                        Sem comanda
+                    </strong>
+                </span>
+
+                {% endif %}
+
+            </div>
+
+            {% if mesa["comanda_id"] %}
+
+            <div class="mesa-comanda">
+
+                <div class="mesa-comanda-linha">
+
+                    <span>
+                        Total da comanda
+                    </span>
+
+                    <strong>
+                        R$
+                        {{
+                            "%.2f"|format(
+                                (mesa["total"] or 0)|float
+                            )
+                        }}
+                    </strong>
+
+                </div>
+
+                <div class="mesa-comanda-meta">
+
+                    <span>
+                        {{
+                            mesa["identificacao"]
+                            or "Consumidor não identificado"
+                        }}
+                    </span>
+
+                    {% if mesa["funcionario_nome"] %}
+
+                    <span>
+                        Atendimento:
+                        {{ mesa["funcionario_nome"] }}
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <div class="mesa-vazia">
+
+                {% if mesa["status"] == "reservada" %}
+
+                <span>
+                    ◷
+                </span>
+
+                <p>
+                    Mesa aguardando atendimento
+                </p>
+
+                {% elif mesa["status"] == "inativa" %}
+
+                <span>
+                    ×
+                </span>
+
+                <p>
+                    Mesa temporariamente indisponível
+                </p>
+
+                {% else %}
+
+                <span>
+                    ✓
+                </span>
+
+                <p>
+                    Pronta para um novo atendimento
+                </p>
+
+                {% endif %}
+
+            </div>
+
+            {% endif %}
+
+            <div class="mesa-acoes">
+
+                {% if mesa["comanda_id"] %}
+
+                <a
+                    href="{{ url_for(
+                        'detalhes_comanda',
+                        comanda_id=mesa['comanda_id']
+                    ) }}"
+                    class="btn-mesa-destaque"
+                >
+                    Abrir comanda
+                </a>
+
+                {% if (
+                    (mesa["quantidade_itens"] or 0)|float > 0
+                    and (mesa["itens_nao_enviados"] or 0)|int == 0
+                    and (mesa["itens_em_producao"] or 0)|int == 0
+                ) %}
+
+                <button
+                    type="button"
+                    class="btn-fechar-comanda"
+                    data-fechar-comanda
+                    data-comanda-id="{{ mesa['comanda_id'] }}"
+                    data-mesa-numero="{{ mesa['numero']|e }}"
+                    data-mesa-nome="{{ (mesa['nome'] or '')|e }}"
+                    data-comanda-total="{{ (mesa['total'] or 0)|float }}"
+                >
+                    Fechar
+                </button>
+
+                {% elif (mesa["quantidade_itens"] or 0)|float > 0 %}
+
+                <button
+                    type="button"
+                    class="btn-fechar-comanda aguardando"
+                    disabled
+                    title="Envie e conclua o preparo de todos os itens"
+                >
+                    Aguardando
+                </button>
+
+                {% endif %}
+
+                {% elif mesa["status"] != "inativa" %}
+
+                <button
+                    type="button"
+                    class="btn-mesa-destaque"
+                    data-abrir-comanda
+                    data-mesa-id="{{ mesa['id'] }}"
+                    data-mesa-numero="{{ mesa['numero']|e }}"
+                    data-mesa-nome="{{ (mesa['nome'] or '')|e }}"
+                >
+                    + Abrir comanda
+                </button>
+
+                {% endif %}
+
+                <button
+                    type="button"
+                    class="btn-mesa-menu"
+                    data-menu-mesa
+                    aria-label="Mais opções"
+                >
+                    ⋮
+                </button>
+
+                <div class="mesa-menu">
+
+                    <button
+                        type="button"
+                        data-editar-mesa
+                        data-mesa-id="{{ mesa['id'] }}"
+                        data-mesa-numero="{{ mesa['numero']|e }}"
+                        data-mesa-nome="{{ (mesa['nome'] or '')|e }}"
+                        data-mesa-capacidade="{{ mesa['capacidade'] }}"
+                        data-mesa-observacoes="{{
+                            (mesa['observacoes'] or '')|e
+                        }}"
+                    >
+                        Editar mesa
+                    </button>
+
+                    {% if mesa["status"] == "livre" %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'reservar_mesa',
+                            mesa_id=mesa['id']
+                        ) }}"
+                    >
+                        <button type="submit">
+                            Reservar mesa
+                        </button>
+                    </form>
+
+                    {% elif (
+                        mesa["status"] == "reservada"
+                        and not mesa["comanda_id"]
+                    ) %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'liberar_mesa',
+                            mesa_id=mesa['id']
+                        ) }}"
+                    >
+                        <button type="submit">
+                            Remover reserva
+                        </button>
+                    </form>
+
+                    {% endif %}
+
+                    {% if (
+                        not mesa["comanda_id"]
+                        and mesa["status"] != "inativa"
+                    ) %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'status_mesa',
+                            mesa_id=mesa['id']
+                        ) }}"
+                    >
+                        <input
+                            type="hidden"
+                            name="status"
+                            value="inativa"
+                        >
+
+                        <button
+                            type="submit"
+                            class="acao-perigo"
+                        >
+                            Inativar mesa
+                        </button>
+                    </form>
+
+                    {% elif mesa["status"] == "inativa" %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'status_mesa',
+                            mesa_id=mesa['id']
+                        ) }}"
+                    >
+                        <input
+                            type="hidden"
+                            name="status"
+                            value="livre"
+                        >
+
+                        <button type="submit">
+                            Ativar mesa
+                        </button>
+                    </form>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </article>
+
+        {% else %}
+
+        <div class="mesas-empty">
+
+            <span>
+                ▦
+            </span>
+
+            <h2>
+                Nenhuma mesa cadastrada
+            </h2>
+
+            <p>
+                Cadastre a primeira mesa para começar
+                a controlar os atendimentos.
+            </p>
+
+            <button
+                type="button"
+                class="btn-mesas-principal"
+                data-modal-abrir="modalNovaMesa"
+            >
+                + Cadastrar primeira mesa
+            </button>
+
+        </div>
+
+        {% endfor %}
+
+    </section>
+
+    <div
+        class="mesas-sem-resultado"
+        id="mesasSemResultado"
+        hidden
+    >
+
+        <h2>
+            Nenhuma mesa encontrada
+        </h2>
+
+        <p>
+            Tente alterar a busca ou o filtro selecionado.
+        </p>
+
+    </div>
+
+</main>
+
+<!-- =====================================================
+     MODAL: NOVA MESA
+====================================================== -->
+
+<div
+    class="mesas-modal"
+    id="modalNovaMesa"
+    aria-hidden="true"
+>
+
+    <div
+        class="mesas-modal-backdrop"
+        data-modal-fechar
+    ></div>
+
+    <section
+        class="mesas-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tituloNovaMesa"
+    >
+
+        <header class="mesas-modal-header">
+
+            <div>
+
+                <span class="mesas-kicker">
+                    NOVO CADASTRO
+                </span>
+
+                <h2 id="tituloNovaMesa">
+                    Cadastrar mesa
+                </h2>
+
+                <p>
+                    Informe a identificação e capacidade.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="mesas-modal-fechar"
+                data-modal-fechar
+            >
+                ×
+            </button>
+
+        </header>
+
+        <form
+            method="POST"
+            action="{{ url_for('nova_mesa') }}"
+            class="mesas-form"
+        >
+
+            <div class="mesas-form-grid">
+
+                <label>
+
+                    <span>Número ou código *</span>
+
+                    <input
+                        type="text"
+                        name="numero"
+                        maxlength="20"
+                        placeholder="Ex.: 01"
+                        required
+                    >
+
+                </label>
+
+                <label>
+
+                    <span>Nome opcional</span>
+
+                    <input
+                        type="text"
+                        name="nome"
+                        maxlength="100"
+                        placeholder="Ex.: Varanda"
+                    >
+
+                </label>
+
+                <label>
+
+                    <span>Capacidade *</span>
+
+                    <input
+                        type="number"
+                        name="capacidade"
+                        value="4"
+                        min="1"
+                        max="100"
+                        required
+                    >
+
+                </label>
+
+                <label class="campo-largo">
+
+                    <span>Observações</span>
+
+                    <textarea
+                        name="observacoes"
+                        maxlength="1000"
+                        placeholder="Informações adicionais..."
+                    ></textarea>
+
+                </label>
+
+            </div>
+
+            <footer class="mesas-modal-footer">
+
+                <button
+                    type="button"
+                    class="btn-mesas-cancelar"
+                    data-modal-fechar
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-mesas-principal"
+                >
+                    Cadastrar mesa
+                </button>
+
+            </footer>
+
+        </form>
+
+    </section>
+
+</div>
+
+<!-- =====================================================
+     MODAL: EDITAR MESA
+====================================================== -->
+
+<div
+    class="mesas-modal"
+    id="modalEditarMesa"
+    aria-hidden="true"
+>
+
+    <div
+        class="mesas-modal-backdrop"
+        data-modal-fechar
+    ></div>
+
+    <section
+        class="mesas-modal-card"
+        role="dialog"
+        aria-modal="true"
+    >
+
+        <header class="mesas-modal-header">
+
+            <div>
+
+                <span class="mesas-kicker">
+                    CONFIGURAÇÃO
+                </span>
+
+                <h2>
+                    Editar mesa
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                class="mesas-modal-fechar"
+                data-modal-fechar
+            >
+                ×
+            </button>
+
+        </header>
+
+        <form
+            method="POST"
+            id="formEditarMesa"
+            class="mesas-form"
+        >
+
+            <div class="mesas-form-grid">
+
+                <label>
+
+                    <span>Número ou código *</span>
+
+                    <input
+                        type="text"
+                        name="numero"
+                        id="editarMesaNumero"
+                        maxlength="20"
+                        required
+                    >
+
+                </label>
+
+                <label>
+
+                    <span>Nome opcional</span>
+
+                    <input
+                        type="text"
+                        name="nome"
+                        id="editarMesaNome"
+                        maxlength="100"
+                    >
+
+                </label>
+
+                <label>
+
+                    <span>Capacidade *</span>
+
+                    <input
+                        type="number"
+                        name="capacidade"
+                        id="editarMesaCapacidade"
+                        min="1"
+                        max="100"
+                        required
+                    >
+
+                </label>
+
+                <label class="campo-largo">
+
+                    <span>Observações</span>
+
+                    <textarea
+                        name="observacoes"
+                        id="editarMesaObservacoes"
+                        maxlength="1000"
+                    ></textarea>
+
+                </label>
+
+            </div>
+
+            <footer class="mesas-modal-footer">
+
+                <button
+                    type="button"
+                    class="btn-mesas-cancelar"
+                    data-modal-fechar
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-mesas-principal"
+                >
+                    Salvar alterações
+                </button>
+
+            </footer>
+
+        </form>
+
+    </section>
+
+</div>
+
+<!-- =====================================================
+     MODAL: ABRIR COMANDA
+====================================================== -->
+
+<div
+    class="mesas-modal"
+    id="modalAbrirComanda"
+    aria-hidden="true"
+>
+
+    <div
+        class="mesas-modal-backdrop"
+        data-modal-fechar
+    ></div>
+
+    <section
+        class="mesas-modal-card"
+        role="dialog"
+        aria-modal="true"
+    >
+
+        <header class="mesas-modal-header">
+
+            <div>
+
+                <span class="mesas-kicker">
+                    NOVO ATENDIMENTO
+                </span>
+
+                <h2>
+                    Abrir comanda
+                </h2>
+
+                <p id="abrirComandaMesaTexto">
+                    Selecione os dados do atendimento.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="mesas-modal-fechar"
+                data-modal-fechar
+            >
+                ×
+            </button>
+
+        </header>
+
+        <form
+            method="POST"
+            id="formAbrirComanda"
+            class="mesas-form"
+        >
+
+            <div class="mesas-form-grid">
+
+                <label class="campo-largo">
+
+                    <span>Identificação da comanda</span>
+
+                    <input
+                        type="text"
+                        name="identificacao"
+                        maxlength="120"
+                        placeholder="Ex.: Família Silva"
+                    >
+
+                </label>
+
+                <label>
+
+                    <span>Quantidade de pessoas *</span>
+
+                    <input
+                        type="number"
+                        name="quantidade_pessoas"
+                        value="1"
+                        min="1"
+                        max="100"
+                        required
+                    >
+
+                </label>
+
+                <label>
+
+                    <span>Cliente opcional</span>
+
+                    <select name="cliente_id">
+
+                        <option value="">
+                            Atendimento sem cliente
+                        </option>
+
+                        {% for cliente in clientes %}
+
+                        <option value="{{ cliente['id'] }}">
+                            {{ cliente["nome"] }}
+                            {% if cliente["telefone"] %}
+                                — {{ cliente["telefone"] }}
+                            {% endif %}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </label>
+
+                <label class="campo-largo">
+
+                    <span>Observações</span>
+
+                    <textarea
+                        name="observacoes"
+                        maxlength="1000"
+                        placeholder="Preferências ou informações do atendimento..."
+                    ></textarea>
+
+                </label>
+
+            </div>
+
+            <footer class="mesas-modal-footer">
+
+                <button
+                    type="button"
+                    class="btn-mesas-cancelar"
+                    data-modal-fechar
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-mesas-principal"
+                >
+                    Abrir comanda
+                </button>
+
+            </footer>
+
+        </form>
+
+    </section>
+
+</div>
+
+<!-- =====================================================
+     MODAL: FECHAR E RECEBER COMANDA
+====================================================== -->
+
+<div
+    class="mesas-modal"
+    id="modalFecharComanda"
+    aria-hidden="true"
+>
+
+    <div
+        class="mesas-modal-backdrop"
+        data-modal-fechar
+    ></div>
+
+    <section
+        class="mesas-modal-card modal-recebimento"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tituloFecharComanda"
+    >
+
+        <header class="mesas-modal-header">
+
+            <div>
+                <span class="mesas-kicker">
+                    RECEBIMENTO
+                </span>
+
+                <h2 id="tituloFecharComanda">
+                    Fechar comanda
+                </h2>
+
+                <p id="fecharComandaMesaTexto">
+                    Confira os valores antes de confirmar.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="mesas-modal-fechar"
+                data-modal-fechar
+                aria-label="Fechar"
+            >
+                ×
+            </button>
+
+        </header>
+
+        <form
+            method="POST"
+            id="formFecharComanda"
+            class="mesas-form"
+        >
+
+            <section class="recebimento-total">
+                <span>Total atual da comanda</span>
+
+                <strong id="fecharComandaTotal">
+                    R$ 0,00
+                </strong>
+            </section>
+
+            <div class="mesas-form-grid">
+
+                <label>
+                    <span>Forma de pagamento *</span>
+
+                    <select name="pagamento" required>
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="pix">PIX</option>
+                        <option value="cartao">Cartão</option>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Cliente opcional</span>
+
+                    <select name="cliente_id">
+                        <option value="">
+                            Venda sem cliente
+                        </option>
+
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente['id'] }}">
+                            {{ cliente["nome"] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    <span>Tipo de desconto</span>
+
+                    <select
+                        name="desconto_tipo"
+                        id="fecharDescontoTipo"
+                    >
+                        <option value="nenhum">
+                            Sem desconto
+                        </option>
+
+                        <option value="percentual">
+                            Porcentagem (%)
+                        </option>
+
+                        <option value="valor">
+                            Valor em reais
+                        </option>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Desconto</span>
+
+                    <input
+                        type="text"
+                        name="desconto_valor"
+                        id="fecharDescontoValor"
+                        value="0"
+                        inputmode="decimal"
+                        autocomplete="off"
+                    >
+                </label>
+
+            </div>
+
+            <section class="recebimento-previsao">
+                <span>Total previsto após desconto</span>
+
+                <strong id="fecharTotalPrevisto">
+                    R$ 0,00
+                </strong>
+            </section>
+
+            <p class="recebimento-aviso">
+                Ao confirmar, a venda será registrada, o estoque
+                será atualizado, o valor entrará no caixa e a mesa
+                será liberada.
+            </p>
+
+            <footer class="mesas-modal-footer">
+
+                <button
+                    type="button"
+                    class="btn-mesas-cancelar"
+                    data-modal-fechar
+                >
+                    Voltar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-confirmar-recebimento"
+                >
+                    Confirmar pagamento e liberar mesa
+                </button>
+
+            </footer>
+
+        </form>
+
+    </section>
+
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    const modais = document.querySelectorAll(".mesas-modal");
+    const cards = Array.from(
+        document.querySelectorAll("[data-mesa-card]")
+    );
+
+    const busca = document.getElementById("buscarMesa");
+    const semResultado = document.getElementById(
+        "mesasSemResultado"
+    );
+
+    let statusAtual = "todas";
+    let totalComandaFechamento = 0;
+
+    function abrirModal(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add("aberto");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-aberto");
+
+        const campo = modal.querySelector(
+            "input:not([type='hidden']), select, textarea"
+        );
+
+        if (campo) {
+            window.setTimeout(function () {
+                campo.focus();
+            }, 80);
+        }
+    }
+
+    function moeda(valor) {
+        return Number(valor || 0).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+    }
+
+    function numeroMonetario(valor) {
+        let texto = String(valor || "0")
+            .replace("R$", "")
+            .replace(/\s/g, "");
+
+        if (texto.includes(",")) {
+            texto = texto
+                .replace(/\./g, "")
+                .replace(",", ".");
+        } else if (
+            /^\d{1,3}(\.\d{3})+$/.test(texto)
+        ) {
+            texto = texto.replace(/\./g, "");
+        }
+
+        const numero = Number(texto);
+
+        return Number.isFinite(numero)
+            ? numero
+            : 0;
+    }
+
+    function atualizarPrevisaoFechamento() {
+        const tipo = document.getElementById(
+            "fecharDescontoTipo"
+        ).value;
+
+        const informado = numeroMonetario(
+            document.getElementById(
+                "fecharDescontoValor"
+            ).value
+        );
+
+        let desconto = 0;
+
+        if (tipo === "percentual") {
+            desconto = (
+                totalComandaFechamento
+                * Math.min(
+                    Math.max(informado, 0),
+                    100
+                )
+                / 100
+            );
+        } else if (tipo === "valor") {
+            desconto = Math.max(
+                informado,
+                0
+            );
+        }
+
+        const total = Math.max(
+            totalComandaFechamento - desconto,
+            0
+        );
+
+        document.getElementById(
+            "fecharTotalPrevisto"
+        ).textContent = moeda(total);
+    }
+
+    function fecharModal(modal) {
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("aberto");
+        modal.setAttribute("aria-hidden", "true");
+
+        if (!document.querySelector(".mesas-modal.aberto")) {
+            document.body.classList.remove("modal-aberto");
+        }
+    }
+
+    function aplicarFiltros() {
+        const termo = (
+            busca ? busca.value : ""
+        ).trim().toLowerCase();
+
+        let visiveis = 0;
+
+        cards.forEach(function (card) {
+            const correspondeStatus = (
+                statusAtual === "todas"
+                || card.dataset.status === statusAtual
+            );
+
+            const correspondeBusca = (
+                !termo
+                || card.dataset.pesquisa.includes(termo)
+            );
+
+            const mostrar = (
+                correspondeStatus
+                && correspondeBusca
+            );
+
+            card.hidden = !mostrar;
+
+            if (mostrar) {
+                visiveis += 1;
+            }
+        });
+
+        if (semResultado) {
+            semResultado.hidden = (
+                visiveis > 0
+                || cards.length === 0
+            );
+        }
+    }
+
+    document.addEventListener("click", function (evento) {
+        const abrir = evento.target.closest(
+            "[data-modal-abrir]"
+        );
+
+        if (abrir) {
+            abrirModal(
+                abrir.dataset.modalAbrir
+            );
+            return;
+        }
+
+        const fechar = evento.target.closest(
+            "[data-modal-fechar]"
+        );
+
+        if (fechar) {
+            fecharModal(
+                fechar.closest(".mesas-modal")
+            );
+            return;
+        }
+
+        const botaoComanda = evento.target.closest(
+            "[data-abrir-comanda]"
+        );
+
+        if (botaoComanda) {
+            const mesaId = botaoComanda.dataset.mesaId;
+            const numero = botaoComanda.dataset.mesaNumero;
+            const nome = botaoComanda.dataset.mesaNome;
+
+            const form = document.getElementById(
+                "formAbrirComanda"
+            );
+
+            const texto = document.getElementById(
+                "abrirComandaMesaTexto"
+            );
+
+            form.action = (
+                "/mesas/"
+                + encodeURIComponent(mesaId)
+                + "/abrir-comanda"
+            );
+
+            texto.textContent = (
+                "Mesa "
+                + numero
+                + (nome ? " — " + nome : "")
+            );
+
+            abrirModal("modalAbrirComanda");
+            return;
+        }
+
+        const botaoFecharComanda = evento.target.closest(
+            "[data-fechar-comanda]"
+        );
+
+        if (botaoFecharComanda) {
+            const comandaId = (
+                botaoFecharComanda.dataset.comandaId
+            );
+
+            const numero = (
+                botaoFecharComanda.dataset.mesaNumero
+            );
+
+            const nome = (
+                botaoFecharComanda.dataset.mesaNome
+            );
+
+            totalComandaFechamento = Number(
+                botaoFecharComanda.dataset.comandaTotal
+                || 0
+            );
+
+            document.getElementById(
+                "formFecharComanda"
+            ).action = (
+                "/comandas/"
+                + encodeURIComponent(comandaId)
+                + "/finalizar"
+            );
+
+            document.getElementById(
+                "fecharComandaMesaTexto"
+            ).textContent = (
+                "Mesa "
+                + numero
+                + (nome ? " — " + nome : "")
+            );
+
+            document.getElementById(
+                "fecharComandaTotal"
+            ).textContent = moeda(
+                totalComandaFechamento
+            );
+
+            document.getElementById(
+                "fecharDescontoTipo"
+            ).value = "nenhum";
+
+            document.getElementById(
+                "fecharDescontoValor"
+            ).value = "0";
+
+            atualizarPrevisaoFechamento();
+            abrirModal("modalFecharComanda");
+            return;
+        }
+
+        const botaoEditar = evento.target.closest(
+            "[data-editar-mesa]"
+        );
+
+        if (botaoEditar) {
+            const mesaId = botaoEditar.dataset.mesaId;
+
+            document.getElementById(
+                "formEditarMesa"
+            ).action = (
+                "/mesas/"
+                + encodeURIComponent(mesaId)
+                + "/editar"
+            );
+
+            document.getElementById(
+                "editarMesaNumero"
+            ).value = botaoEditar.dataset.mesaNumero || "";
+
+            document.getElementById(
+                "editarMesaNome"
+            ).value = botaoEditar.dataset.mesaNome || "";
+
+            document.getElementById(
+                "editarMesaCapacidade"
+            ).value = (
+                botaoEditar.dataset.mesaCapacidade
+                || "4"
+            );
+
+            document.getElementById(
+                "editarMesaObservacoes"
+            ).value = (
+                botaoEditar.dataset.mesaObservacoes
+                || ""
+            );
+
+            abrirModal("modalEditarMesa");
+            return;
+        }
+
+        const botaoMenu = evento.target.closest(
+            "[data-menu-mesa]"
+        );
+
+        if (botaoMenu) {
+            const menu = botaoMenu
+                .closest(".mesa-acoes")
+                .querySelector(".mesa-menu");
+
+            document
+                .querySelectorAll(".mesa-menu.aberto")
+                .forEach(function (menuAberto) {
+                    if (menuAberto !== menu) {
+                        menuAberto.classList.remove("aberto");
+                    }
+                });
+
+            menu.classList.toggle("aberto");
+            return;
+        }
+
+        if (!evento.target.closest(".mesa-menu")) {
+            document
+                .querySelectorAll(".mesa-menu.aberto")
+                .forEach(function (menu) {
+                    menu.classList.remove("aberto");
+                });
+        }
+
+        const filtro = evento.target.closest(
+            ".filtro-status"
+        );
+
+        if (filtro) {
+            statusAtual = filtro.dataset.status;
+
+            document
+                .querySelectorAll(".filtro-status")
+                .forEach(function (botao) {
+                    botao.classList.remove("ativo");
+                });
+
+            filtro.classList.add("ativo");
+
+            aplicarFiltros();
+        }
+    });
+
+    if (busca) {
+        busca.addEventListener(
+            "input",
+            aplicarFiltros
+        );
+    }
+
+    const descontoTipo = document.getElementById(
+        "fecharDescontoTipo"
+    );
+
+    const descontoValor = document.getElementById(
+        "fecharDescontoValor"
+    );
+
+    if (descontoTipo) {
+        descontoTipo.addEventListener(
+            "change",
+            atualizarPrevisaoFechamento
+        );
+    }
+
+    if (descontoValor) {
+        descontoValor.addEventListener(
+            "input",
+            atualizarPrevisaoFechamento
+        );
+    }
+
+    const formFecharComanda = document.getElementById(
+        "formFecharComanda"
+    );
+
+    if (formFecharComanda) {
+        formFecharComanda.addEventListener(
+            "submit",
+            function (evento) {
+                const confirmar = window.confirm(
+                    "Confirmar o pagamento e liberar a mesa?"
+                );
+
+                if (!confirmar) {
+                    evento.preventDefault();
+                    return;
+                }
+
+                const botao = formFecharComanda.querySelector(
+                    "[type='submit']"
+                );
+
+                botao.disabled = true;
+                botao.textContent = "Finalizando...";
+            }
+        );
+    }
+
+    document.addEventListener(
+        "keydown",
+        function (evento) {
+            if (evento.key === "Escape") {
+                modais.forEach(function (modal) {
+                    fecharModal(modal);
+                });
+            }
+        }
+    );
+
+    window.recarregarMesas = function () {
+        window.location.reload();
+    };
+})();
+</script>
+
+{% endblock %}

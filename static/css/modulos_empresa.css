@@ -1,0 +1,150 @@
+.seletor-modulos,
+.nexus-empresa-modulos {
+    padding: 18px;
+    border: 1px solid rgba(103, 160, 239, 0.24);
+    border-radius: 18px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(65, 145, 255, 0.09),
+            rgba(130, 92, 255, 0.04)
+        ),
+        rgba(12, 30, 59, 0.48);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 16px 38px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(20px) saturate(135%);
+    -webkit-backdrop-filter: blur(20px) saturate(135%);
+}
+
+.seletor-modulos-cabecalho h3,
+.nexus-empresa-modulos-titulo strong {
+    margin: 4px 0;
+    color: var(--text-primary, #fff);
+}
+
+.seletor-modulos-cabecalho p,
+.nexus-empresa-modulos-titulo small {
+    color: var(--text-secondary, #91a4bf);
+}
+
+.seletor-modulos-grid,
+.nexus-empresa-modulos-grid {
+    margin: 16px 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.modulo-opcao,
+.nexus-empresa-modulo-opcao {
+    min-width: 0;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    cursor: pointer;
+    border: 1px solid rgba(111, 159, 222, 0.22);
+    border-radius: 13px;
+    background: rgba(12, 31, 62, 0.45);
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.modulo-opcao:hover,
+.nexus-empresa-modulo-opcao:hover {
+    transform: translateY(-2px);
+    border-color: rgba(73, 151, 255, 0.62);
+    background: rgba(31, 70, 128, 0.48);
+}
+
+.modulo-opcao input,
+.nexus-empresa-modulo-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modulo-check,
+.nexus-empresa-modulo-controle {
+    width: 38px;
+    height: 24px;
+    flex: 0 0 38px;
+    display: grid;
+    place-items: center;
+    color: transparent;
+    border: 1px solid rgba(128, 158, 202, 0.38);
+    border-radius: 999px;
+    background: rgba(8, 22, 45, 0.72);
+    transition: 0.2s ease;
+}
+
+.nexus-empresa-modulo-controle span {
+    width: 16px;
+    height: 16px;
+    justify-self: start;
+    margin-left: 3px;
+    border-radius: 50%;
+    background: #dbe8ff;
+    transition: transform 0.2s ease;
+}
+
+.modulo-opcao input:checked + .modulo-check,
+.nexus-empresa-modulo-input:checked
+    + .nexus-empresa-modulo-controle {
+    color: #fff;
+    border-color: #40d6af;
+    background: linear-gradient(135deg, #2ebd9c, #398cff);
+    box-shadow: 0 7px 18px rgba(49, 164, 215, 0.25);
+}
+
+.nexus-empresa-modulo-input:checked
+    + .nexus-empresa-modulo-controle span {
+    transform: translateX(15px);
+}
+
+.modulo-opcao strong,
+.modulo-opcao small,
+.nexus-empresa-modulo-info strong,
+.nexus-empresa-modulo-info small {
+    display: block;
+}
+
+.modulo-opcao strong,
+.nexus-empresa-modulo-info strong {
+    color: var(--text-primary, #fff);
+    font-size: 12px;
+}
+
+.modulo-opcao small,
+.nexus-empresa-modulo-info small {
+    margin-top: 3px;
+    color: var(--text-secondary, #91a4bf);
+    font-size: 9px;
+    line-height: 1.45;
+}
+
+html:not(.dark) .seletor-modulos,
+html:not(.dark) .nexus-empresa-modulos {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(65, 145, 255, 0.09),
+            rgba(130, 92, 255, 0.035)
+        ),
+        rgba(255, 255, 255, 0.84);
+}
+
+html:not(.dark) .modulo-opcao,
+html:not(.dark) .nexus-empresa-modulo-opcao {
+    background: rgba(239, 246, 255, 0.9);
+}
+
+@media (max-width: 760px) {
+    .seletor-modulos-grid,
+    .nexus-empresa-modulos-grid {
+        grid-template-columns: 1fr;
+    }
+}

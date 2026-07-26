@@ -15,6 +15,8 @@ from services.onboarding_empresa_service import (
     OnboardingEmpresaService,
 )
 
+from services.modulos_empresa_service import ModulosEmpresaService
+
 
 # =========================================================
 # FUNÇÕES AUXILIARES
@@ -254,6 +256,7 @@ def registrar_rotas_onboarding_admin(app):
         return render_template(
             "onboarding_solicitacao_detalhes.html",
             solicitacao=solicitacao,
+            catalogo_modulos=ModulosEmpresaService.catalogo(),
         )
 
     # =====================================================
@@ -342,10 +345,8 @@ def registrar_rotas_onboarding_admin(app):
             "",
         )
 
-        emprestimos_ativo = _valor_booleano(
-            request.form.get(
-                "emprestimos_ativo"
-            )
+        modulos = ModulosEmpresaService.normalizar(
+            request.form.getlist("modulos")
         )
 
         dias_teste = request.form.get(
@@ -365,7 +366,7 @@ def registrar_rotas_onboarding_admin(app):
                     solicitacao_id=solicitacao_id,
                     usuario_id=session["usuario_id"],
                     plano=plano,
-                    emprestimos_ativo=emprestimos_ativo,
+                    modulos=modulos,
                     dias_teste=dias_teste,
                     observacoes_admin=(
                         observacoes_admin

@@ -1,0 +1,1720 @@
+/* =========================================================
+   NEXUS PDV — DETALHES DA COMANDA
+========================================================= */
+
+:root {
+    --comanda-card: rgba(27, 50, 85, 0.77);
+    --comanda-card-forte: rgba(21, 42, 74, 0.95);
+    --comanda-campo: rgba(7, 24, 51, 0.7);
+
+    --comanda-borda: rgba(101, 150, 216, 0.24);
+    --comanda-texto: #f4f8ff;
+    --comanda-secundario: #8fa3c0;
+
+    --comanda-azul: #48a6ff;
+    --comanda-verde: #32d4aa;
+    --comanda-laranja: #ffad42;
+    --comanda-vermelho: #ff587a;
+    --comanda-roxo: #916fff;
+
+    --comanda-sombra:
+        0 18px 43px rgba(0, 0, 0, 0.15);
+}
+
+.comanda-page {
+    width: min(100%, 1220px);
+    margin: 0 auto;
+    padding: 28px 24px 48px;
+
+    color: var(--comanda-texto);
+}
+
+.comanda-page *,
+.comanda-modal * {
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   CABEÇALHO
+========================================================= */
+
+.comanda-header {
+    position: relative;
+    min-height: 135px;
+    padding: 25px 29px;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+
+    border: 1px solid rgba(91, 158, 240, 0.32);
+    border-radius: 23px;
+
+    background:
+        radial-gradient(
+            circle at 78% -10%,
+            rgba(67, 156, 255, 0.24),
+            transparent 37%
+        ),
+        linear-gradient(
+            125deg,
+            rgba(42, 99, 178, 0.59),
+            rgba(51, 54, 107, 0.36)
+        ),
+        var(--comanda-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        var(--comanda-sombra);
+
+    backdrop-filter: blur(25px) saturate(140%);
+    -webkit-backdrop-filter: blur(25px) saturate(140%);
+}
+
+.comanda-header-identidade {
+    position: relative;
+    z-index: 2;
+
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.comanda-voltar {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+
+    display: grid;
+    place-items: center;
+
+    color: #ffffff;
+    text-decoration: none;
+
+    font-size: 18px;
+
+    border: 1px solid rgba(126, 188, 255, 0.36);
+    border-radius: 12px;
+
+    background: rgba(11, 34, 68, 0.5);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.comanda-voltar:hover {
+    transform: translateX(-3px);
+
+    border-color: rgba(96, 181, 255, 0.7);
+    background: rgba(29, 70, 121, 0.67);
+}
+
+.comanda-kicker {
+    display: block;
+    margin-bottom: 6px;
+
+    color: #55c9ff;
+
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+.comanda-header h1 {
+    margin: 0;
+
+    color: var(--comanda-texto);
+
+    font-size: clamp(25px, 3.4vw, 38px);
+    line-height: 1.05;
+    letter-spacing: -1px;
+}
+
+.comanda-header p {
+    margin: 8px 0 0;
+
+    color: var(--comanda-secundario);
+
+    font-size: 9px;
+}
+
+.comanda-header-status {
+    position: relative;
+    z-index: 2;
+
+    flex: 0 0 auto;
+}
+
+.status-comanda {
+    padding: 7px 11px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    font-size: 8px;
+    font-weight: 850;
+    text-transform: uppercase;
+
+    border: 1px solid rgba(52, 216, 172, 0.38);
+    border-radius: 999px;
+
+    background: rgba(43, 201, 160, 0.1);
+}
+
+.status-comanda::before {
+    content: "";
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+    box-shadow: 0 0 12px currentColor;
+}
+
+.status-aberta {
+    color: var(--comanda-verde);
+}
+
+.status-aguardando_pagamento {
+    color: var(--comanda-laranja);
+
+    border-color: rgba(255, 174, 66, 0.4);
+    background: rgba(255, 174, 66, 0.1);
+}
+
+.status-fechada {
+    color: var(--comanda-azul);
+
+    border-color: rgba(72, 166, 255, 0.4);
+    background: rgba(72, 166, 255, 0.1);
+}
+
+.status-cancelada {
+    color: var(--comanda-vermelho);
+
+    border-color: rgba(255, 88, 122, 0.4);
+    background: rgba(255, 88, 122, 0.1);
+}
+
+.comanda-header-marca {
+    position: absolute;
+    right: 10px;
+    bottom: -30px;
+
+    color: rgba(109, 163, 234, 0.065);
+
+    font-size: 85px;
+    font-weight: 950;
+    line-height: 1;
+
+    pointer-events: none;
+}
+
+/* =========================================================
+   RESUMO
+========================================================= */
+
+.comanda-resumo {
+    margin-top: 15px;
+
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 11px;
+}
+
+.comanda-resumo article {
+    min-width: 0;
+    min-height: 75px;
+    padding: 14px 15px;
+
+    border: 1px solid var(--comanda-borda);
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(60, 129, 218, 0.08),
+            rgba(127, 91, 225, 0.03)
+        ),
+        var(--comanda-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.055),
+        0 12px 27px rgba(0, 0, 0, 0.09);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.comanda-resumo small,
+.comanda-resumo strong {
+    display: block;
+}
+
+.comanda-resumo small {
+    margin-bottom: 7px;
+
+    color: var(--comanda-secundario);
+
+    font-size: 7px;
+}
+
+.comanda-resumo strong {
+    overflow: hidden;
+
+    color: var(--comanda-texto);
+
+    font-size: 11px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   LAYOUT PRINCIPAL
+========================================================= */
+
+.comanda-layout {
+    margin-top: 15px;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.08fr)
+        minmax(340px, 0.92fr);
+    align-items: start;
+    gap: 15px;
+}
+
+.comanda-catalogo,
+.comanda-pedido,
+.comanda-historico {
+    min-width: 0;
+    padding: 18px;
+
+    border: 1px solid var(--comanda-borda);
+    border-radius: 19px;
+
+    background:
+        linear-gradient(
+            140deg,
+            rgba(57, 125, 215, 0.07),
+            rgba(122, 90, 218, 0.025)
+        ),
+        var(--comanda-card);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        var(--comanda-sombra);
+
+    backdrop-filter: blur(21px) saturate(135%);
+    -webkit-backdrop-filter: blur(21px) saturate(135%);
+}
+
+.comanda-pedido {
+    position: sticky;
+    top: 15px;
+}
+
+.secao-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 13px;
+}
+
+.secao-header h2 {
+    margin: 0;
+
+    color: var(--comanda-texto);
+
+    font-size: 17px;
+}
+
+.secao-header p {
+    margin: 5px 0 0;
+
+    color: var(--comanda-secundario);
+
+    font-size: 8px;
+}
+
+.secao-contador {
+    flex: 0 0 auto;
+    padding: 5px 8px;
+
+    color: #56caff;
+
+    font-size: 7px;
+    font-weight: 800;
+
+    border: 1px solid rgba(86, 199, 255, 0.3);
+    border-radius: 999px;
+
+    background: rgba(70, 162, 255, 0.08);
+}
+
+/* =========================================================
+   BUSCA DE PRODUTOS
+========================================================= */
+
+.catalogo-busca {
+    margin-top: 15px;
+
+    display: flex;
+    align-items: center;
+
+    border: 1px solid rgba(101, 149, 212, 0.24);
+    border-radius: 11px;
+
+    background: var(--comanda-campo);
+}
+
+.catalogo-busca span {
+    padding-left: 13px;
+
+    color: var(--comanda-azul);
+
+    font-size: 15px;
+}
+
+.catalogo-busca input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+
+    color: var(--comanda-texto);
+
+    font: inherit;
+    font-size: 9px;
+
+    outline: none;
+    border: 0;
+    background: transparent;
+}
+
+.catalogo-busca input::placeholder {
+    color: #7185a3;
+}
+
+/* =========================================================
+   CATÁLOGO
+========================================================= */
+
+.catalogo-produtos {
+    max-height: 600px;
+    margin-top: 12px;
+    padding-right: 4px;
+    overflow-y: auto;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: 9px;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(70, 151, 255, 0.55)
+        transparent;
+}
+
+.catalogo-produtos::-webkit-scrollbar,
+.comanda-itens::-webkit-scrollbar {
+    width: 5px;
+}
+
+.catalogo-produtos::-webkit-scrollbar-thumb,
+.comanda-itens::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(70, 151, 255, 0.5);
+}
+
+.produto-comanda-card {
+    min-width: 0;
+    min-height: 88px;
+    padding: 11px;
+
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 9px;
+
+    border: 1px solid rgba(99, 145, 207, 0.18);
+    border-radius: 13px;
+
+    background: rgba(9, 28, 57, 0.42);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.produto-comanda-card:hover {
+    transform: translateY(-2px);
+
+    border-color: rgba(69, 156, 255, 0.5);
+    background: rgba(24, 55, 98, 0.58);
+}
+
+.produto-comanda-card[hidden] {
+    display: none;
+}
+
+.produto-comanda-icone {
+    width: 36px;
+    height: 36px;
+
+    display: grid;
+    place-items: center;
+
+    color: #61c8ff;
+
+    font-size: 17px;
+
+    border: 1px solid rgba(85, 185, 255, 0.3);
+    border-radius: 10px;
+
+    background: rgba(60, 153, 255, 0.08);
+}
+
+.produto-comanda-info {
+    min-width: 0;
+}
+
+.produto-comanda-info h3 {
+    margin: 0;
+    overflow: hidden;
+
+    color: var(--comanda-texto);
+
+    font-size: 9px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.produto-comanda-info span {
+    display: block;
+    margin-top: 4px;
+
+    color: #8094b1;
+
+    font-size: 7px;
+}
+
+.produto-comanda-preco {
+    grid-column: 1 / -1;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.produto-comanda-preco strong {
+    color: var(--comanda-verde);
+
+    font-size: 10px;
+}
+
+.produto-comanda-preco button {
+    width: 29px;
+    height: 29px;
+
+    color: #ffffff;
+
+    font: inherit;
+    font-size: 16px;
+
+    cursor: pointer;
+
+    border: 1px solid rgba(103, 188, 255, 0.5);
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #45b6ff,
+            #426df0
+        );
+
+    box-shadow:
+        0 7px 15px rgba(49, 116, 232, 0.22);
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.produto-comanda-preco button:hover {
+    transform: scale(1.07);
+
+    box-shadow:
+        0 10px 20px rgba(49, 116, 232, 0.32);
+}
+
+.catalogo-vazio,
+.catalogo-sem-resultado {
+    grid-column: 1 / -1;
+    min-height: 180px;
+    padding: 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    color: var(--comanda-secundario);
+    text-align: center;
+
+    border: 1px dashed rgba(100, 150, 216, 0.24);
+    border-radius: 14px;
+}
+
+.catalogo-vazio span {
+    color: var(--comanda-azul);
+
+    font-size: 28px;
+}
+
+.catalogo-vazio h3 {
+    margin: 9px 0 0;
+
+    color: var(--comanda-texto);
+
+    font-size: 12px;
+}
+
+.catalogo-vazio p {
+    margin: 5px 0 0;
+
+    font-size: 8px;
+}
+
+.catalogo-sem-resultado {
+    min-height: 80px;
+    margin-top: 10px;
+
+    font-size: 8px;
+}
+
+/* =========================================================
+   ITENS DA COMANDA
+========================================================= */
+
+.comanda-itens {
+    max-height: 510px;
+    margin-top: 14px;
+    padding-right: 4px;
+    overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(70, 151, 255, 0.55)
+        transparent;
+}
+
+.comanda-item {
+    --item-cor: var(--comanda-azul);
+
+    position: relative;
+    padding: 12px;
+
+    border: 1px solid rgba(101, 148, 209, 0.2);
+    border-left: 3px solid var(--item-cor);
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            130deg,
+            color-mix(
+                in srgb,
+                var(--item-cor) 7%,
+                transparent
+            ),
+            rgba(9, 28, 57, 0.34)
+        );
+}
+
+.item-pendente {
+    --item-cor: var(--comanda-laranja);
+}
+
+.item-preparando {
+    --item-cor: var(--comanda-roxo);
+}
+
+.item-pronto {
+    --item-cor: var(--comanda-verde);
+}
+
+.item-entregue {
+    --item-cor: var(--comanda-azul);
+}
+
+.item-cancelado {
+    --item-cor: var(--comanda-vermelho);
+
+    opacity: 0.67;
+}
+
+.item-cancelado h3 {
+    text-decoration: line-through;
+}
+
+.item-cancelado .item-subtotal {
+    color: var(--comanda-vermelho);
+}
+
+.comanda-item-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.item-status {
+    display: block;
+    margin-bottom: 4px;
+
+    color: var(--item-cor);
+
+    font-size: 6px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.comanda-item h3 {
+    margin: 0;
+
+    color: var(--comanda-texto);
+
+    font-size: 10px;
+}
+
+.item-subtotal {
+    flex: 0 0 auto;
+
+    color: var(--item-cor);
+
+    font-size: 11px;
+}
+
+.comanda-item-detalhes {
+    margin-top: 7px;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #8296b3;
+
+    font-size: 7px;
+}
+
+.comanda-item-detalhes span {
+    padding: 4px 6px;
+
+    border: 1px solid rgba(103, 148, 209, 0.17);
+    border-radius: 7px;
+
+    background: rgba(7, 23, 48, 0.3);
+}
+
+.item-observacoes {
+    margin: 8px 0 0;
+    padding: 7px 8px;
+
+    color: #a9b9cd;
+
+    font-size: 7px;
+    line-height: 1.45;
+
+    border-left: 2px solid var(--item-cor);
+
+    background: rgba(9, 26, 52, 0.28);
+}
+
+.comanda-item-acoes {
+    margin-top: 10px;
+    padding-top: 9px;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    border-top: 1px solid rgba(101, 148, 209, 0.15);
+}
+
+.comanda-item-acoes form {
+    margin: 0;
+}
+
+.quantidade-form {
+    min-width: 0;
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+}
+
+.quantidade-form input {
+    width: 58px;
+    height: 30px;
+    padding: 0 5px;
+
+    color: var(--comanda-texto);
+    text-align: center;
+
+    font: inherit;
+    font-size: 7px;
+
+    outline: none;
+
+    border: solid rgba(101, 148, 209, 0.25);
+    border-width: 1px 0;
+
+    background: var(--comanda-campo);
+}
+
+.quantidade-form button {
+    height: 30px;
+
+    color: var(--comanda-texto);
+
+    font: inherit;
+    font-size: 9px;
+
+    cursor: pointer;
+
+    border: 1px solid rgba(101, 148, 209, 0.25);
+    background: rgba(12, 34, 66, 0.7);
+}
+
+.quantidade-form > button:first-child {
+    width: 28px;
+    border-radius: 8px 0 0 8px;
+}
+
+.quantidade-form > button:nth-of-type(2) {
+    width: 28px;
+    border-radius: 0 8px 8px 0;
+}
+
+.quantidade-form .salvar-quantidade {
+    width: auto;
+    margin-left: 5px;
+    padding: 0 8px;
+
+    color: #72caff;
+
+    font-size: 7px;
+
+    border-radius: 8px;
+}
+
+.status-item-form {
+    flex: 0 1 105px;
+}
+
+.status-item-form select {
+    width: 100%;
+    height: 30px;
+    padding: 0 7px;
+
+    color: var(--comanda-texto);
+
+    font: inherit;
+    font-size: 7px;
+
+    cursor: pointer;
+    outline: none;
+
+    border: 1px solid rgba(101, 148, 209, 0.25);
+    border-radius: 8px;
+
+    background: var(--comanda-campo);
+}
+
+.status-item-form option {
+    background: #142c50;
+}
+
+.cancelar-item {
+    width: 30px;
+    height: 30px;
+
+    color: var(--comanda-vermelho);
+
+    font: inherit;
+    font-size: 15px;
+
+    cursor: pointer;
+
+    border: 1px solid rgba(255, 88, 122, 0.3);
+    border-radius: 8px;
+
+    background: rgba(255, 75, 112, 0.07);
+}
+
+.cancelar-item:hover {
+    color: #ffffff;
+    background: rgba(255, 75, 112, 0.6);
+}
+
+.comanda-itens-vazio {
+    min-height: 180px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    color: var(--comanda-secundario);
+    text-align: center;
+
+    border: 1px dashed rgba(100, 150, 216, 0.24);
+    border-radius: 14px;
+}
+
+.comanda-itens-vazio span {
+    color: var(--comanda-azul);
+
+    font-size: 28px;
+}
+
+.comanda-itens-vazio h3 {
+    margin: 8px 0 0;
+
+    color: var(--comanda-texto);
+
+    font-size: 12px;
+}
+
+.comanda-itens-vazio p {
+    margin: 5px 0 0;
+
+    font-size: 8px;
+}
+
+/* =========================================================
+   TOTAIS
+========================================================= */
+
+.comanda-totais {
+    margin-top: 13px;
+    padding: 13px;
+
+    border: 1px solid rgba(101, 149, 212, 0.22);
+    border-radius: 13px;
+
+    background: rgba(8, 26, 53, 0.35);
+}
+
+.comanda-totais > div {
+    padding: 6px 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    color: var(--comanda-secundario);
+
+    font-size: 8px;
+}
+
+.comanda-totais > div strong {
+    color: var(--comanda-texto);
+
+    font-size: 9px;
+}
+
+.comanda-totais .valor-desconto {
+    color: var(--comanda-vermelho);
+}
+
+.comanda-totais .comanda-total-final {
+    margin-top: 6px;
+    padding: 12px 0 5px;
+
+    border-top: 1px solid rgba(101, 149, 212, 0.19);
+}
+
+.comanda-total-final span {
+    color: var(--comanda-texto);
+
+    font-weight: 800;
+}
+
+.comanda-totais .comanda-total-final strong {
+    color: var(--comanda-verde);
+
+    font-size: 18px;
+}
+
+.comanda-finalizar-aviso {
+    margin-top: 10px;
+    padding: 10px;
+
+    border: 1px solid rgba(255, 174, 66, 0.23);
+    border-radius: 10px;
+
+    background: rgba(255, 174, 66, 0.06);
+}
+
+.comanda-finalizar-aviso span {
+    color: var(--comanda-laranja);
+
+    font-size: 7px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.comanda-finalizar-aviso p {
+    margin: 4px 0 0;
+
+    color: var(--comanda-secundario);
+
+    font-size: 7px;
+    line-height: 1.45;
+}
+
+.btn-finalizar-comanda {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 10px;
+
+    color: #71839d;
+
+    font: inherit;
+    font-size: 9px;
+    font-weight: 850;
+
+    cursor: not-allowed;
+
+    border: 1px solid rgba(105, 145, 198, 0.17);
+    border-radius: 11px;
+
+    background: rgba(22, 44, 76, 0.54);
+}
+
+/* =========================================================
+   HISTÓRICO
+========================================================= */
+
+.comanda-historico {
+    margin-top: 15px;
+}
+
+.historico-lista {
+    margin-top: 14px;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.historico-lista article {
+    min-width: 0;
+    padding: 10px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+
+    border: 1px solid rgba(101, 148, 209, 0.17);
+    border-radius: 10px;
+
+    background: rgba(9, 28, 57, 0.31);
+}
+
+.historico-ponto {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    margin-top: 3px;
+
+    border-radius: 50%;
+
+    background: var(--comanda-azul);
+    box-shadow: 0 0 12px rgba(72, 166, 255, 0.55);
+}
+
+.historico-lista article > div {
+    min-width: 0;
+}
+
+.historico-lista strong,
+.historico-lista small {
+    display: block;
+}
+
+.historico-lista strong {
+    color: var(--comanda-texto);
+
+    font-size: 8px;
+    line-height: 1.4;
+}
+
+.historico-lista small {
+    margin-top: 4px;
+
+    color: #7589a7;
+
+    font-size: 7px;
+}
+
+.historico-vazio {
+    grid-column: 1 / -1;
+
+    color: var(--comanda-secundario);
+
+    font-size: 8px;
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+body.modal-aberto {
+    overflow: hidden;
+}
+
+.comanda-modal {
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+
+    padding: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    visibility: hidden;
+    opacity: 0;
+
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
+}
+
+.comanda-modal.aberto {
+    visibility: visible;
+    opacity: 1;
+}
+
+.comanda-modal-backdrop {
+    position: absolute;
+    inset: 0;
+
+    background: rgba(2, 10, 24, 0.75);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.comanda-modal-card {
+    position: relative;
+    z-index: 2;
+
+    width: min(100%, 480px);
+    overflow: hidden;
+
+    border: 1px solid rgba(100, 164, 242, 0.35);
+    border-radius: 20px;
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(65, 151, 255, 0.18),
+            transparent 35%
+        ),
+        rgba(20, 42, 75, 0.97);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 30px 70px rgba(0, 0, 0, 0.43);
+
+    backdrop-filter: blur(27px) saturate(140%);
+    -webkit-backdrop-filter: blur(27px) saturate(140%);
+
+    transform: translateY(14px) scale(0.98);
+
+    transition: transform 0.2s ease;
+}
+
+.comanda-modal.aberto .comanda-modal-card {
+    transform: translateY(0) scale(1);
+}
+
+.comanda-modal-card > header {
+    padding: 19px 20px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+
+    border-bottom: 1px solid rgba(102, 150, 214, 0.18);
+}
+
+.comanda-modal-card header h2 {
+    margin: 0;
+
+    color: var(--comanda-texto);
+
+    font-size: 19px;
+}
+
+.comanda-modal-card header p {
+    margin: 6px 0 0;
+
+    color: var(--comanda-secundario);
+
+    font-size: 8px;
+}
+
+.comanda-modal-card header > button {
+    width: 33px;
+    height: 33px;
+    flex: 0 0 33px;
+
+    color: #c9d6e8;
+
+    font: inherit;
+    font-size: 17px;
+
+    cursor: pointer;
+
+    border: 1px solid rgba(104, 149, 209, 0.27);
+    border-radius: 9px;
+
+    background: rgba(9, 29, 58, 0.55);
+}
+
+.comanda-modal-card > form {
+    padding: 19px 20px;
+}
+
+.comanda-modal-card label {
+    display: block;
+    margin-bottom: 13px;
+}
+
+.comanda-modal-card label > span {
+    display: block;
+    margin-bottom: 6px;
+
+    color: #a4b5cb;
+
+    font-size: 8px;
+    font-weight: 750;
+}
+
+.comanda-modal-card input,
+.comanda-modal-card textarea {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+
+    color: var(--comanda-texto);
+
+    font: inherit;
+    font-size: 9px;
+
+    outline: none;
+
+    border: 1px solid rgba(101, 149, 212, 0.25);
+    border-radius: 11px;
+
+    background: var(--comanda-campo);
+}
+
+.comanda-modal-card textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.comanda-modal-card input:focus,
+.comanda-modal-card textarea:focus {
+    border-color: rgba(69, 159, 255, 0.76);
+
+    box-shadow:
+        0 0 0 3px rgba(58, 145, 255, 0.1);
+}
+
+.comanda-modal-card footer {
+    margin-top: 16px;
+    padding-top: 14px;
+
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+
+    border-top: 1px solid rgba(102, 150, 214, 0.17);
+}
+
+.btn-modal-cancelar,
+.btn-modal-adicionar {
+    min-height: 39px;
+    padding: 8px 14px;
+
+    font: inherit;
+    font-size: 8px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    border-radius: 10px;
+}
+
+.btn-modal-cancelar {
+    color: var(--comanda-texto);
+
+    border: 1px solid var(--comanda-borda);
+    background: rgba(12, 34, 66, 0.62);
+}
+
+.btn-modal-adicionar {
+    color: #ffffff;
+
+    border: 1px solid rgba(103, 189, 255, 0.55);
+
+    background:
+        linear-gradient(
+            135deg,
+            #49b9ff,
+            #426df0
+        );
+
+    box-shadow:
+        0 9px 20px rgba(48, 115, 231, 0.24);
+}
+
+/* =========================================================
+   TEMA CLARO
+========================================================= */
+
+html:not(.dark) {
+    --comanda-card: rgba(255, 255, 255, 0.84);
+    --comanda-card-forte: rgba(255, 255, 255, 0.98);
+    --comanda-campo: rgba(235, 243, 255, 0.9);
+
+    --comanda-borda: rgba(76, 123, 187, 0.2);
+    --comanda-texto: #10203c;
+    --comanda-secundario: #60718a;
+
+    --comanda-sombra:
+        0 18px 43px rgba(47, 75, 116, 0.11);
+}
+
+html:not(.dark) .comanda-header {
+    background:
+        radial-gradient(
+            circle at 78% -10%,
+            rgba(67, 156, 255, 0.2),
+            transparent 37%
+        ),
+        linear-gradient(
+            125deg,
+            rgba(219, 235, 255, 0.96),
+            rgba(240, 235, 255, 0.86)
+        ),
+        #ffffff;
+}
+
+html:not(.dark) .comanda-voltar {
+    color: #173354;
+
+    background: rgba(240, 247, 255, 0.78);
+}
+
+html:not(.dark) .produto-comanda-card,
+html:not(.dark) .comanda-item,
+html:not(.dark) .historico-lista article {
+    background: rgba(237, 245, 255, 0.67);
+}
+
+html:not(.dark) .comanda-item-detalhes span,
+html:not(.dark) .item-observacoes,
+html:not(.dark) .comanda-totais {
+    background: rgba(235, 243, 255, 0.63);
+}
+
+html:not(.dark) .quantidade-form input,
+html:not(.dark) .quantidade-form button,
+html:not(.dark) .status-item-form select {
+    color: #10203c;
+    background: rgba(235, 243, 255, 0.94);
+}
+
+html:not(.dark) .status-item-form option {
+    background: #ffffff;
+}
+
+html:not(.dark) .comanda-modal-backdrop {
+    background: rgba(15, 31, 55, 0.48);
+}
+
+html:not(.dark) .comanda-modal-card {
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(65, 151, 255, 0.15),
+            transparent 35%
+        ),
+        rgba(250, 253, 255, 0.98);
+}
+
+html:not(.dark) .comanda-modal-card header > button,
+html:not(.dark) .btn-modal-cancelar {
+    color: #263b58;
+    background: rgba(235, 243, 255, 0.9);
+}
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 1000px) {
+    .comanda-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .comanda-pedido {
+        position: static;
+    }
+
+    .catalogo-produtos {
+        max-height: 430px;
+    }
+}
+
+@media (max-width: 760px) {
+    .comanda-page {
+        padding: 72px 13px 30px;
+    }
+
+    .comanda-header {
+        padding: 21px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .comanda-header-status {
+        margin-left: 57px;
+    }
+
+    .comanda-resumo {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .historico-lista {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .catalogo-produtos {
+        grid-template-columns: 1fr;
+    }
+
+    .comanda-item-acoes {
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+
+    .quantidade-form {
+        flex: 1 1 100%;
+    }
+
+    .status-item-form {
+        flex: 1;
+    }
+
+    .comanda-modal {
+        padding: 9px;
+    }
+
+    .comanda-modal-card footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .btn-modal-cancelar,
+    .btn-modal-adicionar {
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   ENVIO DO PEDIDO
+========================================================= */
+
+.comanda-enviar-box,
+.comanda-enviado-box {
+    margin-top: 11px;
+    padding: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    border: 1px solid rgba(255, 174, 66, 0.3);
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 174, 66, 0.1),
+            rgba(255, 112, 72, 0.035)
+        );
+}
+
+.comanda-enviar-box > div {
+    min-width: 0;
+}
+
+.comanda-enviar-box span,
+.comanda-enviar-box strong,
+.comanda-enviar-box small {
+    display: block;
+}
+
+.comanda-enviar-box > div > span {
+    margin-bottom: 4px;
+
+    color: var(--comanda-laranja);
+
+    font-size: 6px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+}
+
+.comanda-enviar-box strong {
+    color: var(--comanda-texto);
+
+    font-size: 9px;
+}
+
+.comanda-enviar-box small {
+    margin-top: 4px;
+
+    color: var(--comanda-secundario);
+
+    font-size: 7px;
+}
+
+.btn-enviar-pedido {
+    min-height: 40px;
+    padding: 8px 11px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    color: #ffffff;
+
+    font: inherit;
+    font-size: 8px;
+    font-weight: 850;
+
+    cursor: pointer;
+
+    border: 1px solid rgba(255, 195, 100, 0.6);
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffb13f,
+            #f47a34
+        );
+
+    box-shadow:
+        0 10px 22px rgba(244, 126, 46, 0.24);
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        opacity 0.18s ease;
+}
+
+.btn-enviar-pedido:hover:not(:disabled) {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 14px 28px rgba(244, 126, 46, 0.34);
+}
+
+.btn-enviar-pedido:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.contador-botao {
+    min-width: 21px;
+    height: 21px;
+    padding: 0 6px;
+
+    display: grid !important;
+    place-items: center;
+
+    color: #f27a31;
+
+    border-radius: 999px;
+
+    background: #ffffff;
+}
+
+.comanda-enviado-box {
+    justify-content: flex-start;
+
+    border-color: rgba(49, 212, 169, 0.28);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(49, 212, 169, 0.09),
+            rgba(67, 145, 255, 0.035)
+        );
+}
+
+.comanda-enviado-box > span {
+    width: 33px;
+    height: 33px;
+    flex: 0 0 33px;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--comanda-verde);
+
+    border: 1px solid rgba(49, 212, 169, 0.35);
+    border-radius: 10px;
+
+    background: rgba(49, 212, 169, 0.09);
+}
+
+.comanda-enviado-box strong,
+.comanda-enviado-box small {
+    display: block;
+}
+
+.comanda-enviado-box strong {
+    color: var(--comanda-texto);
+
+    font-size: 9px;
+}
+
+.comanda-enviado-box small {
+    margin-top: 4px;
+
+    color: var(--comanda-secundario);
+
+    font-size: 7px;
+}
+
+.item-envio-status {
+    display: inline-flex;
+    margin: 5px 0 0;
+    padding: 3px 6px;
+
+    color: var(--comanda-verde);
+
+    font-size: 6px;
+    font-weight: 800;
+
+    border: 1px solid rgba(49, 212, 169, 0.27);
+    border-radius: 999px;
+
+    background: rgba(49, 212, 169, 0.07);
+}
+
+.item-envio-rascunho {
+    color: var(--comanda-laranja);
+
+    border-color: rgba(255, 174, 66, 0.28);
+    background: rgba(255, 174, 66, 0.07);
+}
+
+.item-rascunho {
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 174, 66, 0.08);
+}
+
+@media (max-width: 520px) {
+    .comanda-enviar-box {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .btn-enviar-pedido {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* =========================================================
+   CORREÇÕES DA TELA DO GARÇOM
+========================================================= */
+
+.catalogo-sem-resultado[hidden],
+.comanda-page [hidden] {
+    display: none !important;
+}
+
+.comanda-item-acoes {
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+}
+
+.comanda-item.item-enviado {
+    padding-bottom: 13px;
+}
+
+.item-enviado .comanda-item-acoes {
+    display: none;
+}
+
+.item-enviado .item-envio-status {
+    margin-top: 6px;
+}
+
+.item-rascunho .comanda-item-acoes {
+    display: flex;
+}
+
+@media (max-width: 560px) {
+    .item-rascunho .comanda-item-acoes {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .item-rascunho .quantidade-form {
+        width: 100%;
+    }
+
+    .item-rascunho .cancelar-item {
+        width: 100%;
+    }
+}
