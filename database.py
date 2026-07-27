@@ -1,11 +1,13 @@
 import os
 import threading
+import time
 
 import psycopg2
 import psycopg2.extras
+
+from dotenv import load_dotenv
 from psycopg2 import extensions
 from psycopg2.pool import ThreadedConnectionPool
-from dotenv import load_dotenv
 
 
 load_dotenv()
@@ -13,6 +15,9 @@ load_dotenv()
 
 _pool = None
 _pool_lock = threading.Lock()
+
+_validacoes = {}
+_validacoes_lock = threading.Lock()
 
 
 def _configuracao_banco():
@@ -22,8 +27,16 @@ def _configuracao_banco():
         "user": os.getenv("DB_USER"),
         "password": os.getenv("DB_PASSWORD"),
         "port": os.getenv("DB_PORT", "5432"),
-        "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", "8")),
-        "application_name": os.getenv("DB_APPLICATION_NAME", "nexus-pdv"),
+        "connect_timeout": int(
+            os.getenv(
+                "DB_CONNECT_TIMEOUT",
+                "8",
+            )
+        ),
+        "application_name": os.getenv(
+            "DB_APPLICATION_NAME",
+            "nexus-pdv",
+        ),
         "keepalives": 1,
         "keepalives_idle": 30,
         "keepalives_interval": 10,
@@ -39,8 +52,15 @@ def _obter_pool():
 
     with _pool_lock:
         if _pool is None:
-            minimo = max(1, int(os.getenv("DB_POOL_MIN", "1")))
-            maximo = max(minimo, int(os.getenv("DB_POOL_MAX", "10")))
+            minimo = max(
+                1,
+                int(os.getenv("DB_POOL_MIN", "1")),
+            )
+
+            maximo = max(
+                minimo,
+                int(os.getenv("DB_POOL_MAX", "10")),
+            )
 
             _pool = ThreadedConnectionPool(
                 minimo,
@@ -51,8 +71,66 @@ def _obter_pool():
     return _pool
 
 
+def _remover_validacao(conexao):
+    if conexao is None:
+        return
+
+    with _validacoes_lock:
+        _validacoes.pop(
+            id(conexao),
+            None,
+        )
+
+
+def _precisa_validar(conexao):
+    intervalo = max(
+        15,
+        int(
+            os.getenv(
+                "DB_VALIDATION_INTERVAL",
+                "120",
+            )
+        ),
+    )
+
+    agora = time.monotonic()
+    chave = id(conexao)
+
+    with _validacoes_lock:
+        ultima = _validacoes.get(
+            chave,
+            0,
+        )
+
+        if agora - ultima < intervalo:
+            return False
+
+        _validacoes[chave] = agora
+
+    return True
+
+
+def _validar_conexao(conexao):
+    if not _precisa_validar(conexao):
+        return
+
+    cursor = conexao.cursor()
+
+    try:
+        cursor.execute("SELECT 1")
+        cursor.fetchone()
+
+    finally:
+        cursor.close()
+
+    conexao.rollback()
+
+
 class ConexaoPooled:
-    """Mantém conn.close() compatível, devolvendo a conexão ao pool."""
+    """
+    Mantém conn.close() compatível com o restante
+    do sistema, devolvendo a conexão ao pool.
+    """
 
     def __init__(self, pool, conexao):
         self._pool = pool
@@ -60,35 +138,64 @@ class ConexaoPooled:
         self._devolvida = False
 
     def __getattr__(self, nome):
-        return getattr(self._conexao, nome)
+        return getattr(
+            self._conexao,
+            nome,
+        )
 
     def close(self):
         if self._devolvida:
             return
 
-        descartar = bool(self._conexao.closed)
+        descartar = bool(
+            self._conexao.closed
+        )
 
         if not descartar:
             try:
+                status = (
+                    self._conexao
+                    .get_transaction_status()
+                )
+
                 if (
-                    self._conexao.get_transaction_status()
+                    status
                     != extensions.TRANSACTION_STATUS_IDLE
                 ):
                     self._conexao.rollback()
+
             except psycopg2.Error:
                 descartar = True
 
-        self._pool.putconn(self._conexao, close=descartar)
+        if descartar:
+            _remover_validacao(
+                self._conexao
+            )
+
+        self._pool.putconn(
+            self._conexao,
+            close=descartar,
+        )
+
         self._devolvida = True
 
     def __enter__(self):
         return self
 
-    def __exit__(self, tipo, valor, traceback):
-        if tipo is not None and not self._conexao.closed:
+    def __exit__(
+        self,
+        tipo,
+        valor,
+        traceback,
+    ):
+        if (
+            tipo is not None
+            and not self._conexao.closed
+        ):
             self._conexao.rollback()
 
         self.close()
+
         return False
 
 
@@ -96,43 +203,31 @@ def conectar():
     pool = _obter_pool()
     ultimo_erro = None
 
-    # Tenta obter uma conexão válida até 3 vezes.
-    for tentativa in range(3):
-
+    for _ in range(3):
         conexao = None
 
         try:
             conexao = pool.getconn()
 
             if conexao.closed:
+                _remover_validacao(
+                    conexao
+                )
+
                 pool.putconn(
                     conexao,
-                    close=True
+                    close=True,
                 )
 
-                conexao = None
                 continue
 
-            # Testa se a conexão ainda está viva.
-            cursor_teste = conexao.cursor()
-
-            try:
-                cursor_teste.execute(
-                    "SELECT 1"
-                )
-
-                cursor_teste.fetchone()
-
-            finally:
-                cursor_teste.close()
-
-            # O SELECT de teste abre uma transação.
-            # Voltamos para o estado limpo antes de entregar.
-            conexao.rollback()
+            _validar_conexao(
+                conexao
+            )
 
             return ConexaoPooled(
                 pool,
-                conexao
+                conexao,
             )
 
         except (
@@ -142,40 +237,44 @@ def conectar():
             ultimo_erro = erro
 
             if conexao is not None:
+                _remover_validacao(
+                    conexao
+                )
+
                 try:
                     pool.putconn(
                         conexao,
-                        close=True
+                        close=True,
                     )
                 except Exception:
                     pass
 
-            conexao = None
-
-        except Exception as erro:
-            ultimo_erro = erro
-
+        except Exception:
             if conexao is not None:
+                _remover_validacao(
+                    conexao
+                )
+
                 try:
                     pool.putconn(
                         conexao,
-                        close=True
+                        close=True,
                     )
                 except Exception:
                     pass
 
             raise
 
-    print(
-        "Erro ao conectar no banco após 3 tentativas:",
-        ultimo_erro
+    raise ultimo_erro or psycopg2.OperationalError(
+        "Não foi possível conectar ao banco de dados."
     )
 
-    raise ultimo_erro
 
 def criar_cursor(conn):
     return conn.cursor(
-        cursor_factory=psycopg2.extras.RealDictCursor
+        cursor_factory=(
+            psycopg2.extras.RealDictCursor
+        )
     )
 
 
@@ -186,3 +285,6 @@ def fechar_pool():
         if _pool is not None:
             _pool.closeall()
             _pool = None
+
+    with _validacoes_lock:
+        _validacoes.clear()

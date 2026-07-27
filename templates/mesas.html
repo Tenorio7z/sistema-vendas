@@ -933,7 +933,7 @@
 
 </div>
 
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+
 
 <script>
     (function () {
@@ -1365,64 +1365,10 @@
             }
         );
 
-        let recargaMesasAgendada = null;
+        window.recarregarMesas = function () {
+            window.location.reload();
+        };
 
-        function agendarRecargaMesas() {
-            window.clearTimeout(recargaMesasAgendada);
-
-            recargaMesasAgendada = window.setTimeout(
-                function () {
-                    if (
-                        document.querySelector(
-                            ".mesas-modal.aberto"
-                        )
-                    ) {
-                        agendarRecargaMesas();
-                        return;
-                    }
-
-                    window.location.reload();
-                },
-                450
-            );
-        }
-
-        if (typeof window.io === "function") {
-            const ambienteSeguro = (
-                window.location.protocol === "https:"
-            );
-
-            const socket = window.io({
-                transports: ambienteSeguro
-                    ? ["websocket", "polling"]
-                    : ["polling"],
-                upgrade: ambienteSeguro,
-                reconnection: true,
-                reconnectionDelay: 500,
-                reconnectionDelayMax: 5000
-            });
-
-            socket.emit(
-                "entrar_operacao",
-                {
-                    setor: "caixa"
-                }
-            );
-
-            [
-                "novo_pedido",
-                "comanda_atualizada",
-                "comanda_finalizada",
-                "item_pronto"
-            ].forEach(function (evento) {
-                socket.on(
-                    evento,
-                    agendarRecargaMesas
-                );
-            });
-        }
-
-        window.recarregarMesas = agendarRecargaMesas;
     })();
 </script>
 
