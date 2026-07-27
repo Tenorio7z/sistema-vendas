@@ -184,41 +184,17 @@ class MesasService:
                     u.usuario AS funcionario_nome,
 
                     COALESCE(
-                        (
-                            SELECT SUM(
-                                CASE
-                                    WHEN ci.status != 'cancelado'
-                                    THEN ci.quantidade
-                                    ELSE 0
-                                END
-                            )
-                            FROM comanda_itens ci
-                            WHERE ci.comanda_id = c.id
-                        ),
+                        itens.quantidade_itens,
                         0
                     ) AS quantidade_itens,
 
                     COALESCE(
-                        (
-                            SELECT COUNT(*)
-                            FROM comanda_itens ci
-                            WHERE ci.comanda_id = c.id
-                              AND ci.status != 'cancelado'
-                              AND ci.pedido_id IS NULL
-                        ),
+                        itens.itens_nao_enviados,
                         0
                     ) AS itens_nao_enviados,
 
                     COALESCE(
-                        (
-                            SELECT COUNT(*)
-                            FROM comanda_itens ci
-                            WHERE ci.comanda_id = c.id
-                              AND ci.status IN (
-                                  'pendente',
-                                  'preparando'
-                              )
-                        ),
+                        itens.itens_em_producao,
                         0
                     ) AS itens_em_producao
 
@@ -235,6 +211,36 @@ class MesasService:
                 LEFT JOIN usuarios u
                     ON u.id = c.funcionario_id
                     AND u.empresa_id = m.empresa_id
+
+                LEFT JOIN LATERAL (
+                    SELECT
+                        COALESCE(
+                            SUM(ci.quantidade)
+                                FILTER (
+                                    WHERE ci.status != 'cancelado'
+                                ),
+                            0
+                        ) AS quantidade_itens,
+
+                        COUNT(*)
+                            FILTER (
+                                WHERE ci.status != 'cancelado'
+                                  AND ci.pedido_id IS NULL
+                            ) AS itens_nao_enviados,
+
+                        COUNT(*)
+                            FILTER (
+                                WHERE ci.status IN (
+                                    'pendente',
+                                    'preparando'
+                                )
+                            ) AS itens_em_producao
+
+                    FROM comanda_itens ci
+
+                    WHERE ci.comanda_id = c.id
+                      AND ci.empresa_id = m.empresa_id
+                ) itens ON TRUE
 
                 WHERE m.empresa_id = %s
 

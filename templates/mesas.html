@@ -1,10 +1,7 @@
 {% extends "layout.html" %}
 
 {% block css %}
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/mesas.css') }}"
->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mesas.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -35,39 +32,25 @@
 
         <div class="mesas-header-acoes">
 
-            <a
-                href="{{ url_for(
+            <a href="{{ url_for(
                     'painel_producao',
                     setor='cozinha'
-                ) }}"
-                class="btn-mesas-secundario"
-            >
+                ) }}" class="btn-mesas-secundario">
                 Cozinha
             </a>
 
-            <a
-                href="{{ url_for(
+            <a href="{{ url_for(
                     'painel_producao',
                     setor='bar'
-                ) }}"
-                class="btn-mesas-secundario"
-            >
+                ) }}" class="btn-mesas-secundario">
                 Bar
             </a>
 
-            <button
-                type="button"
-                class="btn-mesas-secundario"
-                onclick="recarregarMesas()"
-            >
+            <button type="button" class="btn-mesas-secundario" onclick="recarregarMesas()">
                 ↻ Atualizar
             </button>
 
-            <button
-                type="button"
-                class="btn-mesas-principal"
-                data-modal-abrir="modalNovaMesa"
-            >
+            <button type="button" class="btn-mesas-principal" data-modal-abrir="modalNovaMesa">
                 + Nova mesa
             </button>
 
@@ -145,9 +128,9 @@
                 <strong>
                     R$
                     {{
-                        "%.2f"|format(
-                            (resumo["total_em_aberto"] or 0)|float
-                        )
+                    "%.2f"|format(
+                    (resumo["total_em_aberto"] or 0)|float
+                    )
                     }}
                 </strong>
             </div>
@@ -168,46 +151,25 @@
                 ⌕
             </span>
 
-            <input
-                type="search"
-                id="buscarMesa"
-                placeholder="Buscar pelo número ou nome da mesa..."
-                autocomplete="off"
-            >
+            <input type="search" id="buscarMesa" placeholder="Buscar pelo número ou nome da mesa..." autocomplete="off">
 
         </div>
 
         <div class="mesas-filtro-status">
 
-            <button
-                type="button"
-                class="filtro-status ativo"
-                data-status="todas"
-            >
+            <button type="button" class="filtro-status ativo" data-status="todas">
                 Todas
             </button>
 
-            <button
-                type="button"
-                class="filtro-status"
-                data-status="livre"
-            >
+            <button type="button" class="filtro-status" data-status="livre">
                 Livres
             </button>
 
-            <button
-                type="button"
-                class="filtro-status"
-                data-status="ocupada"
-            >
+            <button type="button" class="filtro-status" data-status="ocupada">
                 Ocupadas
             </button>
 
-            <button
-                type="button"
-                class="filtro-status"
-                data-status="reservada"
-            >
+            <button type="button" class="filtro-status" data-status="reservada">
                 Reservadas
             </button>
 
@@ -219,25 +181,18 @@
          LISTA DE MESAS
     ================================================== -->
 
-    <section
-        class="mesas-grid"
-        id="mesasGrid"
-    >
+    <section class="mesas-grid" id="mesasGrid">
 
         {% for mesa in mesas %}
 
-        <article
-            class="mesa-card mesa-{{ mesa['status'] }}"
-            data-mesa-card
-            data-status="{{ mesa['status'] }}"
+        <article class="mesa-card mesa-{{ mesa['status'] }}" data-mesa-card data-status="{{ mesa['status'] }}"
             data-pesquisa="{{
                 (
                     mesa['numero']
                     ~ ' '
                     ~ (mesa['nome'] or '')
                 )|lower|e
-            }}"
-        >
+            }}">
 
             <div class="mesa-card-topo">
 
@@ -255,8 +210,8 @@
 
                         <h2>
                             {{
-                                mesa["nome"]
-                                or "Mesa " ~ mesa["numero"]
+                            mesa["nome"]
+                            or "Mesa " ~ mesa["numero"]
                             }}
                         </h2>
 
@@ -266,13 +221,13 @@
 
                 <span class="mesa-status">
                     {% if mesa["status"] == "livre" %}
-                        Livre
+                    Livre
                     {% elif mesa["status"] == "ocupada" %}
-                        Ocupada
+                    Ocupada
                     {% elif mesa["status"] == "reservada" %}
-                        Reservada
+                    Reservada
                     {% else %}
-                        Inativa
+                    Inativa
                     {% endif %}
                 </span>
 
@@ -334,9 +289,9 @@
                     <strong>
                         R$
                         {{
-                            "%.2f"|format(
-                                (mesa["total"] or 0)|float
-                            )
+                        "%.2f"|format(
+                        (mesa["total"] or 0)|float
+                        )
                         }}
                     </strong>
 
@@ -346,8 +301,8 @@
 
                     <span>
                         {{
-                            mesa["identificacao"]
-                            or "Consumidor não identificado"
+                        mesa["identificacao"]
+                        or "Consumidor não identificado"
                         }}
                     </span>
 
@@ -408,42 +363,29 @@
 
                 {% if mesa["comanda_id"] %}
 
-                <a
-                    href="{{ url_for(
+                <a href="{{ url_for(
                         'detalhes_comanda',
                         comanda_id=mesa['comanda_id']
-                    ) }}"
-                    class="btn-mesa-destaque"
-                >
+                    ) }}" class="btn-mesa-destaque">
                     Abrir comanda
                 </a>
 
                 {% if (
-                    (mesa["quantidade_itens"] or 0)|float > 0
-                    and (mesa["itens_nao_enviados"] or 0)|int == 0
-                    and (mesa["itens_em_producao"] or 0)|int == 0
+                (mesa["quantidade_itens"] or 0)|float > 0
+                and (mesa["itens_nao_enviados"] or 0)|int == 0
+                and (mesa["itens_em_producao"] or 0)|int == 0
                 ) %}
 
-                <button
-                    type="button"
-                    class="btn-fechar-comanda"
-                    data-fechar-comanda
-                    data-comanda-id="{{ mesa['comanda_id'] }}"
-                    data-mesa-numero="{{ mesa['numero']|e }}"
-                    data-mesa-nome="{{ (mesa['nome'] or '')|e }}"
-                    data-comanda-total="{{ (mesa['total'] or 0)|float }}"
-                >
+                <button type="button" class="btn-fechar-comanda" data-fechar-comanda
+                    data-comanda-id="{{ mesa['comanda_id'] }}" data-mesa-numero="{{ mesa['numero']|e }}"
+                    data-mesa-nome="{{ (mesa['nome'] or '')|e }}" data-comanda-total="{{ (mesa['total'] or 0)|float }}">
                     Fechar
                 </button>
 
                 {% elif (mesa["quantidade_itens"] or 0)|float > 0 %}
 
-                <button
-                    type="button"
-                    class="btn-fechar-comanda aguardando"
-                    disabled
-                    title="Envie e conclua o preparo de todos os itens"
-                >
+                <button type="button" class="btn-fechar-comanda aguardando" disabled
+                    title="Envie e conclua o preparo de todos os itens">
                     Aguardando
                 </button>
 
@@ -451,70 +393,47 @@
 
                 {% elif mesa["status"] != "inativa" %}
 
-                <button
-                    type="button"
-                    class="btn-mesa-destaque"
-                    data-abrir-comanda
-                    data-mesa-id="{{ mesa['id'] }}"
-                    data-mesa-numero="{{ mesa['numero']|e }}"
-                    data-mesa-nome="{{ (mesa['nome'] or '')|e }}"
-                >
+                <button type="button" class="btn-mesa-destaque" data-abrir-comanda data-mesa-id="{{ mesa['id'] }}"
+                    data-mesa-numero="{{ mesa['numero']|e }}" data-mesa-nome="{{ (mesa['nome'] or '')|e }}">
                     + Abrir comanda
                 </button>
 
                 {% endif %}
 
-                <button
-                    type="button"
-                    class="btn-mesa-menu"
-                    data-menu-mesa
-                    aria-label="Mais opções"
-                >
+                <button type="button" class="btn-mesa-menu" data-menu-mesa aria-label="Mais opções">
                     ⋮
                 </button>
 
                 <div class="mesa-menu">
 
-                    <button
-                        type="button"
-                        data-editar-mesa
-                        data-mesa-id="{{ mesa['id'] }}"
-                        data-mesa-numero="{{ mesa['numero']|e }}"
-                        data-mesa-nome="{{ (mesa['nome'] or '')|e }}"
-                        data-mesa-capacidade="{{ mesa['capacidade'] }}"
-                        data-mesa-observacoes="{{
+                    <button type="button" data-editar-mesa data-mesa-id="{{ mesa['id'] }}"
+                        data-mesa-numero="{{ mesa['numero']|e }}" data-mesa-nome="{{ (mesa['nome'] or '')|e }}"
+                        data-mesa-capacidade="{{ mesa['capacidade'] }}" data-mesa-observacoes="{{
                             (mesa['observacoes'] or '')|e
-                        }}"
-                    >
+                        }}">
                         Editar mesa
                     </button>
 
                     {% if mesa["status"] == "livre" %}
 
-                    <form
-                        method="POST"
-                        action="{{ url_for(
+                    <form method="POST" action="{{ url_for(
                             'reservar_mesa',
                             mesa_id=mesa['id']
-                        ) }}"
-                    >
+                        ) }}">
                         <button type="submit">
                             Reservar mesa
                         </button>
                     </form>
 
                     {% elif (
-                        mesa["status"] == "reservada"
-                        and not mesa["comanda_id"]
+                    mesa["status"] == "reservada"
+                    and not mesa["comanda_id"]
                     ) %}
 
-                    <form
-                        method="POST"
-                        action="{{ url_for(
+                    <form method="POST" action="{{ url_for(
                             'liberar_mesa',
                             mesa_id=mesa['id']
-                        ) }}"
-                    >
+                        ) }}">
                         <button type="submit">
                             Remover reserva
                         </button>
@@ -523,45 +442,28 @@
                     {% endif %}
 
                     {% if (
-                        not mesa["comanda_id"]
-                        and mesa["status"] != "inativa"
+                    not mesa["comanda_id"]
+                    and mesa["status"] != "inativa"
                     ) %}
 
-                    <form
-                        method="POST"
-                        action="{{ url_for(
+                    <form method="POST" action="{{ url_for(
                             'status_mesa',
                             mesa_id=mesa['id']
-                        ) }}"
-                    >
-                        <input
-                            type="hidden"
-                            name="status"
-                            value="inativa"
-                        >
+                        ) }}">
+                        <input type="hidden" name="status" value="inativa">
 
-                        <button
-                            type="submit"
-                            class="acao-perigo"
-                        >
+                        <button type="submit" class="acao-perigo">
                             Inativar mesa
                         </button>
                     </form>
 
                     {% elif mesa["status"] == "inativa" %}
 
-                    <form
-                        method="POST"
-                        action="{{ url_for(
+                    <form method="POST" action="{{ url_for(
                             'status_mesa',
                             mesa_id=mesa['id']
-                        ) }}"
-                    >
-                        <input
-                            type="hidden"
-                            name="status"
-                            value="livre"
-                        >
+                        ) }}">
+                        <input type="hidden" name="status" value="livre">
 
                         <button type="submit">
                             Ativar mesa
@@ -593,11 +495,7 @@
                 a controlar os atendimentos.
             </p>
 
-            <button
-                type="button"
-                class="btn-mesas-principal"
-                data-modal-abrir="modalNovaMesa"
-            >
+            <button type="button" class="btn-mesas-principal" data-modal-abrir="modalNovaMesa">
                 + Cadastrar primeira mesa
             </button>
 
@@ -607,11 +505,7 @@
 
     </section>
 
-    <div
-        class="mesas-sem-resultado"
-        id="mesasSemResultado"
-        hidden
-    >
+    <div class="mesas-sem-resultado" id="mesasSemResultado" hidden>
 
         <h2>
             Nenhuma mesa encontrada
@@ -629,23 +523,11 @@
      MODAL: NOVA MESA
 ====================================================== -->
 
-<div
-    class="mesas-modal"
-    id="modalNovaMesa"
-    aria-hidden="true"
->
+<div class="mesas-modal" id="modalNovaMesa" aria-hidden="true">
 
-    <div
-        class="mesas-modal-backdrop"
-        data-modal-fechar
-    ></div>
+    <div class="mesas-modal-backdrop" data-modal-fechar></div>
 
-    <section
-        class="mesas-modal-card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="tituloNovaMesa"
-    >
+    <section class="mesas-modal-card" role="dialog" aria-modal="true" aria-labelledby="tituloNovaMesa">
 
         <header class="mesas-modal-header">
 
@@ -665,21 +547,13 @@
 
             </div>
 
-            <button
-                type="button"
-                class="mesas-modal-fechar"
-                data-modal-fechar
-            >
+            <button type="button" class="mesas-modal-fechar" data-modal-fechar>
                 ×
             </button>
 
         </header>
 
-        <form
-            method="POST"
-            action="{{ url_for('nova_mesa') }}"
-            class="mesas-form"
-        >
+        <form method="POST" action="{{ url_for('nova_mesa') }}" class="mesas-form">
 
             <div class="mesas-form-grid">
 
@@ -687,13 +561,7 @@
 
                     <span>Número ou código *</span>
 
-                    <input
-                        type="text"
-                        name="numero"
-                        maxlength="20"
-                        placeholder="Ex.: 01"
-                        required
-                    >
+                    <input type="text" name="numero" maxlength="20" placeholder="Ex.: 01" required>
 
                 </label>
 
@@ -701,12 +569,7 @@
 
                     <span>Nome opcional</span>
 
-                    <input
-                        type="text"
-                        name="nome"
-                        maxlength="100"
-                        placeholder="Ex.: Varanda"
-                    >
+                    <input type="text" name="nome" maxlength="100" placeholder="Ex.: Varanda">
 
                 </label>
 
@@ -714,14 +577,7 @@
 
                     <span>Capacidade *</span>
 
-                    <input
-                        type="number"
-                        name="capacidade"
-                        value="4"
-                        min="1"
-                        max="100"
-                        required
-                    >
+                    <input type="number" name="capacidade" value="4" min="1" max="100" required>
 
                 </label>
 
@@ -729,11 +585,7 @@
 
                     <span>Observações</span>
 
-                    <textarea
-                        name="observacoes"
-                        maxlength="1000"
-                        placeholder="Informações adicionais..."
-                    ></textarea>
+                    <textarea name="observacoes" maxlength="1000" placeholder="Informações adicionais..."></textarea>
 
                 </label>
 
@@ -741,18 +593,11 @@
 
             <footer class="mesas-modal-footer">
 
-                <button
-                    type="button"
-                    class="btn-mesas-cancelar"
-                    data-modal-fechar
-                >
+                <button type="button" class="btn-mesas-cancelar" data-modal-fechar>
                     Cancelar
                 </button>
 
-                <button
-                    type="submit"
-                    class="btn-mesas-principal"
-                >
+                <button type="submit" class="btn-mesas-principal">
                     Cadastrar mesa
                 </button>
 
@@ -768,22 +613,11 @@
      MODAL: EDITAR MESA
 ====================================================== -->
 
-<div
-    class="mesas-modal"
-    id="modalEditarMesa"
-    aria-hidden="true"
->
+<div class="mesas-modal" id="modalEditarMesa" aria-hidden="true">
 
-    <div
-        class="mesas-modal-backdrop"
-        data-modal-fechar
-    ></div>
+    <div class="mesas-modal-backdrop" data-modal-fechar></div>
 
-    <section
-        class="mesas-modal-card"
-        role="dialog"
-        aria-modal="true"
-    >
+    <section class="mesas-modal-card" role="dialog" aria-modal="true">
 
         <header class="mesas-modal-header">
 
@@ -799,21 +633,13 @@
 
             </div>
 
-            <button
-                type="button"
-                class="mesas-modal-fechar"
-                data-modal-fechar
-            >
+            <button type="button" class="mesas-modal-fechar" data-modal-fechar>
                 ×
             </button>
 
         </header>
 
-        <form
-            method="POST"
-            id="formEditarMesa"
-            class="mesas-form"
-        >
+        <form method="POST" id="formEditarMesa" class="mesas-form">
 
             <div class="mesas-form-grid">
 
@@ -821,13 +647,7 @@
 
                     <span>Número ou código *</span>
 
-                    <input
-                        type="text"
-                        name="numero"
-                        id="editarMesaNumero"
-                        maxlength="20"
-                        required
-                    >
+                    <input type="text" name="numero" id="editarMesaNumero" maxlength="20" required>
 
                 </label>
 
@@ -835,12 +655,7 @@
 
                     <span>Nome opcional</span>
 
-                    <input
-                        type="text"
-                        name="nome"
-                        id="editarMesaNome"
-                        maxlength="100"
-                    >
+                    <input type="text" name="nome" id="editarMesaNome" maxlength="100">
 
                 </label>
 
@@ -848,14 +663,7 @@
 
                     <span>Capacidade *</span>
 
-                    <input
-                        type="number"
-                        name="capacidade"
-                        id="editarMesaCapacidade"
-                        min="1"
-                        max="100"
-                        required
-                    >
+                    <input type="number" name="capacidade" id="editarMesaCapacidade" min="1" max="100" required>
 
                 </label>
 
@@ -863,11 +671,7 @@
 
                     <span>Observações</span>
 
-                    <textarea
-                        name="observacoes"
-                        id="editarMesaObservacoes"
-                        maxlength="1000"
-                    ></textarea>
+                    <textarea name="observacoes" id="editarMesaObservacoes" maxlength="1000"></textarea>
 
                 </label>
 
@@ -875,18 +679,11 @@
 
             <footer class="mesas-modal-footer">
 
-                <button
-                    type="button"
-                    class="btn-mesas-cancelar"
-                    data-modal-fechar
-                >
+                <button type="button" class="btn-mesas-cancelar" data-modal-fechar>
                     Cancelar
                 </button>
 
-                <button
-                    type="submit"
-                    class="btn-mesas-principal"
-                >
+                <button type="submit" class="btn-mesas-principal">
                     Salvar alterações
                 </button>
 
@@ -902,22 +699,11 @@
      MODAL: ABRIR COMANDA
 ====================================================== -->
 
-<div
-    class="mesas-modal"
-    id="modalAbrirComanda"
-    aria-hidden="true"
->
+<div class="mesas-modal" id="modalAbrirComanda" aria-hidden="true">
 
-    <div
-        class="mesas-modal-backdrop"
-        data-modal-fechar
-    ></div>
+    <div class="mesas-modal-backdrop" data-modal-fechar></div>
 
-    <section
-        class="mesas-modal-card"
-        role="dialog"
-        aria-modal="true"
-    >
+    <section class="mesas-modal-card" role="dialog" aria-modal="true">
 
         <header class="mesas-modal-header">
 
@@ -937,21 +723,13 @@
 
             </div>
 
-            <button
-                type="button"
-                class="mesas-modal-fechar"
-                data-modal-fechar
-            >
+            <button type="button" class="mesas-modal-fechar" data-modal-fechar>
                 ×
             </button>
 
         </header>
 
-        <form
-            method="POST"
-            id="formAbrirComanda"
-            class="mesas-form"
-        >
+        <form method="POST" id="formAbrirComanda" class="mesas-form">
 
             <div class="mesas-form-grid">
 
@@ -959,12 +737,7 @@
 
                     <span>Identificação da comanda</span>
 
-                    <input
-                        type="text"
-                        name="identificacao"
-                        maxlength="120"
-                        placeholder="Ex.: Família Silva"
-                    >
+                    <input type="text" name="identificacao" maxlength="120" placeholder="Ex.: Família Silva">
 
                 </label>
 
@@ -972,14 +745,7 @@
 
                     <span>Quantidade de pessoas *</span>
 
-                    <input
-                        type="number"
-                        name="quantidade_pessoas"
-                        value="1"
-                        min="1"
-                        max="100"
-                        required
-                    >
+                    <input type="number" name="quantidade_pessoas" value="1" min="1" max="100" required>
 
                 </label>
 
@@ -998,7 +764,7 @@
                         <option value="{{ cliente['id'] }}">
                             {{ cliente["nome"] }}
                             {% if cliente["telefone"] %}
-                                — {{ cliente["telefone"] }}
+                            — {{ cliente["telefone"] }}
                             {% endif %}
                         </option>
 
@@ -1012,11 +778,8 @@
 
                     <span>Observações</span>
 
-                    <textarea
-                        name="observacoes"
-                        maxlength="1000"
-                        placeholder="Preferências ou informações do atendimento..."
-                    ></textarea>
+                    <textarea name="observacoes" maxlength="1000"
+                        placeholder="Preferências ou informações do atendimento..."></textarea>
 
                 </label>
 
@@ -1024,18 +787,11 @@
 
             <footer class="mesas-modal-footer">
 
-                <button
-                    type="button"
-                    class="btn-mesas-cancelar"
-                    data-modal-fechar
-                >
+                <button type="button" class="btn-mesas-cancelar" data-modal-fechar>
                     Cancelar
                 </button>
 
-                <button
-                    type="submit"
-                    class="btn-mesas-principal"
-                >
+                <button type="submit" class="btn-mesas-principal">
                     Abrir comanda
                 </button>
 
@@ -1051,23 +807,12 @@
      MODAL: FECHAR E RECEBER COMANDA
 ====================================================== -->
 
-<div
-    class="mesas-modal"
-    id="modalFecharComanda"
-    aria-hidden="true"
->
+<div class="mesas-modal" id="modalFecharComanda" aria-hidden="true">
 
-    <div
-        class="mesas-modal-backdrop"
-        data-modal-fechar
-    ></div>
+    <div class="mesas-modal-backdrop" data-modal-fechar></div>
 
-    <section
-        class="mesas-modal-card modal-recebimento"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="tituloFecharComanda"
-    >
+    <section class="mesas-modal-card modal-recebimento" role="dialog" aria-modal="true"
+        aria-labelledby="tituloFecharComanda">
 
         <header class="mesas-modal-header">
 
@@ -1085,22 +830,13 @@
                 </p>
             </div>
 
-            <button
-                type="button"
-                class="mesas-modal-fechar"
-                data-modal-fechar
-                aria-label="Fechar"
-            >
+            <button type="button" class="mesas-modal-fechar" data-modal-fechar aria-label="Fechar">
                 ×
             </button>
 
         </header>
 
-        <form
-            method="POST"
-            id="formFecharComanda"
-            class="mesas-form"
-        >
+        <form method="POST" id="formFecharComanda" class="mesas-form">
 
             <section class="recebimento-total">
                 <span>Total atual da comanda</span>
@@ -1141,10 +877,7 @@
                 <label>
                     <span>Tipo de desconto</span>
 
-                    <select
-                        name="desconto_tipo"
-                        id="fecharDescontoTipo"
-                    >
+                    <select name="desconto_tipo" id="fecharDescontoTipo">
                         <option value="nenhum">
                             Sem desconto
                         </option>
@@ -1162,14 +895,8 @@
                 <label>
                     <span>Desconto</span>
 
-                    <input
-                        type="text"
-                        name="desconto_valor"
-                        id="fecharDescontoValor"
-                        value="0"
-                        inputmode="decimal"
-                        autocomplete="off"
-                    >
+                    <input type="text" name="desconto_valor" id="fecharDescontoValor" value="0" inputmode="decimal"
+                        autocomplete="off">
                 </label>
 
             </div>
@@ -1190,18 +917,11 @@
 
             <footer class="mesas-modal-footer">
 
-                <button
-                    type="button"
-                    class="btn-mesas-cancelar"
-                    data-modal-fechar
-                >
+                <button type="button" class="btn-mesas-cancelar" data-modal-fechar>
                     Voltar
                 </button>
 
-                <button
-                    type="submit"
-                    class="btn-confirmar-recebimento"
-                >
+                <button type="submit" class="btn-confirmar-recebimento">
                     Confirmar pagamento e liberar mesa
                 </button>
 
@@ -1213,440 +933,497 @@
 
 </div>
 
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+
 <script>
-(function () {
-    "use strict";
+    (function () {
+        "use strict";
 
-    const modais = document.querySelectorAll(".mesas-modal");
-    const cards = Array.from(
-        document.querySelectorAll("[data-mesa-card]")
-    );
-
-    const busca = document.getElementById("buscarMesa");
-    const semResultado = document.getElementById(
-        "mesasSemResultado"
-    );
-
-    let statusAtual = "todas";
-    let totalComandaFechamento = 0;
-
-    function abrirModal(id) {
-        const modal = document.getElementById(id);
-
-        if (!modal) {
-            return;
-        }
-
-        modal.classList.add("aberto");
-        modal.setAttribute("aria-hidden", "false");
-        document.body.classList.add("modal-aberto");
-
-        const campo = modal.querySelector(
-            "input:not([type='hidden']), select, textarea"
+        const modais = document.querySelectorAll(".mesas-modal");
+        const cards = Array.from(
+            document.querySelectorAll("[data-mesa-card]")
         );
 
-        if (campo) {
-            window.setTimeout(function () {
-                campo.focus();
-            }, 80);
-        }
-    }
+        const busca = document.getElementById("buscarMesa");
+        const semResultado = document.getElementById(
+            "mesasSemResultado"
+        );
 
-    function moeda(valor) {
-        return Number(valor || 0).toLocaleString(
-            "pt-BR",
-            {
-                style: "currency",
-                currency: "BRL"
+        let statusAtual = "todas";
+        let totalComandaFechamento = 0;
+
+        function abrirModal(id) {
+            const modal = document.getElementById(id);
+
+            if (!modal) {
+                return;
             }
-        );
-    }
 
-    function numeroMonetario(valor) {
-        let texto = String(valor || "0")
-            .replace("R$", "")
-            .replace(/\s/g, "");
+            modal.classList.add("aberto");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.classList.add("modal-aberto");
 
-        if (texto.includes(",")) {
-            texto = texto
-                .replace(/\./g, "")
-                .replace(",", ".");
-        } else if (
-            /^\d{1,3}(\.\d{3})+$/.test(texto)
-        ) {
-            texto = texto.replace(/\./g, "");
+            const campo = modal.querySelector(
+                "input:not([type='hidden']), select, textarea"
+            );
+
+            if (campo) {
+                window.setTimeout(function () {
+                    campo.focus();
+                }, 80);
+            }
         }
 
-        const numero = Number(texto);
-
-        return Number.isFinite(numero)
-            ? numero
-            : 0;
-    }
-
-    function atualizarPrevisaoFechamento() {
-        const tipo = document.getElementById(
-            "fecharDescontoTipo"
-        ).value;
-
-        const informado = numeroMonetario(
-            document.getElementById(
-                "fecharDescontoValor"
-            ).value
-        );
-
-        let desconto = 0;
-
-        if (tipo === "percentual") {
-            desconto = (
-                totalComandaFechamento
-                * Math.min(
-                    Math.max(informado, 0),
-                    100
-                )
-                / 100
+        function moeda(valor) {
+            return Number(valor || 0).toLocaleString(
+                "pt-BR",
+                {
+                    style: "currency",
+                    currency: "BRL"
+                }
             );
-        } else if (tipo === "valor") {
-            desconto = Math.max(
-                informado,
+        }
+
+        function numeroMonetario(valor) {
+            let texto = String(valor || "0")
+                .replace("R$", "")
+                .replace(/\s/g, "");
+
+            if (texto.includes(",")) {
+                texto = texto
+                    .replace(/\./g, "")
+                    .replace(",", ".");
+            } else if (
+                /^\d{1,3}(\.\d{3})+$/.test(texto)
+            ) {
+                texto = texto.replace(/\./g, "");
+            }
+
+            const numero = Number(texto);
+
+            return Number.isFinite(numero)
+                ? numero
+                : 0;
+        }
+
+        function atualizarPrevisaoFechamento() {
+            const tipo = document.getElementById(
+                "fecharDescontoTipo"
+            ).value;
+
+            const informado = numeroMonetario(
+                document.getElementById(
+                    "fecharDescontoValor"
+                ).value
+            );
+
+            let desconto = 0;
+
+            if (tipo === "percentual") {
+                desconto = (
+                    totalComandaFechamento
+                    * Math.min(
+                        Math.max(informado, 0),
+                        100
+                    )
+                    / 100
+                );
+            } else if (tipo === "valor") {
+                desconto = Math.max(
+                    informado,
+                    0
+                );
+            }
+
+            const total = Math.max(
+                totalComandaFechamento - desconto,
                 0
             );
+
+            document.getElementById(
+                "fecharTotalPrevisto"
+            ).textContent = moeda(total);
         }
 
-        const total = Math.max(
-            totalComandaFechamento - desconto,
-            0
-        );
+        function fecharModal(modal) {
+            if (!modal) {
+                return;
+            }
 
-        document.getElementById(
-            "fecharTotalPrevisto"
-        ).textContent = moeda(total);
-    }
+            modal.classList.remove("aberto");
+            modal.setAttribute("aria-hidden", "true");
 
-    function fecharModal(modal) {
-        if (!modal) {
-            return;
+            if (!document.querySelector(".mesas-modal.aberto")) {
+                document.body.classList.remove("modal-aberto");
+            }
         }
 
-        modal.classList.remove("aberto");
-        modal.setAttribute("aria-hidden", "true");
+        function aplicarFiltros() {
+            const termo = (
+                busca ? busca.value : ""
+            ).trim().toLowerCase();
 
-        if (!document.querySelector(".mesas-modal.aberto")) {
-            document.body.classList.remove("modal-aberto");
+            let visiveis = 0;
+
+            cards.forEach(function (card) {
+                const correspondeStatus = (
+                    statusAtual === "todas"
+                    || card.dataset.status === statusAtual
+                );
+
+                const correspondeBusca = (
+                    !termo
+                    || card.dataset.pesquisa.includes(termo)
+                );
+
+                const mostrar = (
+                    correspondeStatus
+                    && correspondeBusca
+                );
+
+                card.hidden = !mostrar;
+
+                if (mostrar) {
+                    visiveis += 1;
+                }
+            });
+
+            if (semResultado) {
+                semResultado.hidden = (
+                    visiveis > 0
+                    || cards.length === 0
+                );
+            }
         }
-    }
 
-    function aplicarFiltros() {
-        const termo = (
-            busca ? busca.value : ""
-        ).trim().toLowerCase();
-
-        let visiveis = 0;
-
-        cards.forEach(function (card) {
-            const correspondeStatus = (
-                statusAtual === "todas"
-                || card.dataset.status === statusAtual
+        document.addEventListener("click", function (evento) {
+            const abrir = evento.target.closest(
+                "[data-modal-abrir]"
             );
 
-            const correspondeBusca = (
-                !termo
-                || card.dataset.pesquisa.includes(termo)
+            if (abrir) {
+                abrirModal(
+                    abrir.dataset.modalAbrir
+                );
+                return;
+            }
+
+            const fechar = evento.target.closest(
+                "[data-modal-fechar]"
             );
 
-            const mostrar = (
-                correspondeStatus
-                && correspondeBusca
+            if (fechar) {
+                fecharModal(
+                    fechar.closest(".mesas-modal")
+                );
+                return;
+            }
+
+            const botaoComanda = evento.target.closest(
+                "[data-abrir-comanda]"
             );
 
-            card.hidden = !mostrar;
+            if (botaoComanda) {
+                const mesaId = botaoComanda.dataset.mesaId;
+                const numero = botaoComanda.dataset.mesaNumero;
+                const nome = botaoComanda.dataset.mesaNome;
 
-            if (mostrar) {
-                visiveis += 1;
+                const form = document.getElementById(
+                    "formAbrirComanda"
+                );
+
+                const texto = document.getElementById(
+                    "abrirComandaMesaTexto"
+                );
+
+                form.action = (
+                    "/mesas/"
+                    + encodeURIComponent(mesaId)
+                    + "/abrir-comanda"
+                );
+
+                texto.textContent = (
+                    "Mesa "
+                    + numero
+                    + (nome ? " — " + nome : "")
+                );
+
+                abrirModal("modalAbrirComanda");
+                return;
+            }
+
+            const botaoFecharComanda = evento.target.closest(
+                "[data-fechar-comanda]"
+            );
+
+            if (botaoFecharComanda) {
+                const comandaId = (
+                    botaoFecharComanda.dataset.comandaId
+                );
+
+                const numero = (
+                    botaoFecharComanda.dataset.mesaNumero
+                );
+
+                const nome = (
+                    botaoFecharComanda.dataset.mesaNome
+                );
+
+                totalComandaFechamento = Number(
+                    botaoFecharComanda.dataset.comandaTotal
+                    || 0
+                );
+
+                document.getElementById(
+                    "formFecharComanda"
+                ).action = (
+                        "/comandas/"
+                        + encodeURIComponent(comandaId)
+                        + "/finalizar"
+                    );
+
+                document.getElementById(
+                    "fecharComandaMesaTexto"
+                ).textContent = (
+                        "Mesa "
+                        + numero
+                        + (nome ? " — " + nome : "")
+                    );
+
+                document.getElementById(
+                    "fecharComandaTotal"
+                ).textContent = moeda(
+                    totalComandaFechamento
+                );
+
+                document.getElementById(
+                    "fecharDescontoTipo"
+                ).value = "nenhum";
+
+                document.getElementById(
+                    "fecharDescontoValor"
+                ).value = "0";
+
+                atualizarPrevisaoFechamento();
+                abrirModal("modalFecharComanda");
+                return;
+            }
+
+            const botaoEditar = evento.target.closest(
+                "[data-editar-mesa]"
+            );
+
+            if (botaoEditar) {
+                const mesaId = botaoEditar.dataset.mesaId;
+
+                document.getElementById(
+                    "formEditarMesa"
+                ).action = (
+                        "/mesas/"
+                        + encodeURIComponent(mesaId)
+                        + "/editar"
+                    );
+
+                document.getElementById(
+                    "editarMesaNumero"
+                ).value = botaoEditar.dataset.mesaNumero || "";
+
+                document.getElementById(
+                    "editarMesaNome"
+                ).value = botaoEditar.dataset.mesaNome || "";
+
+                document.getElementById(
+                    "editarMesaCapacidade"
+                ).value = (
+                        botaoEditar.dataset.mesaCapacidade
+                        || "4"
+                    );
+
+                document.getElementById(
+                    "editarMesaObservacoes"
+                ).value = (
+                        botaoEditar.dataset.mesaObservacoes
+                        || ""
+                    );
+
+                abrirModal("modalEditarMesa");
+                return;
+            }
+
+            const botaoMenu = evento.target.closest(
+                "[data-menu-mesa]"
+            );
+
+            if (botaoMenu) {
+                const menu = botaoMenu
+                    .closest(".mesa-acoes")
+                    .querySelector(".mesa-menu");
+
+                document
+                    .querySelectorAll(".mesa-menu.aberto")
+                    .forEach(function (menuAberto) {
+                        if (menuAberto !== menu) {
+                            menuAberto.classList.remove("aberto");
+                        }
+                    });
+
+                menu.classList.toggle("aberto");
+                return;
+            }
+
+            if (!evento.target.closest(".mesa-menu")) {
+                document
+                    .querySelectorAll(".mesa-menu.aberto")
+                    .forEach(function (menu) {
+                        menu.classList.remove("aberto");
+                    });
+            }
+
+            const filtro = evento.target.closest(
+                ".filtro-status"
+            );
+
+            if (filtro) {
+                statusAtual = filtro.dataset.status;
+
+                document
+                    .querySelectorAll(".filtro-status")
+                    .forEach(function (botao) {
+                        botao.classList.remove("ativo");
+                    });
+
+                filtro.classList.add("ativo");
+
+                aplicarFiltros();
             }
         });
 
-        if (semResultado) {
-            semResultado.hidden = (
-                visiveis > 0
-                || cards.length === 0
+        if (busca) {
+            busca.addEventListener(
+                "input",
+                aplicarFiltros
             );
         }
-    }
 
-    document.addEventListener("click", function (evento) {
-        const abrir = evento.target.closest(
-            "[data-modal-abrir]"
+        const descontoTipo = document.getElementById(
+            "fecharDescontoTipo"
         );
 
-        if (abrir) {
-            abrirModal(
-                abrir.dataset.modalAbrir
+        const descontoValor = document.getElementById(
+            "fecharDescontoValor"
+        );
+
+        if (descontoTipo) {
+            descontoTipo.addEventListener(
+                "change",
+                atualizarPrevisaoFechamento
             );
-            return;
         }
 
-        const fechar = evento.target.closest(
-            "[data-modal-fechar]"
-        );
-
-        if (fechar) {
-            fecharModal(
-                fechar.closest(".mesas-modal")
+        if (descontoValor) {
+            descontoValor.addEventListener(
+                "input",
+                atualizarPrevisaoFechamento
             );
-            return;
         }
 
-        const botaoComanda = evento.target.closest(
-            "[data-abrir-comanda]"
+        const formFecharComanda = document.getElementById(
+            "formFecharComanda"
         );
 
-        if (botaoComanda) {
-            const mesaId = botaoComanda.dataset.mesaId;
-            const numero = botaoComanda.dataset.mesaNumero;
-            const nome = botaoComanda.dataset.mesaNome;
+        if (formFecharComanda) {
+            formFecharComanda.addEventListener(
+                "submit",
+                function (evento) {
+                    const confirmar = window.confirm(
+                        "Confirmar o pagamento e liberar a mesa?"
+                    );
 
-            const form = document.getElementById(
-                "formAbrirComanda"
-            );
-
-            const texto = document.getElementById(
-                "abrirComandaMesaTexto"
-            );
-
-            form.action = (
-                "/mesas/"
-                + encodeURIComponent(mesaId)
-                + "/abrir-comanda"
-            );
-
-            texto.textContent = (
-                "Mesa "
-                + numero
-                + (nome ? " — " + nome : "")
-            );
-
-            abrirModal("modalAbrirComanda");
-            return;
-        }
-
-        const botaoFecharComanda = evento.target.closest(
-            "[data-fechar-comanda]"
-        );
-
-        if (botaoFecharComanda) {
-            const comandaId = (
-                botaoFecharComanda.dataset.comandaId
-            );
-
-            const numero = (
-                botaoFecharComanda.dataset.mesaNumero
-            );
-
-            const nome = (
-                botaoFecharComanda.dataset.mesaNome
-            );
-
-            totalComandaFechamento = Number(
-                botaoFecharComanda.dataset.comandaTotal
-                || 0
-            );
-
-            document.getElementById(
-                "formFecharComanda"
-            ).action = (
-                "/comandas/"
-                + encodeURIComponent(comandaId)
-                + "/finalizar"
-            );
-
-            document.getElementById(
-                "fecharComandaMesaTexto"
-            ).textContent = (
-                "Mesa "
-                + numero
-                + (nome ? " — " + nome : "")
-            );
-
-            document.getElementById(
-                "fecharComandaTotal"
-            ).textContent = moeda(
-                totalComandaFechamento
-            );
-
-            document.getElementById(
-                "fecharDescontoTipo"
-            ).value = "nenhum";
-
-            document.getElementById(
-                "fecharDescontoValor"
-            ).value = "0";
-
-            atualizarPrevisaoFechamento();
-            abrirModal("modalFecharComanda");
-            return;
-        }
-
-        const botaoEditar = evento.target.closest(
-            "[data-editar-mesa]"
-        );
-
-        if (botaoEditar) {
-            const mesaId = botaoEditar.dataset.mesaId;
-
-            document.getElementById(
-                "formEditarMesa"
-            ).action = (
-                "/mesas/"
-                + encodeURIComponent(mesaId)
-                + "/editar"
-            );
-
-            document.getElementById(
-                "editarMesaNumero"
-            ).value = botaoEditar.dataset.mesaNumero || "";
-
-            document.getElementById(
-                "editarMesaNome"
-            ).value = botaoEditar.dataset.mesaNome || "";
-
-            document.getElementById(
-                "editarMesaCapacidade"
-            ).value = (
-                botaoEditar.dataset.mesaCapacidade
-                || "4"
-            );
-
-            document.getElementById(
-                "editarMesaObservacoes"
-            ).value = (
-                botaoEditar.dataset.mesaObservacoes
-                || ""
-            );
-
-            abrirModal("modalEditarMesa");
-            return;
-        }
-
-        const botaoMenu = evento.target.closest(
-            "[data-menu-mesa]"
-        );
-
-        if (botaoMenu) {
-            const menu = botaoMenu
-                .closest(".mesa-acoes")
-                .querySelector(".mesa-menu");
-
-            document
-                .querySelectorAll(".mesa-menu.aberto")
-                .forEach(function (menuAberto) {
-                    if (menuAberto !== menu) {
-                        menuAberto.classList.remove("aberto");
+                    if (!confirmar) {
+                        evento.preventDefault();
+                        return;
                     }
-                });
 
-            menu.classList.toggle("aberto");
-            return;
-        }
+                    const botao = formFecharComanda.querySelector(
+                        "[type='submit']"
+                    );
 
-        if (!evento.target.closest(".mesa-menu")) {
-            document
-                .querySelectorAll(".mesa-menu.aberto")
-                .forEach(function (menu) {
-                    menu.classList.remove("aberto");
-                });
-        }
-
-        const filtro = evento.target.closest(
-            ".filtro-status"
-        );
-
-        if (filtro) {
-            statusAtual = filtro.dataset.status;
-
-            document
-                .querySelectorAll(".filtro-status")
-                .forEach(function (botao) {
-                    botao.classList.remove("ativo");
-                });
-
-            filtro.classList.add("ativo");
-
-            aplicarFiltros();
-        }
-    });
-
-    if (busca) {
-        busca.addEventListener(
-            "input",
-            aplicarFiltros
-        );
-    }
-
-    const descontoTipo = document.getElementById(
-        "fecharDescontoTipo"
-    );
-
-    const descontoValor = document.getElementById(
-        "fecharDescontoValor"
-    );
-
-    if (descontoTipo) {
-        descontoTipo.addEventListener(
-            "change",
-            atualizarPrevisaoFechamento
-        );
-    }
-
-    if (descontoValor) {
-        descontoValor.addEventListener(
-            "input",
-            atualizarPrevisaoFechamento
-        );
-    }
-
-    const formFecharComanda = document.getElementById(
-        "formFecharComanda"
-    );
-
-    if (formFecharComanda) {
-        formFecharComanda.addEventListener(
-            "submit",
-            function (evento) {
-                const confirmar = window.confirm(
-                    "Confirmar o pagamento e liberar a mesa?"
-                );
-
-                if (!confirmar) {
-                    evento.preventDefault();
-                    return;
+                    botao.disabled = true;
+                    botao.textContent = "Finalizando...";
                 }
+            );
+        }
 
-                const botao = formFecharComanda.querySelector(
-                    "[type='submit']"
-                );
-
-                botao.disabled = true;
-                botao.textContent = "Finalizando...";
+        document.addEventListener(
+            "keydown",
+            function (evento) {
+                if (evento.key === "Escape") {
+                    modais.forEach(function (modal) {
+                        fecharModal(modal);
+                    });
+                }
             }
         );
-    }
 
-    document.addEventListener(
-        "keydown",
-        function (evento) {
-            if (evento.key === "Escape") {
-                modais.forEach(function (modal) {
-                    fecharModal(modal);
-                });
-            }
+        let recargaMesasAgendada = null;
+
+        function agendarRecargaMesas() {
+            window.clearTimeout(recargaMesasAgendada);
+
+            recargaMesasAgendada = window.setTimeout(
+                function () {
+                    if (
+                        document.querySelector(
+                            ".mesas-modal.aberto"
+                        )
+                    ) {
+                        agendarRecargaMesas();
+                        return;
+                    }
+
+                    window.location.reload();
+                },
+                450
+            );
         }
-    );
 
-    window.recarregarMesas = function () {
-        window.location.reload();
-    };
-})();
+        if (typeof window.io === "function") {
+            const ambienteSeguro = (
+                window.location.protocol === "https:"
+            );
+
+            const socket = window.io({
+                transports: ambienteSeguro
+                    ? ["websocket", "polling"]
+                    : ["polling"],
+                upgrade: ambienteSeguro,
+                reconnection: true,
+                reconnectionDelay: 500,
+                reconnectionDelayMax: 5000
+            });
+
+            socket.emit(
+                "entrar_operacao",
+                {
+                    setor: "caixa"
+                }
+            );
+
+            [
+                "novo_pedido",
+                "comanda_atualizada",
+                "comanda_finalizada",
+                "item_pronto"
+            ].forEach(function (evento) {
+                socket.on(
+                    evento,
+                    agendarRecargaMesas
+                );
+            });
+        }
+
+        window.recarregarMesas = agendarRecargaMesas;
+    })();
 </script>
 
 {% endblock %}

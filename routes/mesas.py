@@ -96,10 +96,6 @@ def registrar_rotas(
         if not empresa_id:
             return
 
-        join_room(
-            f"empresa_{empresa_id}"
-        )
-
         dados = dados or {}
 
         setor = str(
@@ -108,6 +104,15 @@ def registrar_rotas(
                 ""
             )
         ).strip().lower()
+
+        somente_setor = bool(
+            dados.get("somente_setor")
+        )
+
+        if not somente_setor:
+            join_room(
+                f"empresa_{empresa_id}"
+            )
 
         if setor in {
             "cozinha",

@@ -1,18 +1,12 @@
 {% extends "layout.html" %}
 
 {% block css %}
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/producao.css') }}"
->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/producao.css') }}">
 {% endblock %}
 
 {% block content %}
 
-<main
-    class="producao-page"
-    data-setor-producao="{{ setor|e }}"
->
+<main class="producao-page" data-setor-producao="{{ setor|e }}">
 
     <header class="producao-header">
 
@@ -23,9 +17,9 @@
 
             <h1>
                 {% if setor == "bar" %}
-                    Painel do bar
+                Painel do bar
                 {% else %}
-                    Painel da cozinha
+                Painel da cozinha
                 {% endif %}
             </h1>
 
@@ -37,17 +31,12 @@
 
         <nav class="producao-setores">
 
-            <a
-                href="{{ url_for('painel_producao', setor='cozinha') }}"
-                class="{% if setor == 'cozinha' %}ativo{% endif %}"
-            >
+            <a href="{{ url_for('painel_producao', setor='cozinha') }}"
+                class="{% if setor == 'cozinha' %}ativo{% endif %}">
                 Cozinha
             </a>
 
-            <a
-                href="{{ url_for('painel_producao', setor='bar') }}"
-                class="{% if setor == 'bar' %}ativo{% endif %}"
-            >
+            <a href="{{ url_for('painel_producao', setor='bar') }}" class="{% if setor == 'bar' %}ativo{% endif %}">
                 Bar
             </a>
 
@@ -58,11 +47,7 @@
         </nav>
 
         <span class="producao-marca">
-            {% if setor == "bar" %}
-                BAR
-            {% else %}
-                KDS
-            {% endif %}
+            {% if setor == "bar" %}BAR{% else %}KDS{% endif %}
         </span>
 
     </header>
@@ -76,7 +61,6 @@
 
         <article>
             <small>Setor</small>
-
             <strong>
                 {{ "Bar" if setor == "bar" else "Cozinha" }}
             </strong>
@@ -84,7 +68,6 @@
 
         <article class="producao-online">
             <small>Atualização</small>
-
             <strong>
                 <span></span>
                 Tempo real
@@ -93,22 +76,15 @@
 
     </section>
 
-    <section
-        class="producao-grid"
-        id="producaoGrid"
-    >
+    <section class="producao-grid" id="producaoGrid">
 
         {% for pedido in pedidos %}
 
-        <article
-            class="pedido-producao"
-            data-pedido-id="{{ pedido['pedido_id'] }}"
-        >
+        <article class="pedido-producao" data-pedido-id="{{ pedido['pedido_id'] }}">
 
             <header>
 
                 <div class="pedido-identidade">
-
                     <span>
                         PEDIDO #{{ pedido["numero"] }}
                     </span>
@@ -117,28 +93,21 @@
                         Mesa {{ pedido["mesa_numero"] }}
 
                         {% if pedido["mesa_nome"] %}
-                            — {{ pedido["mesa_nome"] }}
+                        — {{ pedido["mesa_nome"] }}
                         {% endif %}
                     </h2>
 
                     {% if pedido["identificacao"] %}
-                    <p>
-                        {{ pedido["identificacao"] }}
-                    </p>
+                    <p>{{ pedido["identificacao"] }}</p>
                     {% endif %}
-
                 </div>
 
                 <div class="pedido-tempo">
-
-                    <small>
-                        Enviado às
-                    </small>
+                    <small>Enviado às</small>
 
                     <strong>
                         {{ pedido["enviado_em"].strftime("%H:%M") }}
                     </strong>
-
                 </div>
 
             </header>
@@ -153,10 +122,7 @@
 
                 {% for item in pedido["itens"] %}
 
-                <article
-                    class="item-producao status-{{ item['status'] }}"
-                    data-item-id="{{ item['id'] }}"
-                >
+                <article class="item-producao status-{{ item['status'] }}" data-item-id="{{ item['id'] }}">
 
                     <div class="item-producao-info">
 
@@ -165,17 +131,13 @@
                         </span>
 
                         <div>
-
-                            <h3>
-                                {{ item["nome"] }}
-                            </h3>
+                            <h3>{{ item["nome"] }}</h3>
 
                             {% if item["observacoes"] %}
                             <p>
                                 {{ item["observacoes"] }}
                             </p>
                             {% endif %}
-
                         </div>
 
                     </div>
@@ -184,29 +146,19 @@
 
                         {% if item["status"] == "pendente" %}
 
-                        <button
-                            type="button"
-                            class="btn-iniciar"
-                            data-status-producao="preparando"
-                            data-url="{{ url_for(
-                                'status_item_producao',
-                                setor=setor,
-                                item_id=item['id']
-                            ) }}"
-                        >
+                        <button type="button" class="btn-iniciar" data-status-producao="preparando" data-url="{{ url_for(
+                                            'status_item_producao',
+                                            setor=setor,
+                                            item_id=item['id']
+                                        ) }}">
                             Iniciar preparo
                         </button>
 
-                        <button
-                            type="button"
-                            class="btn-pronto-direto"
-                            data-status-producao="pronto"
-                            data-url="{{ url_for(
-                                'status_item_producao',
-                                setor=setor,
-                                item_id=item['id']
-                            ) }}"
-                        >
+                        <button type="button" class="btn-pronto-direto" data-status-producao="pronto" data-url="{{ url_for(
+                                            'status_item_producao',
+                                            setor=setor,
+                                            item_id=item['id']
+                                        ) }}">
                             Marcar pronto
                         </button>
 
@@ -216,24 +168,13 @@
                             Em preparo
                         </span>
 
-                        <button
-                            type="button"
-                            class="btn-pronto"
-                            data-status-producao="pronto"
-                            data-url="{{ url_for(
-                                'status_item_producao',
-                                setor=setor,
-                                item_id=item['id']
-                            ) }}"
-                        >
+                        <button type="button" class="btn-pronto" data-status-producao="pronto" data-url="{{ url_for(
+                                            'status_item_producao',
+                                            setor=setor,
+                                            item_id=item['id']
+                                        ) }}">
                             Pedido pronto
                         </button>
-
-                        {% elif item["status"] == "pronto" %}
-
-                        <span class="pronto-label">
-                            Pedido pronto
-                        </span>
 
                         {% endif %}
 
@@ -250,18 +191,12 @@
         {% else %}
 
         <div class="producao-vazia">
-
             <span>✓</span>
-
-            <h2>
-                Nenhum pedido aguardando
-            </h2>
-
+            <h2>Nenhum pedido aguardando</h2>
             <p>
                 Os próximos pedidos aparecerão aqui
                 automaticamente.
             </p>
-
         </div>
 
         {% endfor %}
@@ -270,157 +205,238 @@
 
 </main>
 
-<script
-    src="https://cdn.socket.io/4.7.5/socket.io.min.js"
-    crossorigin="anonymous"
-></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
 
 <script>
-(function () {
-    "use strict";
+    (function () {
+        "use strict";
 
-    const paginaProducao = document.querySelector(
-        "[data-setor-producao]"
-    );
+        const paginaProducao = document.querySelector(
+            "[data-setor-producao]"
+        );
 
-    const setorProducao = paginaProducao
-        ? paginaProducao.dataset.setorProducao
-        : "cozinha";
+        const setorProducao = paginaProducao
+            ? paginaProducao.dataset.setorProducao
+            : "cozinha";
 
-    function conectarTempoReal() {
-        if (typeof window.io !== "function") {
+        let recargaAgendada = null;
+
+        function agendarRecarga() {
+            window.clearTimeout(recargaAgendada);
+
+            recargaAgendada = window.setTimeout(
+                function () {
+                    window.location.reload();
+                },
+                350
+            );
+        }
+
+        function atualizarContadorPedidos() {
+            const contador = document.querySelector(
+                ".producao-resumo article:first-child strong"
+            );
+
+            if (contador) {
+                contador.textContent = document.querySelectorAll(
+                    ".pedido-producao"
+                ).length;
+            }
+        }
+
+        function aplicarStatusItem(itemId, status) {
+            const item = document.querySelector(
+                '[data-item-id="' + String(itemId) + '"]'
+            );
+
+            if (!item) {
+                return false;
+            }
+
+            const pedido = item.closest(".pedido-producao");
+
+            if (status === "pronto" || status === "entregue") {
+                item.remove();
+
+                if (
+                    pedido
+                    && !pedido.querySelector(".item-producao")
+                ) {
+                    pedido.remove();
+                }
+
+                atualizarContadorPedidos();
+                return true;
+            }
+
+            item.className = "item-producao status-" + status;
+
+            if (status === "preparando") {
+                const acoes = item.querySelector(
+                    ".item-producao-acoes"
+                );
+
+                if (acoes) {
+                    const botaoAnterior = acoes.querySelector(
+                        "[data-status-producao]"
+                    );
+
+                    const url = botaoAnterior
+                        ? botaoAnterior.dataset.url
+                        : "";
+
+                    acoes.replaceChildren();
+
+                    const etiqueta = document.createElement("span");
+                    etiqueta.className = "preparando-label";
+                    etiqueta.textContent = "Em preparo";
+
+                    const botao = document.createElement("button");
+                    botao.type = "button";
+                    botao.className = "btn-pronto";
+                    botao.dataset.statusProducao = "pronto";
+                    botao.dataset.url = url;
+                    botao.textContent = "Pedido pronto";
+
+                    acoes.append(etiqueta, botao);
+                }
+            }
+
+            return true;
+        }
+
+        if (typeof window.io === "function") {
+            const ambienteSeguro = (
+                window.location.protocol === "https:"
+            );
+
+            const socket = window.io({
+                transports: ambienteSeguro
+                    ? ["websocket", "polling"]
+                    : ["polling"],
+                upgrade: ambienteSeguro,
+                reconnection: true,
+                reconnectionDelay: 500,
+                reconnectionDelayMax: 5000
+            });
+
+            socket.emit(
+                "entrar_operacao",
+                {
+                    setor: setorProducao,
+                    somente_setor: true
+                }
+            );
+
+            socket.on(
+                "novo_pedido_setor",
+                function (pedido) {
+                    if (
+                        pedido.setor
+                        === setorProducao
+                    ) {
+                        agendarRecarga();
+                    }
+                }
+            );
+
+            socket.on(
+                "item_producao_atualizado",
+                function (item) {
+                    if (
+                        item.setor
+                        === setorProducao
+                    ) {
+                        aplicarStatusItem(
+                            item.item_id || item.id,
+                            item.status
+                        );
+                    }
+                }
+            );
+        } else {
             console.warn(
                 "Socket.IO indisponível. "
                 + "O painel continuará funcionando sem tempo real."
             );
-
-            return;
         }
 
-        const socket = window.io();
+        document.addEventListener(
+            "click",
+            async function (evento) {
+                const botao = evento.target.closest(
+                    "[data-status-producao]"
+                );
 
-        socket.emit(
-            "entrar_operacao",
-            {
-                setor: setorProducao
-            }
-        );
+                if (!botao || botao.disabled) {
+                    return;
+                }
 
-        socket.on(
-            "novo_pedido_setor",
-            function (pedido) {
-                if (
-                    pedido
-                    && pedido.setor === setorProducao
-                ) {
-                    window.location.reload();
+                const textoOriginal = botao.textContent;
+
+                botao.disabled = true;
+                botao.textContent = "Atualizando...";
+
+                try {
+                    const resposta = await fetch(
+                        botao.dataset.url,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-Requested-With": "XMLHttpRequest"
+                            },
+                            body: JSON.stringify({
+                                status: botao.dataset.statusProducao
+                            })
+                        }
+                    );
+
+                    const tipoConteudo = (
+                        resposta.headers.get("content-type")
+                        || ""
+                    );
+
+                    if (
+                        !tipoConteudo.includes("application/json")
+                    ) {
+                        throw new Error(
+                            "O servidor retornou uma resposta inválida."
+                        );
+                    }
+
+                    const dados = await resposta.json();
+
+                    if (!resposta.ok || !dados.ok) {
+                        throw new Error(
+                            dados.erro
+                            || "Não foi possível atualizar."
+                        );
+                    }
+
+                    const itemAtual = botao.closest(
+                        ".item-producao"
+                    );
+
+                    if (itemAtual) {
+                        aplicarStatusItem(
+                            itemAtual.dataset.itemId,
+                            botao.dataset.statusProducao
+                        );
+                    }
+
+                } catch (erro) {
+                    window.alert(
+                        erro.message
+                        || "Erro ao atualizar o pedido."
+                    );
+
+                    botao.disabled = false;
+                    botao.textContent = textoOriginal;
                 }
             }
         );
-
-        socket.on(
-            "item_producao_atualizado",
-            function (item) {
-                if (
-                    item
-                    && item.setor === setorProducao
-                ) {
-                    window.location.reload();
-                }
-            }
-        );
-
-        socket.on(
-            "connect_error",
-            function (erro) {
-                console.warn(
-                    "Não foi possível conectar ao tempo real:",
-                    erro
-                );
-            }
-        );
-    }
-
-    async function atualizarStatus(botao) {
-        const textoOriginal = botao.textContent.trim();
-
-        botao.disabled = true;
-        botao.classList.add("carregando");
-        botao.textContent = "Atualizando...";
-
-        try {
-            const resposta = await fetch(
-                botao.dataset.url,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-Requested-With": "XMLHttpRequest"
-                    },
-                    body: JSON.stringify({
-                        status: botao.dataset.statusProducao
-                    })
-                }
-            );
-
-            const tipoConteudo =
-                resposta.headers.get("content-type") || "";
-
-            if (
-                !tipoConteudo.includes(
-                    "application/json"
-                )
-            ) {
-                throw new Error(
-                    "O servidor retornou uma resposta inválida."
-                );
-            }
-
-            const dados = await resposta.json();
-
-            if (!resposta.ok || !dados.ok) {
-                throw new Error(
-                    dados.erro
-                    || "Não foi possível atualizar o pedido."
-                );
-            }
-
-            window.location.reload();
-
-        } catch (erro) {
-            console.error(
-                "Erro ao atualizar a produção:",
-                erro
-            );
-
-            window.alert(
-                erro.message
-                || "Erro ao atualizar o pedido."
-            );
-
-            botao.disabled = false;
-            botao.classList.remove("carregando");
-            botao.textContent = textoOriginal;
-        }
-    }
-
-    document.addEventListener(
-        "click",
-        function (evento) {
-            const botao = evento.target.closest(
-                "[data-status-producao]"
-            );
-
-            if (!botao || botao.disabled) {
-                return;
-            }
-
-            atualizarStatus(botao);
-        }
-    );
-
-    conectarTempoReal();
-})();
+    })();
 </script>
 
 {% endblock %}
