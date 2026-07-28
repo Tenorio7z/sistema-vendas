@@ -1,4 +1,5 @@
 import os
+import time
 
 import psycopg2.extras
 
@@ -16,6 +17,9 @@ from werkzeug.security import check_password_hash
 
 from database import conectar
 from services.login_token_service import LoginTokenService
+
+
+_login_persistente_indisponivel_ate = 0.0
 
 
 def _preencher_sessao(usuario):
@@ -122,6 +126,8 @@ def registrar_rotas(app):
 
     @app.before_request
     def restaurar_login_persistente():
+        global _login_persistente_indisponivel_ate
+
         if session.get("logado"):
             return None
 
@@ -132,9 +138,31 @@ def registrar_rotas(app):
         if not token:
             return None
 
-        usuario = LoginTokenService.autenticar(
-            token
-        )
+        if (
+            time.monotonic()
+            < _login_persistente_indisponivel_ate
+        ):
+            return None
+
+        try:
+            usuario = LoginTokenService.autenticar(
+                token
+            )
+
+        except (
+            psycopg2.InterfaceError,
+            psycopg2.OperationalError,
+        ) as erro:
+            _login_persistente_indisponivel_ate = (
+                time.monotonic() + 30
+            )
+
+            app.logger.warning(
+                "Banco indisponível ao restaurar login: %s",
+                erro,
+            )
+
+            return None
 
         if not usuario:
             g.remover_login_token = True
@@ -180,15 +208,19 @@ def registrar_rotas(app):
 
             manter_conectado = True
 
-            conn = conectar()
-
-            cursor = conn.cursor(
-                cursor_factory=(
-                    psycopg2.extras.RealDictCursor
-                )
-            )
+            conn = None
+            cursor = None
+            usuario = None
 
             try:
+                conn = conectar()
+
+                cursor = conn.cursor(
+                    cursor_factory=(
+                        psycopg2.extras.RealDictCursor
+                    )
+                )
+
                 cursor.execute(
                     """
                     SELECT
@@ -223,9 +255,34 @@ def registrar_rotas(app):
 
                 usuario = cursor.fetchone()
 
+            except (
+                psycopg2.InterfaceError,
+                psycopg2.OperationalError,
+            ) as erro:
+                app.logger.warning(
+                    "Banco indisponível durante o login: %s",
+                    erro,
+                )
+
+                flash(
+                    (
+                        "O banco de dados está temporariamente "
+                        "indisponível. Tente novamente em instantes."
+                    ),
+                    "erro",
+                )
+
+                return (
+                    render_template("login.html"),
+                    503,
+                )
+
             finally:
-                cursor.close()
-                conn.close()
+                if cursor is not None:
+                    cursor.close()
+
+                if conn is not None:
+                    conn.close()
 
             if usuario:
                 usuario_bloqueado = (

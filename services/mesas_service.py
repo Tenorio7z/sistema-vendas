@@ -955,6 +955,157 @@ class MesasService:
             conn.close()
 
     # =====================================================
+    # CONFIGURAR QUANTIDADE DE MESAS
+    # =====================================================
+
+    @classmethod
+    def configurar_quantidade_mesas(
+        cls,
+        *,
+        empresa_id,
+        quantidade,
+        capacidade=4,
+    ):
+
+        empresa_id = cls._inteiro(
+            empresa_id,
+            "Empresa",
+        )
+
+        quantidade = cls._inteiro(
+            quantidade,
+            "Quantidade de mesas",
+        )
+
+        capacidade = cls._inteiro(
+            capacidade,
+            "Capacidade",
+        )
+
+        if quantidade > 300:
+            raise MesasErro(
+                "A quantidade máxima é de 300 mesas."
+            )
+
+        if capacidade > 100:
+            raise MesasErro(
+                "A capacidade máxima por mesa é de 100 pessoas."
+            )
+
+        conn = conectar()
+        cursor = criar_cursor(conn)
+
+        try:
+            cursor.execute(
+                """
+                SELECT numero
+                FROM mesas
+                WHERE empresa_id = %s
+                ORDER BY numero
+                """,
+                (empresa_id,),
+            )
+
+            registros = cursor.fetchall()
+            numeros_existentes = set()
+            larguras_com_zero = []
+
+            for registro in registros:
+                texto = str(
+                    registro["numero"] or ""
+                ).strip()
+
+                if not texto.isdigit():
+                    continue
+
+                numeros_existentes.add(
+                    int(texto)
+                )
+
+                if len(texto) > 1 and texto.startswith("0"):
+                    larguras_com_zero.append(
+                        len(texto)
+                    )
+
+            if larguras_com_zero:
+                largura = max(
+                    max(larguras_com_zero),
+                    len(str(quantidade)),
+                )
+            elif not numeros_existentes:
+                largura = max(
+                    2,
+                    len(str(quantidade)),
+                )
+            else:
+                largura = 0
+
+            faltantes = [
+                numero
+                for numero in range(
+                    1,
+                    quantidade + 1,
+                )
+                if numero not in numeros_existentes
+            ]
+
+            valores = [
+                (
+                    empresa_id,
+                    (
+                        str(numero).zfill(largura)
+                        if largura
+                        else str(numero)
+                    ),
+                    capacidade,
+                )
+                for numero in faltantes
+            ]
+
+            criadas = []
+
+            if valores:
+                criadas = execute_values(
+                    cursor,
+                    """
+                    INSERT INTO mesas (
+                        empresa_id,
+                        numero,
+                        capacidade,
+                        status
+                    )
+                    VALUES %s
+                    ON CONFLICT (
+                        empresa_id,
+                        numero
+                    )
+                    DO NOTHING
+                    RETURNING id, numero
+                    """,
+                    valores,
+                    template="(%s, %s, %s, 'livre')",
+                    fetch=True,
+                )
+
+            conn.commit()
+
+            return {
+                "solicitadas": quantidade,
+                "criadas": len(criadas),
+                "existentes": len(registros),
+                "total": len(registros) + len(criadas),
+                "mesas_criadas": criadas,
+            }
+
+        except Exception:
+            conn.rollback()
+            raise
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    # =====================================================
     # ALTERAR MESA
     # =====================================================
 
@@ -1681,6 +1832,395 @@ class MesasService:
 
         finally:
 
+            cursor.close()
+            conn.close()
+
+    # =====================================================
+    # LANÇAMENTO DIRETO DE PRODUTOS NA MESA
+    # =====================================================
+
+    @classmethod
+    def lancar_produtos_mesa(
+        cls,
+        *,
+        empresa_id,
+        mesa_id,
+        usuario_id,
+        itens,
+    ):
+
+        empresa_id = cls._inteiro(
+            empresa_id,
+            "Empresa",
+        )
+
+        mesa_id = cls._inteiro(
+            mesa_id,
+            "Mesa",
+        )
+
+        usuario_id = cls._inteiro(
+            usuario_id,
+            "Usuário",
+        )
+
+        if not isinstance(itens, list):
+            raise MesasErro(
+                "A lista de produtos é inválida."
+            )
+
+        quantidades = {}
+
+        for item in itens:
+            if not isinstance(item, dict):
+                continue
+
+            produto_id = cls._inteiro(
+                item.get("produto_id"),
+                "Produto",
+            )
+
+            quantidade = cls._decimal(
+                item.get("quantidade", 0),
+                "Quantidade",
+            )
+
+            if quantidade <= 0:
+                continue
+
+            quantidades[produto_id] = (
+                quantidades.get(
+                    produto_id,
+                    Decimal("0"),
+                )
+                + quantidade
+            )
+
+        if not quantidades:
+            raise MesasErro(
+                "Selecione pelo menos um produto."
+            )
+
+        if len(quantidades) > 100:
+            raise MesasErro(
+                "Selecione no máximo 100 produtos por lançamento."
+            )
+
+        conn = conectar()
+        cursor = criar_cursor(conn)
+
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    numero,
+                    nome,
+                    status
+
+                FROM mesas
+
+                WHERE id = %s
+                  AND empresa_id = %s
+
+                FOR UPDATE
+                """,
+                (
+                    mesa_id,
+                    empresa_id,
+                ),
+            )
+
+            mesa = cursor.fetchone()
+
+            if not mesa:
+                raise MesasErro(
+                    "Mesa não encontrada."
+                )
+
+            if mesa["status"] == "inativa":
+                raise MesasErro(
+                    "Essa mesa está inativa."
+                )
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    status
+
+                FROM comandas
+
+                WHERE empresa_id = %s
+                  AND mesa_id = %s
+                  AND status IN (
+                      'aberta',
+                      'aguardando_pagamento'
+                  )
+
+                ORDER BY id DESC
+                LIMIT 1
+
+                FOR UPDATE
+                """,
+                (
+                    empresa_id,
+                    mesa_id,
+                ),
+            )
+
+            comanda = cursor.fetchone()
+            comanda_criada = False
+
+            if comanda:
+                if comanda["status"] != "aberta":
+                    raise MesasErro(
+                        "Essa mesa está aguardando pagamento."
+                    )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO comandas (
+                        empresa_id,
+                        mesa_id,
+                        funcionario_id,
+                        quantidade_pessoas,
+                        status,
+                        subtotal,
+                        desconto_valor,
+                        desconto_percentual,
+                        total
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        %s,
+                        1,
+                        'aberta',
+                        0,
+                        0,
+                        0,
+                        0
+                    )
+                    RETURNING
+                        id,
+                        status
+                    """,
+                    (
+                        empresa_id,
+                        mesa_id,
+                        usuario_id,
+                    ),
+                )
+
+                comanda = cursor.fetchone()
+                comanda_criada = True
+
+                cursor.execute(
+                    """
+                    UPDATE mesas
+
+                    SET
+                        status = 'ocupada',
+                        atualizado_em = CURRENT_TIMESTAMP
+
+                    WHERE id = %s
+                      AND empresa_id = %s
+                    """,
+                    (
+                        mesa_id,
+                        empresa_id,
+                    ),
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO comanda_historico (
+                        empresa_id,
+                        comanda_id,
+                        usuario_id,
+                        acao,
+                        descricao
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        %s,
+                        'comanda_aberta',
+                        %s
+                    )
+                    """,
+                    (
+                        empresa_id,
+                        comanda["id"],
+                        usuario_id,
+                        (
+                            "Comanda aberta automaticamente "
+                            f"na mesa {mesa['numero']}."
+                        ),
+                    ),
+                )
+
+            produto_ids = list(
+                quantidades.keys()
+            )
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    nome,
+                    preco,
+                    estoque
+
+                FROM produtos
+
+                WHERE empresa_id = %s
+                  AND id = ANY(%s)
+
+                ORDER BY id
+
+                FOR UPDATE
+                """,
+                (
+                    empresa_id,
+                    produto_ids,
+                ),
+            )
+
+            produtos = {
+                produto["id"]: produto
+                for produto in cursor.fetchall()
+            }
+
+            if len(produtos) != len(produto_ids):
+                raise MesasErro(
+                    "Um dos produtos selecionados não existe mais."
+                )
+
+            valores_insercao = []
+            total_itens = Decimal("0")
+
+            for produto_id, quantidade in quantidades.items():
+                produto = produtos[produto_id]
+
+                estoque = Decimal(
+                    str(produto["estoque"] or 0)
+                )
+
+                if quantidade > estoque:
+                    raise MesasErro(
+                        (
+                            f"Estoque insuficiente para "
+                            f"{produto['nome']}. "
+                            f"Disponível: {estoque}."
+                        )
+                    )
+
+                valor_unitario = Decimal(
+                    str(produto["preco"] or 0)
+                ).quantize(
+                    Decimal("0.01")
+                )
+
+                subtotal = (
+                    valor_unitario
+                    * quantidade
+                ).quantize(
+                    Decimal("0.01")
+                )
+
+                total_itens += subtotal
+
+                valores_insercao.append(
+                    (
+                        empresa_id,
+                        comanda["id"],
+                        produto_id,
+                        produto["nome"],
+                        quantidade,
+                        valor_unitario,
+                        subtotal,
+                    )
+                )
+
+            execute_values(
+                cursor,
+                """
+                INSERT INTO comanda_itens (
+                    empresa_id,
+                    comanda_id,
+                    produto_id,
+                    produto_nome,
+                    quantidade,
+                    valor_unitario,
+                    subtotal,
+                    status,
+                    setor_preparo
+                )
+                VALUES %s
+                """,
+                valores_insercao,
+                template=(
+                    "(%s, %s, %s, %s, %s, %s, %s, "
+                    "'entregue', 'direto')"
+                ),
+            )
+
+            comanda_atualizada = cls._recalcular_comanda(
+                cursor,
+                empresa_id=empresa_id,
+                comanda_id=comanda["id"],
+            )
+
+            cursor.execute(
+                """
+                INSERT INTO comanda_historico (
+                    empresa_id,
+                    comanda_id,
+                    usuario_id,
+                    acao,
+                    descricao
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    'itens_adicionados',
+                    %s
+                )
+                """,
+                (
+                    empresa_id,
+                    comanda["id"],
+                    usuario_id,
+                    (
+                        f"{len(valores_insercao)} produto(s) "
+                        "lançado(s) diretamente na mesa. "
+                        f"Valor adicionado: R$ {total_itens:.2f}."
+                    ),
+                ),
+            )
+
+            conn.commit()
+
+            return {
+                "mesa_id": mesa_id,
+                "comanda_id": comanda["id"],
+                "comanda_criada": comanda_criada,
+                "quantidade_produtos": len(
+                    valores_insercao
+                ),
+                "valor_adicionado": total_itens,
+                "subtotal": comanda_atualizada["subtotal"],
+                "total": comanda_atualizada["total"],
+            }
+
+        except Exception:
+            conn.rollback()
+            raise
+
+        finally:
             cursor.close()
             conn.close()
 

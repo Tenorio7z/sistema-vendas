@@ -1346,6 +1346,38 @@ body.modal-aberto {
     grid-column: 1 / -1;
 }
 
+.mesas-configuracao-aviso {
+    padding: 14px 16px;
+
+    border: 1px solid rgba(68, 156, 255, 0.28);
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(68, 156, 255, 0.12),
+            rgba(144, 109, 255, 0.07)
+        );
+}
+
+.mesas-configuracao-aviso strong,
+.mesas-configuracao-aviso p {
+    display: block;
+    margin: 0;
+}
+
+.mesas-configuracao-aviso strong {
+    margin-bottom: 5px;
+    color: var(--mesas-texto);
+    font-size: 12px;
+}
+
+.mesas-configuracao-aviso p {
+    color: var(--mesas-texto-secundario);
+    font-size: 11px;
+    line-height: 1.55;
+}
+
 .mesas-modal-footer {
     margin-top: 18px;
     padding-top: 15px;
@@ -1543,10 +1575,171 @@ html:not(.dark) .mesas-form select option {
         min-height: 290px;
     }
 }
-
-/* Respeitar elementos ocultados pelo JavaScript */
+/* Elementos controlados pelo JavaScript precisam respeitar
+   o atributo hidden, mesmo quando possuem display no CSS. */
 .mesas-page [hidden],
 .mesas-sem-resultado[hidden],
 [data-mesa-card][hidden] {
     display: none !important;
+}
+
+/* LANÇAMENTO RÁPIDO DE PRODUTOS */
+.mesa-card:not(.mesa-inativa) { cursor: pointer; }
+
+.modal-produtos-mesa {
+    width: min(920px, 100%);
+    max-height: min(820px, calc(100vh - 32px));
+}
+
+.produtos-mesa-conteudo {
+    min-height: 0;
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.produtos-mesa-busca {
+    min-height: 48px;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    border: 1px solid rgba(89, 157, 255, .25);
+    border-radius: 14px;
+    background: rgba(5, 19, 43, .48);
+}
+
+.produtos-mesa-busca span { color: #55bdff; font-size: 20px; }
+.produtos-mesa-busca input {
+    width: 100%;
+    padding: 0;
+    color: var(--mesas-texto, #f4f8ff);
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
+
+.produtos-mesa-grid {
+    min-height: 180px;
+    max-height: 52vh;
+    padding-right: 5px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #438cff transparent;
+}
+
+.produto-mesa-card {
+    min-width: 0;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 15px;
+    border: 1px solid rgba(116, 163, 224, .22);
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(74,139,235,.09), rgba(103,76,210,.04)), rgba(17,39,73,.72);
+    box-shadow: inset 0 1px rgba(255,255,255,.06);
+    transition: .18s ease;
+}
+
+.produto-mesa-card:hover,
+.produto-mesa-card.selecionado {
+    border-color: rgba(66,145,255,.75);
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px rgba(255,255,255,.09), 0 12px 28px rgba(20,72,159,.17);
+}
+
+.produto-mesa-card.selecionado {
+    background: linear-gradient(145deg, rgba(49,145,255,.2), rgba(93,70,219,.11)), rgba(17,39,73,.83);
+}
+
+.produto-mesa-info { min-width: 0; display: grid; gap: 6px; }
+.produto-mesa-info strong {
+    overflow: hidden;
+    color: var(--mesas-texto, #fff);
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.produto-mesa-info span { color: #38e5ba; font-size: 15px; font-weight: 850; }
+.produto-mesa-info small { color: var(--mesas-texto-suave, #91a7c5); font-size: 10px; }
+
+.produto-mesa-quantidade {
+    min-height: 38px;
+    display: grid;
+    grid-template-columns: 38px minmax(44px, 1fr) 38px;
+    overflow: hidden;
+    border: 1px solid rgba(107,158,224,.25);
+    border-radius: 11px;
+    background: rgba(4,18,41,.5);
+}
+
+.produto-mesa-quantidade button,
+.produto-mesa-quantidade input {
+    min-width: 0;
+    color: var(--mesas-texto, #fff);
+    border: 0;
+    outline: 0;
+    background: transparent;
+    text-align: center;
+}
+.produto-mesa-quantidade button { cursor: pointer; color: #62c8ff; font-size: 18px; font-weight: 800; }
+.produto-mesa-quantidade button:hover { background: rgba(70,147,255,.18); }
+.produto-mesa-quantidade input {
+    border-right: 1px solid rgba(107,158,224,.18);
+    border-left: 1px solid rgba(107,158,224,.18);
+    -moz-appearance: textfield;
+}
+.produto-mesa-quantidade input::-webkit-inner-spin-button,
+.produto-mesa-quantidade input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
+
+.produtos-mesa-estado {
+    grid-column: 1 / -1;
+    min-height: 180px;
+    display: grid;
+    place-items: center;
+    color: var(--mesas-texto-suave, #91a7c5);
+    border: 1px dashed rgba(100,157,230,.28);
+    border-radius: 15px;
+}
+.produtos-mesa-estado.erro { color: #ff6e88; }
+
+.produtos-mesa-rodape {
+    padding: 16px 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px solid rgba(112,157,216,.2);
+    background: rgba(7,22,49,.36);
+}
+.produtos-mesa-resumo { min-width: 0; display: grid; gap: 4px; }
+.produtos-mesa-resumo span { color: var(--mesas-texto-suave, #91a7c5); font-size: 10px; }
+.produtos-mesa-resumo strong { color: #38e5ba; font-size: 20px; }
+
+html:not(.dark) .produtos-mesa-busca,
+html:not(.dark) .produto-mesa-quantidade { background: rgba(235,243,255,.84); }
+html:not(.dark) .produto-mesa-card {
+    background: linear-gradient(145deg, rgba(70,145,255,.08), rgba(114,85,224,.03)), rgba(255,255,255,.9);
+}
+html:not(.dark) .produto-mesa-card.selecionado {
+    background: linear-gradient(145deg, rgba(55,147,255,.17), rgba(108,76,220,.08)), #fff;
+}
+
+@media (max-width: 760px) {
+    .produtos-mesa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .produtos-mesa-rodape { grid-template-columns: 1fr 1fr; }
+    .produtos-mesa-resumo { grid-column: 1 / -1; }
+}
+
+@media (max-width: 480px) {
+    .produtos-mesa-conteudo { padding: 14px; }
+    .produtos-mesa-grid { grid-template-columns: 1fr; }
+    .produtos-mesa-rodape { padding: 13px 14px; grid-template-columns: 1fr; }
+    .produtos-mesa-rodape > button { width: 100%; }
 }

@@ -182,6 +182,141 @@ def registrar_rotas(
             )
 
     # =====================================================
+    # CATÁLOGO SIMPLIFICADO DAS MESAS
+    # =====================================================
+
+    @app.route(
+        "/mesas/produtos-disponiveis",
+        methods=["GET"],
+    )
+    @modulo_obrigatorio("mesas")
+    def produtos_disponiveis_mesa():
+
+        try:
+            produtos = MesasService.listar_produtos(
+                session.get("empresa_id")
+            )
+
+            return jsonify(
+                {
+                    "ok": True,
+                    "produtos": [
+                        {
+                            "id": produto["id"],
+                            "nome": produto["nome"],
+                            "preco": float(
+                                produto["preco"] or 0
+                            ),
+                            "estoque": float(
+                                produto["estoque"] or 0
+                            ),
+                        }
+                        for produto in produtos
+                    ],
+                }
+            )
+
+        except Exception:
+            app.logger.exception(
+                "Erro ao carregar produtos das mesas."
+            )
+
+            return jsonify(
+                {
+                    "ok": False,
+                    "erro": (
+                        "Não foi possível carregar os produtos."
+                    ),
+                }
+            ), 500
+
+    # =====================================================
+    # LANÇAR VÁRIOS PRODUTOS DIRETAMENTE NA MESA
+    # =====================================================
+
+    @app.route(
+        "/mesas/<int:mesa_id>/lancar-produtos",
+        methods=["POST"],
+    )
+    @modulo_obrigatorio("mesas")
+    def lancar_produtos_mesa(
+        mesa_id,
+    ):
+
+        dados = request.get_json(
+            silent=True
+        ) or {}
+
+        try:
+            resultado = (
+                MesasService.lancar_produtos_mesa(
+                    empresa_id=session.get(
+                        "empresa_id"
+                    ),
+                    mesa_id=mesa_id,
+                    usuario_id=session.get(
+                        "usuario_id"
+                    ),
+                    itens=dados.get(
+                        "itens",
+                        [],
+                    ),
+                )
+            )
+
+            return jsonify(
+                {
+                    "ok": True,
+                    "mensagem": (
+                        "Produtos lançados na mesa."
+                    ),
+                    "mesa_id": resultado["mesa_id"],
+                    "comanda_id": resultado["comanda_id"],
+                    "comanda_criada": resultado[
+                        "comanda_criada"
+                    ],
+                    "quantidade_produtos": resultado[
+                        "quantidade_produtos"
+                    ],
+                    "valor_adicionado": float(
+                        resultado["valor_adicionado"]
+                    ),
+                    "subtotal": float(
+                        resultado["subtotal"]
+                    ),
+                    "total": float(
+                        resultado["total"]
+                    ),
+                }
+            )
+
+        except MesasErro as erro:
+            return jsonify(
+                {
+                    "ok": False,
+                    "erro": str(erro),
+                }
+            ), 400
+
+        except Exception:
+            app.logger.exception(
+                (
+                    "Erro ao lançar produtos "
+                    "diretamente na mesa %s."
+                ),
+                mesa_id,
+            )
+
+            return jsonify(
+                {
+                    "ok": False,
+                    "erro": (
+                        "Não foi possível lançar os produtos."
+                    ),
+                }
+            ), 500
+
+    # =====================================================
     # CADASTRAR MESA
     # =====================================================
 
@@ -236,6 +371,70 @@ def registrar_rotas(
 
             flash(
                 "Não foi possível cadastrar a mesa.",
+                "erro",
+            )
+
+        return _voltar_mesas()
+
+    # =====================================================
+    # CONFIGURAR QUANTIDADE DE MESAS
+    # =====================================================
+
+    @app.route(
+        "/mesas/configurar",
+        methods=["POST"],
+    )
+    @modulo_obrigatorio("mesas")
+    def configurar_mesas():
+
+        try:
+            resultado = (
+                MesasService
+                .configurar_quantidade_mesas(
+                    empresa_id=session.get(
+                        "empresa_id"
+                    ),
+                    quantidade=request.form.get(
+                        "quantidade"
+                    ),
+                    capacidade=request.form.get(
+                        "capacidade",
+                        4,
+                    ),
+                )
+            )
+
+            if resultado["criadas"]:
+                flash(
+                    (
+                        f"{resultado['criadas']} mesa(s) "
+                        "criada(s) com sucesso. "
+                        f"Total atual: {resultado['total']}."
+                    ),
+                    "sucesso",
+                )
+            else:
+                flash(
+                    (
+                        "As mesas solicitadas já estavam "
+                        "cadastradas. Nenhuma duplicação foi feita."
+                    ),
+                    "info",
+                )
+
+        except MesasErro as erro:
+            flash(
+                str(erro),
+                "erro",
+            )
+
+        except Exception:
+            app.logger.exception(
+                "Erro ao configurar quantidade de mesas."
+            )
+
+            flash(
+                "Não foi possível configurar as mesas.",
                 "erro",
             )
 

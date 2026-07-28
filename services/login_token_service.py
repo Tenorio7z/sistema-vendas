@@ -1,6 +1,8 @@
 import hashlib
 import secrets
 
+import psycopg2
+
 from database import conectar, criar_cursor
 
 
@@ -175,6 +177,13 @@ class LoginTokenService:
             conn.commit()
 
             return usuario
+
+        except (
+            psycopg2.InterfaceError,
+            psycopg2.OperationalError,
+        ):
+            conn.rollback()
+            raise
 
         except Exception:
             conn.rollback()
