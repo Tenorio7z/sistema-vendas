@@ -3300,30 +3300,6 @@ class MesasService:
                     "A comanda não possui itens válidos."
                 )
 
-            nao_enviados = [
-                item
-                for item in itens
-                if not item["pedido_id"]
-            ]
-
-            if nao_enviados:
-                raise MesasErro(
-                    "Envie todos os itens antes de fechar a comanda."
-                )
-
-            em_producao = [
-                item
-                for item in itens
-                if item["status"] in {
-                    "pendente",
-                    "preparando",
-                }
-            ]
-
-            if em_producao:
-                raise MesasErro(
-                    "Ainda existem itens em produção."
-                )
 
             cursor.execute(
                 """
