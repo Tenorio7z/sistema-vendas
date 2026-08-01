@@ -2452,3 +2452,188 @@ html:not(.dark) .modal-recebimento .recebimento-previsao span {
         width: 100%;
     }
 }
+
+/* =========================================
+   CATÁLOGO COMPACTO — 2 × 2
+========================================= */
+
+.modal-produtos-mesa {
+    width: min(720px, calc(100vw - 30px));
+}
+
+/* PC — 3 colunas × 2 linhas */
+
+#produtosMesaGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: 132px;
+
+    max-height: 274px;
+
+    gap: 10px;
+    padding-right: 6px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* CARD COMPACTO */
+
+#produtosMesaGrid .produto-mesa-card {
+    min-width: 0;
+    min-height: 0;
+    height: 126px;
+
+    padding: 12px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 116px;
+    align-items: center;
+    gap: 12px;
+
+    border-radius: 14px;
+}
+
+#produtosMesaGrid .produto-mesa-info {
+    min-width: 0;
+    align-content: center;
+    gap: 5px;
+}
+
+#produtosMesaGrid .produto-mesa-info strong {
+    overflow: hidden;
+
+    font-size: 13px;
+    line-height: 1.25;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#produtosMesaGrid .produto-mesa-info span {
+    font-size: 14px;
+}
+
+#produtosMesaGrid .produto-mesa-info small {
+    font-size: 9px;
+}
+
+
+/* QUANTIDADE */
+
+#produtosMesaGrid .produto-mesa-quantidade {
+    width: 116px;
+    min-height: 38px;
+
+    grid-template-columns: 35px 46px 35px;
+}
+
+#produtosMesaGrid .produto-mesa-quantidade button {
+    font-size: 16px;
+}
+
+#produtosMesaGrid .produto-mesa-quantidade input {
+    width: 46px;
+}
+
+
+/* SCROLL GLASS */
+
+#produtosMesaGrid::-webkit-scrollbar {
+    width: 6px;
+}
+
+#produtosMesaGrid::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: rgba(12, 35, 70, 0.32);
+}
+
+#produtosMesaGrid::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(75, 170, 255, 0.82),
+            rgba(89, 98, 235, 0.72)
+        );
+}
+
+
+/* =========================================
+   CELULAR — 2 × 3
+========================================= */
+
+@media (max-width: 620px) {
+    .modal-produtos-mesa {
+        width: calc(100vw - 18px);
+        max-height: calc(100dvh - 18px);
+    }
+
+    .produtos-mesa-conteudo {
+        padding: 13px;
+    }
+
+    #produtosMesaGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: 132px;
+
+        max-height: 416px;
+
+        gap: 8px;
+    }
+
+    #produtosMesaGrid .produto-mesa-card {
+        width: 100%;
+        height: 132px;
+
+        padding: 10px;
+
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+    #produtosMesaGrid .produto-mesa-info {
+        gap: 3px;
+    }
+
+    #produtosMesaGrid .produto-mesa-info strong {
+        font-size: 11px;
+    }
+
+    #produtosMesaGrid .produto-mesa-info span {
+        font-size: 12px;
+    }
+
+    #produtosMesaGrid .produto-mesa-info small {
+        font-size: 8px;
+    }
+
+    #produtosMesaGrid .produto-mesa-quantidade {
+        width: 100%;
+        min-height: 34px;
+
+        grid-template-columns: 32px minmax(35px, 1fr) 32px;
+    }
+
+    #produtosMesaGrid .produto-mesa-quantidade input {
+        width: 100%;
+    }
+}
+
+
+/* CELULARES MENORES */
+
+@media (max-width: 370px) {
+    #produtosMesaGrid {
+        grid-auto-rows: 128px;
+        max-height: 404px;
+    }
+
+    #produtosMesaGrid .produto-mesa-card {
+        height: 128px;
+    }
+}
