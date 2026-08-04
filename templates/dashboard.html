@@ -1,264 +1,405 @@
 {% extends "layout.html" %}
 
 {% block css %}
-
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-
 {% endblock %}
 
 {% block content %}
 
-
-
-<!-- ===================================== -->
-<!-- BOAS-VINDAS -->
-<!-- ===================================== -->
-
-
-
-    <div class="card-boas-vindas">
-
-        <h1>
-
-            Bem-vindo,
-            {{ empresa["nome"] }}
-
-        </h1>
-
-        <p>
-
-        Sistema operacional de vendas
-
-        </p>
-
-    </div>
-
-
-
-<!-- ===================================== -->
-<!-- CARDS PRINCIPAIS -->
-<!-- ===================================== -->
-
-<div class="topo-dashboard">
-
-    <div class="dashboard-card">
-
-        <span class="card-label">
-
-            Faturamento do dia
-
-        </span>
-
-        <h2 id="faturamento">
-
-            R$ {{ faturamento }}
-
-        </h2>
-
-    </div>
-
-    <div class="dashboard-card">
-
-        <span class="card-label">
-
-            Total de vendas
-
-        </span>
-
-        <h2 id="total-vendas"> 
-
-            {{ total_vendas }}
-
-        </h2>
-
-    </div>
-
-    <div class="dashboard-card">
-
-        <span class="card-label">
-
-            Produtos cadastrados
-
-        </span>
-
-        <h2 id="total-produtos">
-
-            {{ total_produtos }}
-
-        </h2>
-
-    </div>
-
-    <div class="dashboard-card">
-
-        <span class="card-label">
-
-            Caixa
-
-        </span>
-
-        <h2>
-
-            {% if caixa_aberto %}
-
-            Aberto
-
-            {% else %}
-
-            Fechado
-
-            {% endif %}
-
-        </h2>
-
-    </div>
-
-</div>
-
-<!-- ===================================== -->
-<!-- GRÁFICO -->
-<!-- ===================================== -->
-
-
-
-<!-- ===================================== -->
-<!-- MOVIMENTO E ALERTAS -->
-<!-- ===================================== -->
-
-<div class="dashboard-grid-2">
-
-    <div class="card">
-
-        <h2>
-
-            Movimento do dia
-
-        </h2>
-
-        <div class="movimento-item">
-
-            <span> 
-
-                Clientes atendidos
-
+<main class="dash-shell">
+    <section class="dash-hero">
+        <div class="dash-hero-copy">
+            <span class="dash-eyebrow">VISÃO GERAL</span>
+            <h1>Bem-vindo, {{ empresa["nome"] }}</h1>
+            <p>Acompanhe a operação e tome decisões sem sair do painel.</p>
+        </div>
+
+        <div class="dash-hero-side">
+            <span class="dash-status {% if caixa_aberto %}is-open{% else %}is-closed{% endif %}">
+                <i></i>
+                Caixa {% if caixa_aberto %}aberto{% else %}fechado{% endif %}
             </span>
 
-            <strong id="clientes-atendidos">
+            <span class="dash-hero-mark" aria-hidden="true">N</span>
+        </div>
+    </section>
 
-                {{ clientes_atendidos }}
-
-            </strong>
-
+    <section class="dash-toolbar" aria-label="Filtros do dashboard">
+        <div class="dash-period-copy">
+            <span>PERÍODO ANALISADO</span>
+            <strong>{{ periodo.titulo }}</strong>
+            <small>{{ periodo.descricao }}</small>
         </div>
 
-        <div class="movimento-item">
+        <nav class="dash-period-tabs" aria-label="Períodos rápidos">
+            <a href="{{ url_for('dashboard', periodo='hoje') }}"
+               class="{% if periodo.chave == 'hoje' %}active{% endif %}">Hoje</a>
+            <a href="{{ url_for('dashboard', periodo='7dias') }}"
+               class="{% if periodo.chave == '7dias' %}active{% endif %}">7 dias</a>
+            <a href="{{ url_for('dashboard', periodo='mes') }}"
+               class="{% if periodo.chave == 'mes' %}active{% endif %}">Este mês</a>
+        </nav>
 
-            <span>
+        <form class="dash-custom-period" method="GET" action="{{ url_for('dashboard') }}">
+            <input type="hidden" name="periodo" value="personalizado">
 
-                Itens vendidos
+            <label>
+                <span>Data inicial</span>
+                <input type="date" name="inicio" value="{{ periodo.inicio }}" required>
+            </label>
 
-            </span>
+            <label>
+                <span>Data final</span>
+                <input type="date" name="fim" value="{{ periodo.fim }}" required>
+            </label>
 
-            <strong id="itens-vendidos">
+            <button type="submit">Aplicar</button>
+        </form>
+    </section>
 
-                {{ itens_vendidos }}
-
-            </strong>
-
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <h2>
-
-            Alertas
-
-        </h2>
-
-        {% if alertas %}
-
-        {% for alerta in alertas %}
-
-        <div class="alerta-item">
-
-            {{ alerta }}
-
-        </div>
-
-        {% endfor %}
-
-        {% else %}
-
-        <p>
-
-            Nenhum alerta encontrado
-
-        </p>
-
+    <section class="dash-quick-actions" aria-label="Ações rápidas">
+        {% if modulo_ativo("vendas") %}
+        <a href="/vendas" class="dash-action dash-action-primary">
+            <span class="dash-action-icon">+</span>
+            <span><strong>Nova venda</strong><small>Abrir o PDV</small></span>
+        </a>
         {% endif %}
 
-    </div>
+        {% if modulo_ativo("produtos") %}
+        <a href="/produtos" class="dash-action">
+            <span class="dash-action-icon">▣</span>
+            <span><strong>Produtos</strong><small>Estoque e preços</small></span>
+        </a>
+        {% endif %}
 
-</div>
+        {% if modulo_ativo("caixa") %}
+        <a href="/caixa" class="dash-action">
+            <span class="dash-action-icon">▤</span>
+            <span><strong>Caixa</strong><small>Movimentações</small></span>
+        </a>
+        {% endif %}
 
+        {% if modulo_ativo("clientes") %}
+        <a href="/clientes" class="dash-action">
+            <span class="dash-action-icon">◎</span>
+            <span><strong>Clientes</strong><small>Relacionamento</small></span>
+        </a>
+        {% endif %}
+
+        {% if modulo_ativo("custos") %}
+        <a href="/custos" class="dash-action">
+            <span class="dash-action-icon">↘</span>
+            <span><strong>Nova despesa</strong><small>Custos empresariais</small></span>
+        </a>
+        {% endif %}
+    </section>
+
+    <section class="dash-kpis">
+        <article class="dash-kpi kpi-revenue">
+            <div class="dash-kpi-head">
+                <span>Faturamento</span>
+                <b>R$</b>
+            </div>
+            <strong id="dash-faturamento">{{ metricas.faturamento_formatado }}</strong>
+            <small class="dash-trend {{ metricas.variacao_faturamento.tipo }}">
+                {{ metricas.variacao_faturamento.texto }} em relação ao período anterior
+            </small>
+        </article>
+
+        <article class="dash-kpi kpi-profit">
+            <div class="dash-kpi-head">
+                <span>Resultado líquido</span>
+                <b>↗</b>
+            </div>
+            <strong id="dash-resultado" class="{% if metricas.resultado_liquido < 0 %}negative{% endif %}">
+                {{ metricas.resultado_liquido_formatado }}
+            </strong>
+            <small>Receitas menos saídas efetivamente pagas</small>
+        </article>
+
+        <article class="dash-kpi kpi-sales">
+            <div class="dash-kpi-head">
+                <span>Vendas realizadas</span>
+                <b>#</b>
+            </div>
+            <strong id="dash-vendas">{{ metricas.vendas_validas }}</strong>
+            <small class="dash-trend {{ metricas.variacao_vendas.tipo }}">
+                {{ metricas.variacao_vendas.texto }} em relação ao período anterior
+            </small>
+        </article>
+
+        <article class="dash-kpi kpi-ticket">
+            <div class="dash-kpi-head">
+                <span>Ticket médio</span>
+                <b>◇</b>
+            </div>
+            <strong id="dash-ticket">{{ metricas.ticket_medio_formatado }}</strong>
+            <small>Valor médio por venda concluída</small>
+        </article>
+    </section>
+
+    <section class="dash-main-grid">
+        <article class="dash-panel dash-chart-panel">
+            <header class="dash-panel-head">
+                <div>
+                    <span class="dash-eyebrow">DESEMPENHO</span>
+                    <h2>Faturamento no período</h2>
+                </div>
+                <strong id="dash-chart-total">{{ metricas.faturamento_formatado }}</strong>
+            </header>
+
+            <div class="dash-chart-wrap">
+                <canvas id="dash-chart" aria-label="Gráfico de faturamento" role="img"></canvas>
+                <div id="dash-chart-empty" class="dash-chart-empty" hidden>
+                    <strong>Nenhuma venda neste período</strong>
+                    <span>O gráfico aparecerá assim que houver movimento.</span>
+                </div>
+            </div>
+        </article>
+
+        <article class="dash-panel dash-alert-panel">
+            <header class="dash-panel-head">
+                <div>
+                    <span class="dash-eyebrow">ATENÇÃO</span>
+                    <h2>Alertas importantes</h2>
+                </div>
+                <span class="dash-counter">{{ alertas|length }}</span>
+            </header>
+
+            <div class="dash-alert-list">
+                {% if alertas %}
+                    {% for alerta in alertas %}
+                    <a href="{{ alerta.url }}" class="dash-alert {{ alerta.nivel }}">
+                        <span class="dash-alert-dot"></span>
+                        <span>
+                            <strong>{{ alerta.titulo }}</strong>
+                            <small>{{ alerta.descricao }}</small>
+                        </span>
+                        <b>›</b>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="dash-empty-state">
+                        <span>✓</span>
+                        <strong>Tudo sob controle</strong>
+                        <small>Nenhum alerta encontrado.</small>
+                    </div>
+                {% endif %}
+            </div>
+        </article>
+    </section>
+
+    <section class="dash-secondary-grid">
+        <article class="dash-panel dash-movement-panel">
+            <header class="dash-panel-head">
+                <div>
+                    <span class="dash-eyebrow">OPERAÇÃO</span>
+                    <h2>Movimento do período</h2>
+                </div>
+            </header>
+
+            <div class="dash-movement-grid">
+                <div><span>Itens vendidos</span><strong id="dash-itens">{{ metricas.itens_vendidos|int }}</strong></div>
+                <div><span>Clientes identificados</span><strong id="dash-clientes">{{ metricas.clientes_identificados }}</strong></div>
+                <div><span>Descontos concedidos</span><strong id="dash-descontos">- {{ metricas.descontos_formatado }}</strong></div>
+                <div><span>Vendas canceladas</span><strong id="dash-canceladas">{{ metricas.vendas_canceladas }}</strong></div>
+                <div><span>Valor cancelado</span><strong id="dash-valor-cancelado">- {{ metricas.total_cancelado_formatado }}</strong></div>
+                <div><span>Saídas financeiras</span><strong id="dash-saidas">- {{ metricas.total_saidas_formatado }}</strong></div>
+            </div>
+        </article>
+
+        <article class="dash-panel dash-ranking-panel">
+            <header class="dash-panel-head">
+                <div>
+                    <span class="dash-eyebrow">PRODUTOS</span>
+                    <h2>Mais vendidos</h2>
+                </div>
+                {% if modulo_ativo("produtos") %}<a href="/produtos">Ver produtos</a>{% endif %}
+            </header>
+
+            <ol class="dash-ranking">
+                {% if ranking %}
+                    {% for produto in ranking %}
+                    <li>
+                        <span class="dash-rank-position">{{ "%02d"|format(loop.index) }}</span>
+                        <span class="dash-rank-name"><strong>{{ produto.nome }}</strong><small>{{ produto.quantidade }} unidade(s)</small></span>
+                        <strong>R$ {{ "%.2f"|format(produto.faturamento|float)|replace(".", ",") }}</strong>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="dash-ranking-empty">Nenhum produto vendido no período.</li>
+                {% endif %}
+            </ol>
+        </article>
+
+        {% if modulo_ativo("nami") %}
+        <article class="dash-panel dash-nami-panel">
+            <div class="dash-nami-orb" aria-hidden="true">✦</div>
+            <div>
+                <span class="dash-eyebrow">ANÁLISE DA NAMI</span>
+                <h2>Resumo inteligente</h2>
+                <p id="dash-nami-insight">{{ insight_nami }}</p>
+                <a href="/ia">Conversar com a Nami <span>→</span></a>
+            </div>
+        </article>
+        {% endif %}
+    </section>
+</main>
+
+<script id="dash-chart-data" type="application/json">{{ grafico|tojson }}</script>
 
 <script>
+(function () {
+    "use strict";
 
-function atualizarDashboard() {
+    const canvas = document.getElementById("dash-chart");
+    const emptyState = document.getElementById("dash-chart-empty");
+    const initialData = JSON.parse(
+        document.getElementById("dash-chart-data").textContent
+    );
+    let chartData = initialData;
+    let resizeTimer = null;
 
-    fetch(
-        "/api/dashboard?t=" +
-        new Date().getTime()
-    )
+    const dinheiro = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    });
 
-    .then(response => response.json())
+    function drawChart(data) {
+        if (!canvas) return;
 
-    .then(dados => {
+        const values = (data.valores || []).map(Number);
+        const labels = data.labels || [];
+        const hasData = values.some(value => value > 0);
+        emptyState.hidden = hasData;
+        canvas.hidden = !hasData;
 
-        document.getElementById(
-            "faturamento"
-        ).innerHTML =
-            "R$ " +
-            parseFloat(
-                dados.faturamento
-            ).toFixed(2)
+        if (!hasData) return;
 
-        document.getElementById(
-            "total-vendas"
-        ).innerHTML =
-            dados.total_vendas
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        canvas.height = Math.max(1, Math.round(rect.height * dpr));
 
-        document.getElementById(
-            "clientes-atendidos"
-        ).innerHTML =
-            dados.clientes_atendidos
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        document.getElementById(
-            "itens-vendidos"
-        ).innerHTML =
-            dados.itens_vendidos
+        const width = rect.width;
+        const height = rect.height;
+        const padding = { top: 22, right: 18, bottom: 34, left: 18 };
+        const graphWidth = width - padding.left - padding.right;
+        const graphHeight = height - padding.top - padding.bottom;
+        const max = Math.max(...values, 1) * 1.12;
 
-    })
+        ctx.clearRect(0, 0, width, height);
 
-    .catch(erro => {
+        ctx.strokeStyle = "rgba(124, 164, 224, 0.14)";
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i += 1) {
+            const y = padding.top + (graphHeight / 4) * i;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(width - padding.right, y);
+            ctx.stroke();
+        }
 
-        console.log(
-            "Erro dashboard:",
-            erro
-        )
+        const points = values.map((value, index) => ({
+            x: padding.left + (labels.length === 1 ? graphWidth / 2 : (graphWidth * index) / (labels.length - 1)),
+            y: padding.top + graphHeight - (value / max) * graphHeight
+        }));
 
-    })
+        const gradient = ctx.createLinearGradient(0, padding.top, 0, height);
+        gradient.addColorStop(0, "rgba(61, 182, 255, 0.42)");
+        gradient.addColorStop(1, "rgba(72, 116, 255, 0.01)");
 
-}
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, padding.top + graphHeight);
+        points.forEach(point => ctx.lineTo(point.x, point.y));
+        ctx.lineTo(points[points.length - 1].x, padding.top + graphHeight);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
 
-setInterval(
-    atualizarDashboard,
-    3000
-)
+        const lineGradient = ctx.createLinearGradient(padding.left, 0, width - padding.right, 0);
+        lineGradient.addColorStop(0, "#49d8ff");
+        lineGradient.addColorStop(1, "#6f6bff");
 
+        ctx.beginPath();
+        points.forEach((point, index) => {
+            if (index === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+        });
+        ctx.strokeStyle = lineGradient;
+        ctx.lineWidth = 3;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        ctx.fillStyle = "#71ddff";
+        points.forEach(point => {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        ctx.fillStyle = "rgba(175, 197, 229, 0.76)";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        const step = Math.max(1, Math.ceil(labels.length / 7));
+        labels.forEach((label, index) => {
+            if (index % step === 0 || index === labels.length - 1) {
+                ctx.fillText(label, points[index].x, height - 10);
+            }
+        });
+    }
+
+    function updateText(id, value) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    }
+
+    async function refreshDashboard() {
+        if (document.hidden) return;
+
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const apiResponse = await fetch("/api/dashboard?" + params.toString(), {
+                headers: { Accept: "application/json" }
+            });
+            if (!apiResponse.ok) return;
+
+            const data = await apiResponse.json();
+            const metrics = data.metricas;
+
+            updateText("dash-faturamento", dinheiro.format(metrics.faturamento));
+            updateText("dash-resultado", dinheiro.format(metrics.resultado_liquido));
+            updateText("dash-vendas", metrics.vendas_validas);
+            updateText("dash-ticket", dinheiro.format(metrics.ticket_medio));
+            updateText("dash-itens", Math.trunc(metrics.itens_vendidos));
+            updateText("dash-clientes", metrics.clientes_identificados);
+            updateText("dash-descontos", "- " + dinheiro.format(metrics.descontos));
+            updateText("dash-canceladas", metrics.vendas_canceladas);
+            updateText("dash-valor-cancelado", "- " + dinheiro.format(metrics.total_cancelado));
+            updateText("dash-saidas", "- " + dinheiro.format(metrics.total_saidas));
+            updateText("dash-chart-total", dinheiro.format(metrics.faturamento));
+            updateText("dash-nami-insight", data.insight_nami);
+
+            chartData = data.grafico;
+            drawChart(chartData);
+        } catch (error) {
+            console.debug("Dashboard temporariamente sem atualização automática.", error);
+        }
+    }
+
+    drawChart(chartData);
+
+    window.addEventListener("resize", function () {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => drawChart(chartData), 140);
+    });
+
+    window.setInterval(refreshDashboard, 30000);
+})();
 </script>
-
 
 {% endblock %}
