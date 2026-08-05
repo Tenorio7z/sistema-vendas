@@ -36,6 +36,7 @@ from routes.auth import registrar_rotas as auth
 from routes.dashboard import registrar_rotas as dashboard
 from routes.emprestimos import emprestimos_bp
 from routes.produtos import registrar_rotas as produtos
+from routes.importacao_produtos import registrar_rotas as importacao_produtos
 from routes.vendas import registrar_rotas as vendas
 from routes.admin import registrar_rotas as admin
 from routes.caixa import registrar_rotas as caixa
@@ -89,6 +90,7 @@ registrar_rotas_onboarding_admin(app)
 auth(app)
 dashboard(app)
 produtos(app)
+importacao_produtos(app)
 clientes_rotas(app)
 mesas_rotas(
     app,

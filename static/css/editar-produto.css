@@ -1,207 +1,449 @@
-/* ==========================================
-PÁGINA
-========================================== */
+/* =========================================================
+   NEXUS PDV — EDITAR PRODUTO
+========================================================= */
 
-.editar-container{
-    max-width:700px;
-    margin:0 auto;
+.editar-container {
+    --edit-bg: rgba(19, 42, 77, 0.76);
+    --edit-bg-soft: rgba(8, 27, 56, 0.62);
+    --edit-border: rgba(107, 169, 241, 0.26);
+    --edit-text: #f4f8ff;
+    --edit-muted: #91a6c4;
+    --edit-blue: #4aaeff;
+    --edit-green: #31d9ad;
+
+    width: 100%;
+    min-height: calc(100vh - 40px);
+    padding: 38px 28px 60px;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    color: var(--edit-text);
+    box-sizing: border-box;
 }
 
-/* ==========================================
-CARD
-========================================== */
+.editar-container *,
+.editar-container *::before,
+.editar-container *::after {
+    box-sizing: border-box;
+}
 
-.editar-card{
-    background:white;
+/* =========================================================
+   CARD PRINCIPAL
+========================================================= */
 
-    border:1px solid #dbe4f0;
+.editar-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
 
-    border-radius:24px;
+    width: min(100%, 780px);
+    padding: 34px;
 
-    padding:30px;
+    border: 1px solid var(--edit-border);
+    border-radius: 26px;
+
+    background:
+        radial-gradient(
+            circle at 90% 0%,
+            rgba(74, 174, 255, 0.18),
+            transparent 34%
+        ),
+        radial-gradient(
+            circle at 0% 100%,
+            rgba(91, 79, 238, 0.12),
+            transparent 35%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.065),
+            rgba(255, 255, 255, 0.018)
+        ),
+        var(--edit-bg);
 
     box-shadow:
-        0 10px 30px rgba(0,0,0,.05);
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 28px 70px rgba(0, 9, 31, 0.28);
+
+    backdrop-filter: blur(28px) saturate(145%);
+    -webkit-backdrop-filter: blur(28px) saturate(145%);
 }
 
-/* ==========================================
-TOPO
-========================================== */
+.editar-card::before {
+    content: "";
 
-.editar-topo{
-    margin-bottom:30px;
+    position: absolute;
+    z-index: -1;
+    top: -130px;
+    right: -100px;
+
+    width: 300px;
+    height: 300px;
+
+    border-radius: 50%;
+
+    background: rgba(74, 174, 255, 0.13);
+    filter: blur(20px);
 }
 
-.editar-topo h1{
-    color:#2563eb;
-    margin-bottom:8px;
+.editar-card::after {
+    content: "EDIT";
+
+    position: absolute;
+    z-index: -1;
+    top: 12px;
+    right: 22px;
+
+    color: rgba(112, 175, 255, 0.045);
+
+    font-size: 84px;
+    font-weight: 950;
+    letter-spacing: -7px;
+    pointer-events: none;
 }
 
-.editar-topo p{
-    color:#64748b;
+/* =========================================================
+   CABEÇALHO
+========================================================= */
+
+.editar-topo {
+    position: relative;
+
+    margin-bottom: 30px;
+    padding-bottom: 23px;
+
+    border-bottom: 1px solid rgba(107, 169, 241, 0.17);
 }
 
-/* ==========================================
-FORM
-========================================== */
+.editar-topo::before {
+    content: "GESTÃO DE PRODUTOS";
 
-.form-editar{
-    display:flex;
-    flex-direction:column;
-    gap:20px;
+    display: block;
+    margin-bottom: 9px;
+
+    color: #65d4ff;
+
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 2.2px;
 }
 
-.form-group{
-    display:flex;
-    flex-direction:column;
+.editar-topo h1 {
+    margin: 0;
+
+    color: var(--edit-text);
+
+    font-size: clamp(27px, 4vw, 38px);
+    font-weight: 850;
+    line-height: 1.08;
 }
 
-.form-group label{
-    margin-bottom:8px;
+.editar-topo p {
+    margin: 10px 0 0;
 
-    font-weight:600;
+    color: var(--edit-muted);
 
-    color:#334155;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
-.form-group input{
-    padding:14px;
+/* =========================================================
+   FORMULÁRIO
+========================================================= */
 
-    border:1px solid #dbe4f0;
-
-    border-radius:12px;
-
-    outline:none;
-
-    transition:.3s;
+.form-editar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
 }
 
-.form-group input:focus{
-    border-color:#2563eb;
+.form-group {
+    min-width: 0;
+}
+
+.form-group:first-child {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    display: block;
+    margin: 0 0 8px;
+
+    color: #b9c9df;
+
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.25px;
+}
+
+/* Campo de código de barras não possui form-group no HTML */
+.form-editar > div:not(.form-group):not(.acoes-editar) {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.form-editar input,
+.form-editar select {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 100%;
+    height: 52px;
+    padding: 0 15px;
+
+    color: var(--edit-text);
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    outline: none;
+
+    border: 1px solid rgba(105, 164, 233, 0.24);
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.04),
+            rgba(255, 255, 255, 0.01)
+        ),
+        var(--edit-bg-soft);
 
     box-shadow:
-        0 0 0 4px rgba(37,99,235,.10);
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease,
+        transform 0.18s ease;
 }
 
-/* ==========================================
-AÇÕES
-========================================== */
+.form-editar select {
+    padding-right: 45px;
 
-.acoes-editar{
-    display:flex;
-    gap:15px;
-    margin-top:10px;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #8fa8ca 50%),
+        linear-gradient(135deg, #8fa8ca 50%, transparent 50%),
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.04),
+            rgba(255, 255, 255, 0.01)
+        );
+
+    background-position:
+        calc(100% - 19px) 22px,
+        calc(100% - 14px) 22px,
+        center;
+
+    background-size:
+        5px 5px,
+        5px 5px,
+        100% 100%;
+
+    background-repeat: no-repeat;
 }
 
-.btn-salvar{
-    flex:1;
-
-    background:#2563eb;
-
-    color:white;
-
-    border:none;
-
-    padding:14px;
-
-    border-radius:12px;
-
-    font-weight:bold;
-
-    cursor:pointer;
-
-    transition:.3s;
+.form-editar select option {
+    color: #eaf3ff;
+    background: #11294c;
 }
 
-.btn-salvar:hover{
-    background:#1d4ed8;
+.form-editar input::placeholder {
+    color: #7187a6;
 }
 
-.btn-voltar{
-    flex:1;
-
-    background:#e2e8f0;
-
-    color:#334155;
-
-    text-decoration:none;
-
-    text-align:center;
-
-    padding:14px;
-
-    border-radius:12px;
-
-    font-weight:bold;
-
-    transition:.3s;
+.form-editar input:hover,
+.form-editar select:hover {
+    border-color: rgba(92, 181, 255, 0.47);
 }
 
-.btn-voltar:hover{
-    background:#cbd5e1;
+.form-editar input:focus,
+.form-editar select:focus {
+    border-color: var(--edit-blue);
+
+    background-color: rgba(10, 35, 70, 0.88);
+
+    box-shadow:
+        0 0 0 4px rgba(74, 174, 255, 0.11),
+        0 12px 30px rgba(23, 105, 218, 0.12);
 }
 
-/* ==========================================
-RESPONSIVO
-========================================== */
+/* =========================================================
+   BOTÕES
+========================================================= */
 
-@media (max-width: 700px) {
+.acoes-editar {
+    grid-column: 1 / -1;
 
-    /* =========================
-       CONTAINER
-    ========================= */
+    display: grid;
+    grid-template-columns: 1fr 0.55fr;
+    gap: 12px;
+
+    margin-top: 11px;
+    padding-top: 23px;
+
+    border-top: 1px solid rgba(107, 169, 241, 0.17);
+}
+
+.btn-salvar,
+.btn-voltar {
+    min-height: 50px;
+    padding: 0 20px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+
+    border-radius: 13px;
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease,
+        filter 0.18s ease;
+}
+
+.btn-salvar {
+    color: #fff;
+
+    border: 1px solid rgba(108, 199, 255, 0.46);
+
+    background:
+        linear-gradient(
+            135deg,
+            #43b6ff,
+            #3c78f2 55%,
+            #6257ea
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        0 13px 28px rgba(50, 113, 231, 0.27);
+}
+
+.btn-voltar {
+    color: #b8cae1;
+
+    border: 1px solid rgba(109, 164, 229, 0.25);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.045),
+            rgba(255, 255, 255, 0.012)
+        ),
+        rgba(7, 27, 57, 0.5);
+}
+
+.btn-salvar:hover,
+.btn-voltar:hover {
+    transform: translateY(-2px);
+}
+
+.btn-salvar:hover {
+    filter: brightness(1.08);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        0 17px 35px rgba(50, 113, 231, 0.36);
+}
+
+.btn-voltar:hover {
+    color: #fff;
+    border-color: rgba(100, 184, 255, 0.5);
+}
+
+/* =========================================================
+   MODO CLARO
+========================================================= */
+
+body:not(.dark) .editar-container,
+html:not(.dark) .editar-container {
+    --edit-bg: rgba(255, 255, 255, 0.83);
+    --edit-bg-soft: rgba(237, 244, 254, 0.92);
+    --edit-border: rgba(65, 116, 181, 0.2);
+    --edit-text: #10213d;
+    --edit-muted: #657690;
+}
+
+body:not(.dark) .editar-card,
+html:not(.dark) .editar-card {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        0 25px 60px rgba(39, 77, 128, 0.14);
+}
+
+body:not(.dark) .form-group label,
+html:not(.dark) .form-group label {
+    color: #314764;
+}
+
+body:not(.dark) .form-editar input,
+body:not(.dark) .form-editar select,
+html:not(.dark) .form-editar input,
+html:not(.dark) .form-editar select {
+    color: #10213d;
+    background-color: rgba(238, 245, 255, 0.88);
+}
+
+body:not(.dark) .form-editar select option,
+html:not(.dark) .form-editar select option {
+    color: #10213d;
+    background: #fff;
+}
+
+body:not(.dark) .btn-voltar,
+html:not(.dark) .btn-voltar {
+    color: #314764;
+    background: rgba(235, 243, 254, 0.86);
+}
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 720px) {
     .editar-container {
-        max-width: 100%;
-        padding: 0 15px;
+        min-height: auto;
+        padding: 18px 12px 40px;
     }
 
-    /* =========================
-       CARD
-    ========================= */
     .editar-card {
-        padding: 20px;
-        border-radius: 18px;
+        padding: 23px 18px;
+        border-radius: 21px;
     }
 
-    /* =========================
-       TOPO
-    ========================= */
-    .editar-topo h1 {
-        font-size: 24px;
+    .editar-card::after {
+        font-size: 57px;
     }
 
-    .editar-topo p {
-        font-size: 14px;
-    }
-
-    /* =========================
-       FORM
-    ========================= */
     .form-editar {
-        gap: 15px;
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
-    .form-group label {
-        font-size: 14px;
-    }
-
-    .form-group input {
-        padding: 12px;
-        font-size: 14px;
-    }
-
-    /* =========================
-       AÇÕES
-    ========================= */
+    .form-group:first-child,
     .acoes-editar {
-        flex-direction: column;
-        gap: 10px;
+        grid-column: auto;
+    }
+
+    .acoes-editar {
+        grid-template-columns: 1fr;
     }
 
     .btn-salvar,
     .btn-voltar {
         width: 100%;
-        padding: 13px;
-        font-size: 14px;
     }
 }

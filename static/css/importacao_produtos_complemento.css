@@ -1,0 +1,18 @@
+.download-modelo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    margin-top: 12px;
+    padding: 0 16px;
+    color: #8fdcff;
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
+    border: 1px solid rgba(82, 190, 255, .32);
+    border-radius: 12px;
+    background: rgba(55, 143, 255, .09);
+    transition: .2s ease;
+}
+.download-modelo:hover { color:#fff; transform:translateY(-2px); border-color:rgba(82,190,255,.7); background:rgba(55,143,255,.18); }
+body:not(.dark) .download-modelo { color:#1268b8; }

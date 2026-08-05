@@ -32,9 +32,12 @@
 
 
 
-    <button type="button" class="btn-add-produto" onclick="abrirModalProduto()">
-        + Adicionar Produto
-    </button>
+    <div class="produtos-topo-acoes">
+        <a href="/produtos/importar" class="btn-importar-produtos">Importar planilha</a>
+        <button type="button" class="btn-add-produto" onclick="abrirModalProduto()">
+            + Adicionar Produto
+        </button>
+    </div>
 
 
 
@@ -198,12 +201,6 @@
             <input type="number" min="0" name="estoque" placeholder="Estoque" required>
 
             <input type="text" name="codigo_barras" placeholder="Código de barras" maxlength="100">
-
-            <select name="setor_preparo" required>
-                <option value="cozinha">Produção: cozinha</option>
-                <option value="bar">Produção: bar</option>
-                <option value="direto">Entrega direta</option>
-            </select>
 
             <button type="submit" class="btn" id="salvarProduto">
                 Salvar Produto

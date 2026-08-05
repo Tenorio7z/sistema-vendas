@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/importacao_produtos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/importacao_produtos_complemento.css') }}">
+{% endblock %}
+{% block content %}
+<main class="import-shell">
+    <header class="import-hero">
+        <div><span>MIGRAÇÃO DE ESTOQUE</span><h1>Importar produtos</h1><p>Traga milhares de produtos de outro sistema por Excel ou CSV.</p></div>
+        <a href="/produtos">Voltar aos produtos</a>
+    </header>
+
+    {% if not previa %}
+    <section class="import-card upload-card">
+        <div class="upload-icon">⇧</div>
+        <div><span class="import-label">ARQUIVO DE ORIGEM</span><h2>Selecione sua planilha</h2><p>Colunas obrigatórias: Nome, Preço e Estoque. Código de barras é opcional.</p></div>
+        <form method="POST" enctype="multipart/form-data">
+            <label class="file-field"><input type="file" name="arquivo" accept=".xlsx,.csv" required><span>Escolher arquivo XLSX ou CSV</span></label>
+            <button type="submit">Validar e visualizar</button>
+        </form>
+        <a class="download-modelo" href="{{ url_for('static', filename='modelos/modelo_importacao_produtos_nexus.xlsx') }}" download>
+            Baixar modelo oficial do Nexus
+        </a>
+        <div class="import-notes"><span>Até 20 MB</span><span>Até 50.000 linhas</span><span>Nenhum dado é salvo antes da confirmação</span></div>
+    </section>
+    {% else %}
+    <section class="import-summary">
+        <article><span>Linhas analisadas</span><strong>{{ previa.total_linhas }}</strong></article>
+        <article class="success"><span>Produtos válidos</span><strong>{{ previa.produtos|length }}</strong></article>
+        <article class="danger"><span>Linhas com erro</span><strong>{{ previa.erros|length }}</strong></article>
+    </section>
+
+    <section class="import-card">
+        <header class="card-head"><div><span class="import-label">PRÉ-VISUALIZAÇÃO</span><h2>Primeiros produtos encontrados</h2></div><small>Exibindo até 20 registros</small></header>
+        <div class="table-wrap"><table><thead><tr><th>Linha</th><th>Produto</th><th>Código</th><th>Preço</th><th>Estoque</th></tr></thead><tbody>
+            {% for produto in previa.produtos[:20] %}<tr><td>#{{ produto.linha }}</td><td><strong>{{ produto.nome }}</strong></td><td>{{ produto.codigo_barras or '—' }}</td><td>R$ {{ produto.preco|replace('.', ',') }}</td><td>{{ produto.estoque }}</td></tr>{% endfor %}
+        </tbody></table></div>
+    </section>
+
+    {% if previa.erros %}
+    <section class="import-card error-card"><header class="card-head"><div><span class="import-label">ATENÇÃO</span><h2>Linhas que não serão importadas</h2></div></header>
+        <div class="error-list">{% for erro in previa.erros[:20] %}<div><strong>Linha {{ erro.linha }}</strong><span>{{ erro.erro }}</span></div>{% endfor %}</div>
+    </section>
+    {% endif %}
+
+    <section class="import-card confirm-card">
+        <div><span class="import-label">PRODUTOS REPETIDOS</span><h2>Como tratar códigos já cadastrados?</h2></div>
+        <form method="POST" action="{{ url_for('confirmar_importacao_produtos') }}">
+            <input type="hidden" name="token" value="{{ previa.token }}">
+            <label><input type="radio" name="estrategia" value="atualizar" checked><span><strong>Atualizar existentes</strong><small>Substitui nome, preço e estoque pelo conteúdo da planilha.</small></span></label>
+            <label><input type="radio" name="estrategia" value="ignorar"><span><strong>Ignorar existentes</strong><small>Mantém os produtos atuais e cadastra somente códigos novos.</small></span></label>
+            <div class="confirm-actions"><a href="{{ url_for('importar_produtos') }}">Cancelar</a><button type="submit">Confirmar importação</button></div>
+        </form>
+    </section>
+    {% endif %}
+</main>
+{% endblock %}

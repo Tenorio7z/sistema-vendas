@@ -1694,3 +1694,5 @@ body:not(.dark)
         height: 190px;
     }
 }
+/* Ações do cabeçalho de produtos */
+.produtos-topo-acoes{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.btn-importar-produtos{min-height:44px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;color:#d9f3ff;text-decoration:none;font-size:10px;font-weight:750;border:1px solid rgba(84,185,255,.3);border-radius:12px;background:linear-gradient(135deg,rgba(54,158,255,.17),rgba(111,88,255,.09)),rgba(18,40,73,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 24px rgba(0,8,28,.14);backdrop-filter:blur(18px);transition:.18s ease}.btn-importar-produtos:hover{transform:translateY(-2px);border-color:rgba(84,185,255,.58)}body:not(.dark) .btn-importar-produtos{color:#17476f;background:rgba(255,255,255,.78)}@media(max-width:620px){.produtos-topo-acoes{width:100%}.btn-importar-produtos,.produtos-topo-acoes .btn-add-produto{flex:1}}

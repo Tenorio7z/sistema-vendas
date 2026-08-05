@@ -297,17 +297,8 @@ def registrar_rotas(app):
                     ""
                 ).strip()
 
-                setor_preparo = request.form.get(
-                    "setor_preparo",
-                    "cozinha",
-                ).strip().lower()
-
-                if setor_preparo not in {
-                    "cozinha",
-                    "bar",
-                    "direto",
-                }:
-                    setor_preparo = "cozinha"
+                # Fluxo padrão do PDV: produtos vão direto para a venda/mesa.
+                setor_preparo = "direto"
 
                 if not nome:
                     flash(
@@ -685,17 +676,8 @@ def registrar_rotas(app):
                     ""
                 ).strip()
 
-                setor_preparo = request.form.get(
-                    "setor_preparo",
-                    "cozinha",
-                ).strip().lower()
-
-                if setor_preparo not in {
-                    "cozinha",
-                    "bar",
-                    "direto",
-                }:
-                    setor_preparo = "cozinha"
+                # Mantemos a coluna apenas por compatibilidade com o banco.
+                setor_preparo = "direto"
 
                 if not nome:
                     flash(
