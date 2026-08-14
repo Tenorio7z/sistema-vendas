@@ -112,10 +112,12 @@ class LoginTokenService:
                     u.usuario,
                     u.nivel,
                     u.empresa_id,
+                    u.filial_id,
                     u.status,
 
                     e.nome AS empresa_nome,
                     e.plano,
+                    f.nome AS filial_nome,
                     COALESCE(
                         e.emprestimos_ativo,
                         FALSE
@@ -128,6 +130,9 @@ class LoginTokenService:
 
                 LEFT JOIN empresa e
                     ON e.id = u.empresa_id
+
+                LEFT JOIN filiais f
+                    ON f.id = u.filial_id
 
                 WHERE lt.token_hash = %s
                   AND lt.revogado_em IS NULL

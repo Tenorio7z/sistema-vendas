@@ -123,6 +123,18 @@
 
             {% endif %}
 
+            {% if session.get("nivel") in ["gerente", "master"] %}
+            <a href="{{ url_for('filiais') }}" class="{% if request.path.startswith('/filiais') %}active{% endif %}">
+                <svg class="nav-icon nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path>
+                    <path d="M9 21v-5h6v5"></path><path d="M8 9h1"></path><path d="M15 9h1"></path>
+                    <path d="M8 12h1"></path><path d="M15 12h1"></path>
+                </svg>
+                <span class="link-text">Filiais</span>
+            </a>
+            {% endif %}
+
             {% if modulo_ativo("clientes") %}
 
             <a href="{{ url_for('clientes') }}" class="{% if request.path.startswith('/clientes') %}active{% endif %}">

@@ -201,17 +201,20 @@ def registrar_rotas(app):
             cursor.execute(
                 """
                 SELECT
-                    id,
-                    usuario,
-                    nivel,
-                    status,
-                    empresa_id,
-                    COALESCE(comissao, 0)
-                        AS comissao
-                FROM usuarios
-                WHERE id = %s
-                  AND empresa_id = %s
-                  AND nivel = 'funcionario'
+                    u.id,
+                    u.usuario,
+                    u.nivel,
+                    u.status,
+                    u.empresa_id,
+                    COALESCE(u.comissao, 0) AS comissao,
+                    u.filial_id,
+                    COALESCE(fc.salario_base, 0) AS salario_base
+                FROM usuarios u
+                LEFT JOIN funcionarios_config fc
+                  ON fc.usuario_id = u.id AND fc.empresa_id = u.empresa_id
+                WHERE u.id = %s
+                  AND u.empresa_id = %s
+                  AND u.nivel = 'funcionario'
                 """,
                 (
                     funcionario_id,
@@ -307,6 +310,73 @@ def registrar_rotas(app):
                 faturamento
                 * percentual_comissao
                 / 100
+            )
+
+            filial_id = funcionario.get("filial_id")
+
+            cursor.execute(
+                """
+                SELECT
+                    COUNT(*) FILTER (
+                        WHERE pf.ativo = TRUE
+                    ) AS total_produtos,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN pf.ativo = TRUE
+                                THEN COALESCE(p.preco, 0)
+                                   * COALESCE(pf.estoque, 0)
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS valor_total_estoque
+
+                FROM produto_filial pf
+
+                INNER JOIN produtos p
+                    ON p.id = pf.produto_id
+
+                WHERE pf.filial_id = %s
+                  AND p.empresa_id = %s
+                """,
+                (
+                    filial_id,
+                    empresa_id,
+                ),
+            )
+
+            resumo_estoque = cursor.fetchone() or {}
+
+            total_produtos_cadastrados = int(
+                resumo_estoque.get(
+                    "total_produtos",
+                    0
+                )
+                or 0
+            )
+
+            total_esperado = float(
+                resumo_estoque.get(
+                    "valor_total_estoque",
+                    0
+                )
+                or 0
+            )
+            
+            comissao_esperada = (
+                total_esperado
+                * percentual_comissao
+                / 100
+            )
+
+            salario_base = float(
+                funcionario.get(
+                    "salario_base",
+                    0
+                )
+                or 0
             )
 
             cursor.execute(
@@ -509,6 +579,10 @@ def registrar_rotas(app):
                 valor_comissao=(
                     valor_comissao
                 ),
+                total_produtos_cadastrados=total_produtos_cadastrados,
+                salario_base=salario_base,
+                total_esperado=total_esperado,
+                comissao_esperada=comissao_esperada,
 
                 ultima_venda=resumo.get(
                     "ultima_venda"

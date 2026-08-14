@@ -31,6 +31,7 @@ from database import (
 from services.gestao_equipe_service import (
     GestaoEquipeService,
 )
+from services.filiais_service import FiliaisService
 
 
 # ==========================================
@@ -236,6 +237,10 @@ def registrar_rotas(app):
             arquivo_foto = request.files.get(
                 "foto"
             )
+            filial_id = request.form.get("filial_id", type=int)
+            filial = FiliaisService.obter(empresa_id, filial_id) if filial_id else None
+            if not filial or not filial.get("ativa"):
+                filial_id = FiliaisService.garantir_matriz(empresa_id)
 
             if not usuario:
                 flash(
@@ -446,6 +451,7 @@ def registrar_rotas(app):
                         nivel,
                         status,
                         empresa_id,
+                        filial_id,
                         comissao,
                         foto,
                         foto_mime
@@ -458,6 +464,7 @@ def registrar_rotas(app):
                         %s,
                         %s,
                         %s,
+                        %s,
                         %s
                     )
                     RETURNING id
@@ -466,6 +473,7 @@ def registrar_rotas(app):
                         usuario,
                         senha_hash,
                         empresa_id,
+                        filial_id,
                         comissao,
                         (
                             psycopg2.Binary(foto)
@@ -621,6 +629,25 @@ def registrar_rotas(app):
                 )
             )
 
+            conn_metricas = conectar()
+            cursor_metricas = criar_cursor(conn_metricas)
+            try:
+                cursor_metricas.execute(
+                    "SELECT COUNT(*) AS total FROM produtos WHERE empresa_id = %s",
+                    (empresa_id,),
+                )
+                total_produtos = int(cursor_metricas.fetchone()["total"] or 0)
+            finally:
+                cursor_metricas.close()
+                conn_metricas.close()
+
+            valores_esperados = {
+                "produtos_cadastrados": total_produtos,
+                "faturamento": float(resumo["vendas"]["faturamento_equipe"] or 0),
+                "comissoes": float(resumo["comissoes"]["comissoes_geradas"] or 0),
+                "a_pagar": float(resumo["folha"]["total_pendente"] or 0),
+            }
+
         except ValueError as erro:
             flash(
                 str(erro),
@@ -650,6 +677,8 @@ def registrar_rotas(app):
             resumo=resumo,
             historico_folha=historico,
             competencia=competencia,
+            filiais=FiliaisService.listar(empresa_id),
+            valores_esperados=valores_esperados,
             periodo_inicio=(
                 resultado_funcionarios[
                     "periodo_inicio"

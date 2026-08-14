@@ -292,6 +292,27 @@
     </div>
 
 
+    <section class="valores-esperados-funcionario">
+        <header><span>VALORES ESPERADOS</span><h2>Resumo financeiro e operacional</h2></header>
+        <div>
+            <article><small>Produtos disponíveis</small><strong>{{ total_produtos_cadastrados }}</strong><p>Na filial deste funcionário</p></article>
+            <article><small>Total das vendas</small><strong>R$ {{ "%.2f"|format(faturamento) }}</strong><p>Faturamento válido no período</p></article>
+            <article>
+    <small>Comissão esperada</small>
+
+    <strong>
+        R$ {{ "%.2f"|format(comissao_esperada) }}
+    </strong>
+
+    <p>
+        {{ "%.2f"|format(percentual_comissao) }}%
+        sobre o estoque da filial
+    </p>
+</article>
+            <article><small>Total esperado</small><strong>R$ {{ "%.2f"|format(total_esperado) }}</strong><p>Salário-base + comissão</p></article>
+        </div>
+    </section>
+
     <div class="painel-conteudo-grid">
 
         <article class="painel-card produtos-card">

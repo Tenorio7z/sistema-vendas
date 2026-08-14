@@ -43,6 +43,18 @@
 
 </div>
 
+<section class="filial-produtos-bar">
+    <div><small>ESTOQUE ATUAL</small><strong>{{ filial_atual.nome }}</strong></div>
+    {% if session.get("nivel") in ["gerente", "master"] %}
+    <nav class="filial-tabs" aria-label="Selecionar filial">
+        {% for filial in filiais %}
+        <a href="{{ url_for('produtos', filial_id=filial.id) }}" class="{% if filial.id == filial_atual.id %}ativa{% endif %}">{{ filial.nome }}</a>
+        {% endfor %}
+        <a href="{{ url_for('filiais') }}" class="gerenciar-filiais">Gerenciar</a>
+    </nav>
+    {% endif %}
+</section>
+
 
 <!-- =====================================
      PRODUTOS
@@ -99,13 +111,13 @@
             </button>
 
             <div id="menu{{ produto.id }}" class="dropdown-menu">
-                <a href="/editar_produto/{{ produto['id'] }}">
+                <a href="/editar_produto/{{ produto['id'] }}?filial_id={{ filial_atual.id }}">
                     Editar produto
                 </a>
 
                 {% if session.get("nivel") != "funcionario" %}
 
-                <a href="/excluir_produto/{{ produto['id'] }}"
+                <a href="/excluir_produto/{{ produto['id'] }}?filial_id={{ filial_atual.id }}"
                     onclick="return confirm('Deseja excluir este produto?');">
                     Excluir
                 </a>
@@ -169,6 +181,7 @@
         </div>
 
         <form method="POST" enctype="multipart/form-data" id="formNovoProduto">
+            <input type="hidden" name="filial_id" value="{{ filial_atual.id }}">
 
             <label class="upload-imagem-produto">
 

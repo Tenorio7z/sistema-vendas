@@ -502,6 +502,7 @@ class GestaoEquipeService:
                     u.id,
                     u.usuario,
                     u.status,
+                    u.filial_id,
 
                     CASE
                         WHEN u.foto IS NOT NULL

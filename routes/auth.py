@@ -30,6 +30,8 @@ def _preencher_sessao(usuario):
     session["usuario"] = usuario["usuario"]
     session["nivel"] = usuario["nivel"]
     session["empresa_id"] = usuario.get("empresa_id")
+    session["filial_id"] = usuario.get("filial_id")
+    session["filial_nome"] = usuario.get("filial_nome") or "Matriz"
     session["plano"] = usuario.get("plano") or "comum"
 
     session["emprestimos_ativo"] = bool(
@@ -229,10 +231,12 @@ def registrar_rotas(app):
                         u.senha,
                         u.nivel,
                         u.empresa_id,
+                        u.filial_id,
                         u.status,
 
                         e.nome AS empresa_nome,
                         e.plano,
+                        f.nome AS filial_nome,
 
                         COALESCE(
                             e.emprestimos_ativo,
@@ -243,6 +247,9 @@ def registrar_rotas(app):
 
                     LEFT JOIN empresa e
                         ON e.id = u.empresa_id
+
+                    LEFT JOIN filiais f
+                        ON f.id = u.filial_id
 
                     WHERE LOWER(u.usuario) = LOWER(%s)
 

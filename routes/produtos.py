@@ -23,6 +23,23 @@ from database import (
     conectar,
     criar_cursor,
 )
+from services.filiais_service import FiliaisService
+
+
+def _filial_atual(empresa_id):
+    if session.get("nivel") in ("gerente", "master"):
+        filial_id = request.values.get("filial_id", type=int)
+        filial = FiliaisService.obter(empresa_id, filial_id) if filial_id else None
+        if filial and filial.get("ativa"):
+            return filial
+
+    filial = FiliaisService.filial_do_usuario(
+        empresa_id,
+        session.get("usuario_id"),
+    )
+    session["filial_id"] = filial["id"]
+    session["filial_nome"] = filial["nome"]
+    return filial
 
 
 TIPOS_IMAGEM_PERMITIDOS = {
@@ -185,6 +202,9 @@ def registrar_rotas(app):
         if not empresa_id:
             session.clear()
             return redirect("/")
+
+        filial = _filial_atual(empresa_id)
+        filial_id = int(filial["id"])
 
         conn = conectar()
         cursor = criar_cursor(conn)
@@ -397,11 +417,12 @@ def registrar_rotas(app):
                         %s,
                         %s
                     )
+                    RETURNING id
                     """,
                     (
                         nome,
                         preco,
-                        estoque,
+                        estoque if filial.get("matriz") else 0,
                         codigo_barras,
                         empresa_id,
                         (
@@ -414,6 +435,17 @@ def registrar_rotas(app):
                     )
                 )
 
+                produto_id = cursor.fetchone()["id"]
+                cursor.execute(
+                    """
+                    INSERT INTO produto_filial (produto_id, filial_id, estoque, ativo)
+                    VALUES (%s, %s, %s, TRUE)
+                    ON CONFLICT (produto_id, filial_id)
+                    DO UPDATE SET estoque = EXCLUDED.estoque, ativo = TRUE,
+                                  atualizado_em = CURRENT_TIMESTAMP
+                    """,
+                    (produto_id, filial_id, estoque),
+                )
                 conn.commit()
 
                 flash(
@@ -424,7 +456,7 @@ def registrar_rotas(app):
                     "sucesso"
                 )
 
-                return redirect("/produtos")
+                return redirect(f"/produtos?filial_id={filial_id}")
 
             # Não carregamos o BYTEA nesta consulta,
             # evitando deixar a página pesada.
@@ -434,7 +466,7 @@ def registrar_rotas(app):
                     id,
                     nome,
                     preco,
-                    estoque,
+                    pf.estoque AS estoque,
                     codigo_barras,
                     setor_preparo,
                     empresa_id,
@@ -446,12 +478,17 @@ def registrar_rotas(app):
                     END AS possui_imagem
 
                 FROM produtos
+                INNER JOIN produto_filial pf
+                    ON pf.produto_id = produtos.id
+                   AND pf.filial_id = %s
+                   AND pf.ativo = TRUE
 
                 WHERE empresa_id = %s
 
                 ORDER BY id DESC
                 """,
                 (
+                    filial_id,
                     empresa_id,
                 )
             )
@@ -463,6 +500,12 @@ def registrar_rotas(app):
             return render_template(
                 "produtos.html",
                 produtos=produtos_cadastrados,
+                filial_atual=filial,
+                filiais=(
+                    FiliaisService.listar(empresa_id)
+                    if session.get("nivel") in ("gerente", "master")
+                    else [filial]
+                ),
             )
 
         except Exception:
@@ -585,19 +628,24 @@ def registrar_rotas(app):
 
             return redirect("/produtos")
 
+        filial = _filial_atual(session["empresa_id"])
         conn = conectar()
         cursor = criar_cursor(conn)
 
         try:
             cursor.execute(
                 """
-                DELETE FROM produtos
-                WHERE id = %s
-                  AND empresa_id = %s
+                DELETE FROM produto_filial pf
+                USING produtos p
+                WHERE pf.produto_id = p.id
+                  AND p.id = %s
+                  AND p.empresa_id = %s
+                  AND pf.filial_id = %s
                 """,
                 (
                     id,
                     session["empresa_id"],
+                    filial["id"],
                 )
             )
 
@@ -618,7 +666,7 @@ def registrar_rotas(app):
                 "sucesso"
             )
 
-            return redirect("/produtos")
+            return redirect(f"/produtos?filial_id={filial['id']}")
 
         except Exception:
             conn.rollback()
@@ -649,6 +697,8 @@ def registrar_rotas(app):
         empresa_id = session.get(
             "empresa_id"
         )
+        filial = _filial_atual(empresa_id)
+        filial_id = int(filial["id"])
 
         conn = conectar()
         cursor = criar_cursor(conn)
@@ -736,26 +786,23 @@ def registrar_rotas(app):
                 cursor.execute(
                     """
                     UPDATE produtos
-
-                    SET
-                        nome = %s,
+                    SET nome = %s,
                         preco = %s,
-                        estoque = %s,
+                        estoque = CASE WHEN %s THEN %s ELSE estoque END,
                         codigo_barras = %s,
                         setor_preparo = %s
-
-                    WHERE id = %s
-                      AND empresa_id = %s
+                    WHERE id = %s AND empresa_id = %s
                     """,
                     (
                         nome,
                         preco,
+                        bool(filial.get("matriz")),
                         estoque,
                         codigo_barras,
                         setor_preparo,
                         id,
                         empresa_id,
-                    )
+                    ),
                 )
 
                 if cursor.rowcount == 0:
@@ -768,6 +815,16 @@ def registrar_rotas(app):
 
                     return redirect("/produtos")
 
+                cursor.execute(
+                    """
+                    INSERT INTO produto_filial (produto_id, filial_id, estoque, ativo)
+                    VALUES (%s, %s, %s, TRUE)
+                    ON CONFLICT (produto_id, filial_id)
+                    DO UPDATE SET estoque = EXCLUDED.estoque, ativo = TRUE,
+                                  atualizado_em = CURRENT_TIMESTAMP
+                    """,
+                    (id, filial_id, estoque),
+                )
                 conn.commit()
 
                 flash(
@@ -775,38 +832,22 @@ def registrar_rotas(app):
                     "sucesso"
                 )
 
-                return redirect("/produtos")
+                return redirect(f"/produtos?filial_id={filial_id}")
 
             # Também evita carregar a imagem inteira
             # na página de edição.
             cursor.execute(
                 """
-                SELECT
-                    id,
-                    nome,
-                    preco,
-                    estoque,
-                    codigo_barras,
-                    setor_preparo,
-                    empresa_id,
-
-                    CASE
-                        WHEN imagem IS NOT NULL
-                        THEN TRUE
-                        ELSE FALSE
-                    END AS possui_imagem
-
-                FROM produtos
-
-                WHERE id = %s
-                  AND empresa_id = %s
-
+                SELECT p.id, p.nome, p.preco, pf.estoque,
+                       p.codigo_barras, p.setor_preparo, p.empresa_id,
+                       CASE WHEN p.imagem IS NOT NULL THEN TRUE ELSE FALSE END AS possui_imagem
+                FROM produtos p
+                INNER JOIN produto_filial pf
+                    ON pf.produto_id = p.id AND pf.filial_id = %s
+                WHERE p.id = %s AND p.empresa_id = %s
                 LIMIT 1
                 """,
-                (
-                    id,
-                    empresa_id,
-                )
+                (filial_id, id, empresa_id),
             )
 
             produto = cursor.fetchone()
@@ -817,11 +858,12 @@ def registrar_rotas(app):
                     "erro"
                 )
 
-                return redirect("/produtos")
+                return redirect(f"/produtos?filial_id={filial_id}")
 
             return render_template(
                 "editar_produto.html",
                 produto=produto,
+                filial_atual=filial,
             )
 
         except Exception:

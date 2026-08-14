@@ -1739,3 +1739,9 @@ input[type="file"]::file-selector-button {
         flex-basis: 70px;
     }
 }
+/* Valores esperados e filial */
+.valores-esperados-equipe{margin:18px 0;padding:20px;border:1px solid rgba(94,157,235,.25);border-radius:20px;background:linear-gradient(135deg,rgba(52,137,255,.11),rgba(112,80,255,.06)),rgba(18,40,72,.7);box-shadow:inset 0 1px rgba(255,255,255,.08);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.valores-esperados-titulo h2{margin:4px 0 14px}.valores-esperados-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.valores-esperados-grid article{padding:15px;border:1px solid rgba(91,153,226,.22);border-radius:15px;background:rgba(7,26,54,.34)}.valores-esperados-grid span,.valores-esperados-grid small{display:block;color:#91a6c2}.valores-esperados-grid span{font-size:10px}.valores-esperados-grid strong{display:block;margin:7px 0;color:#fff;font-size:20px}.valores-esperados-grid small{font-size:8px}.filial-funcionario-campo select{width:100%}
+html:not(.dark) .valores-esperados-equipe{background:rgba(255,255,255,.82)}html:not(.dark) .valores-esperados-grid article{background:#f1f6ff}html:not(.dark) .valores-esperados-grid strong{color:#10203d}
+@media(max-width:850px){.valores-esperados-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.valores-esperados-grid{grid-template-columns:1fr}}
+.funcionario-filial-form{margin:11px 0;display:flex;align-items:center;gap:9px}.funcionario-filial-form label{color:#8fa4bf;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px}.funcionario-filial-form select{min-width:120px;flex:1;padding:8px 10px;border:1px solid rgba(91,155,229,.24);border-radius:9px;color:#fff;background:#10294c}.funcionario-filial-form select:focus{outline:2px solid rgba(65,158,255,.35)}html:not(.dark) .funcionario-filial-form select{color:#10203d;background:#eef5ff}

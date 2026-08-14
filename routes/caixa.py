@@ -9,6 +9,7 @@ from werkzeug.security import (
 from services.pdf_service import (
     gerar_pdf_fechamento
 )
+from services.filiais_service import FiliaisService
 
 
 def registrar_rotas(app):
@@ -23,6 +24,10 @@ def registrar_rotas(app):
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         empresa_id = session["empresa_id"]
+        filial = FiliaisService.filial_do_usuario(
+            empresa_id, session.get("usuario_id")
+        )
+        filial_id = int(filial["id"])
 
         # ==========================================
         # ÚLTIMO CAIXA
@@ -35,13 +40,14 @@ def registrar_rotas(app):
         FROM caixa
 
         WHERE empresa_id = %s
+        AND filial_id = %s
         AND status = 'aberto'
 
         ORDER BY id DESC
 
         LIMIT 1
 
-        """, (empresa_id,))
+        """, (empresa_id, filial_id))
 
         caixa = cursor.fetchone()
 
@@ -114,15 +120,17 @@ def registrar_rotas(app):
                     valor_final,
                     status,
                     empresa_id,
+                    filial_id,
                     data_abertura
                 )
-                VALUES(%s,%s,%s,%s,NOW())
+                VALUES(%s,%s,%s,%s,%s,NOW())
                 RETURNING id
                 """, (
                     valor,
                     valor,
                     "aberto",
-                    empresa_id
+                    empresa_id,
+                    filial_id
                 ))
 
                 caixa_id = cursor.fetchone()["id"]
@@ -504,6 +512,11 @@ def registrar_rotas(app):
             session.clear()
             return redirect("/")
 
+        filial = FiliaisService.filial_do_usuario(
+            empresa_id, session.get("usuario_id")
+        )
+        filial_id = int(filial["id"])
+
         conn = conectar()
 
         cursor = conn.cursor(
@@ -525,6 +538,7 @@ def registrar_rotas(app):
                     valor,
                     caixa_id,
                     empresa_id,
+                    filial_id,
 
                     COALESCE(
                         cancelada,
@@ -535,6 +549,7 @@ def registrar_rotas(app):
 
                 WHERE id = %s
                   AND empresa_id = %s
+                  AND filial_id = %s
 
                 LIMIT 1
 
@@ -543,6 +558,7 @@ def registrar_rotas(app):
                 (
                     venda_id,
                     empresa_id,
+                    filial_id,
                 ),
             )
 
@@ -564,17 +580,16 @@ def registrar_rotas(app):
 
             cursor.execute(
                 """
-                UPDATE produtos
-
-                SET estoque = estoque + %s
-
-                WHERE id = %s
-                  AND empresa_id = %s
+                UPDATE produto_filial
+                SET estoque = estoque + %s,
+                    atualizado_em = CURRENT_TIMESTAMP
+                WHERE produto_id = %s
+                  AND filial_id = %s
                 """,
                 (
                     venda["quantidade"],
                     venda["produto_id"],
-                    empresa_id,
+                    venda["filial_id"] or filial_id,
                 ),
             )
 

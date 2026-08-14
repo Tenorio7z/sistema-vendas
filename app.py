@@ -68,6 +68,7 @@ from routes.onboarding_admin import (
 from routes.custos import (
     registrar_rotas as registrar_rotas_custos,
 )
+from routes.filiais import registrar_rotas as filiais_rotas
 from services.modulos_empresa_service import (
     registrar_modulos_app,
 )
@@ -92,6 +93,7 @@ dashboard(app)
 produtos(app)
 importacao_produtos(app)
 clientes_rotas(app)
+filiais_rotas(app)
 mesas_rotas(
     app,
     socketio,

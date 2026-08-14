@@ -23,6 +23,7 @@
         </div>
 
         <form method="POST" class="form-editar">
+            <input type="hidden" name="filial_id" value="{{ filial_atual.id }}">
 
             <div class="form-group">
 
@@ -59,7 +60,7 @@
                     Salvar Alterações
                 </button>
 
-                <a href="/produtos" class="btn-voltar">
+                <a href="/produtos?filial_id={{ filial_atual.id }}" class="btn-voltar">
                     Voltar
                 </a>
 

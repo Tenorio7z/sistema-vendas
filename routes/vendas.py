@@ -11,8 +11,21 @@ from decimal import (
 
 from uuid import uuid4
 from psycopg2.extras import execute_values
+from services.filiais_service import FiliaisService
 
 CENTAVOS = Decimal("0.01")
+
+
+def _filial_venda(empresa_id):
+    filial_id = session.get("filial_id")
+    filial = FiliaisService.obter(empresa_id, filial_id) if filial_id else None
+    if not filial or not filial.get("ativa"):
+        filial = FiliaisService.filial_do_usuario(
+            empresa_id, session.get("usuario_id")
+        )
+        session["filial_id"] = filial["id"]
+        session["filial_nome"] = filial["nome"]
+    return filial
 
 
 def _decimal_monetario(valor):
@@ -261,6 +274,8 @@ def registrar_rotas(app, socketio):
         if not empresa_id:
             conn.close()
             return redirect("/")
+        filial = _filial_venda(empresa_id)
+        filial_id = int(filial["id"])
 
         # ==========================================
         # BUSCAR CAIXA ABERTO (OBRIGATÓRIO)
@@ -269,10 +284,11 @@ def registrar_rotas(app, socketio):
             SELECT *
             FROM caixa
             WHERE empresa_id = %s
+            AND filial_id = %s
             AND status = 'aberto'
             ORDER BY id DESC
             LIMIT 1
-        """, (empresa_id,))
+        """, (empresa_id, filial_id))
 
         caixa = cursor.fetchone()
 
@@ -286,27 +302,25 @@ def registrar_rotas(app, socketio):
         cursor.execute(
             """
             SELECT
-                id,
-                nome,
-                preco,
-                estoque,
-                codigo_barras,
-                empresa_id,
+                p.id, p.nome, p.preco, pf.estoque,
+                p.codigo_barras, p.empresa_id,
 
                 CASE
-                    WHEN imagem IS NOT NULL
+                    WHEN p.imagem IS NOT NULL
                     THEN TRUE
                     ELSE FALSE
                 END AS possui_imagem
 
-            FROM produtos
+            FROM produtos p
+            INNER JOIN produto_filial pf
+              ON pf.produto_id = p.id AND pf.filial_id = %s AND pf.ativo = TRUE
 
-            WHERE empresa_id = %s
+            WHERE p.empresa_id = %s
 
             ORDER BY nome ASC
             """,
             (
-                empresa_id,
+                filial_id, empresa_id,
             )
         )
         produtos = cursor.fetchall()
@@ -397,6 +411,7 @@ def registrar_rotas(app, socketio):
                 "Empresa não identificada.",
                 401,
             )
+        filial_id = int(_filial_venda(empresa_id)["id"])
 
         conexao = conectar()
         cursor = criar_cursor(conexao)
@@ -404,20 +419,17 @@ def registrar_rotas(app, socketio):
         try:
             cursor.execute(
                 """
-                SELECT
-                    id,
-                    nome,
-                    preco,
-                    estoque
-
-                FROM produtos
-
-                WHERE id = %s
-                  AND empresa_id = %s
+                SELECT p.id, p.nome, p.preco, pf.estoque
+                FROM produtos p
+                INNER JOIN produto_filial pf
+                  ON pf.produto_id = p.id AND pf.filial_id = %s AND pf.ativo = TRUE
+                WHERE p.id = %s
+                  AND p.empresa_id = %s
 
                 LIMIT 1
                 """,
                 (
+                    filial_id,
                     id,
                     empresa_id,
                 ),
@@ -647,6 +659,8 @@ def registrar_rotas(app, socketio):
                 "erro",
             )
             return redirect("/vendas")
+        filial = _filial_venda(empresa_id)
+        filial_id = int(filial["id"])
 
         pagamentos_permitidos = {
             "dinheiro": "Dinheiro",
@@ -755,12 +769,13 @@ def registrar_rotas(app, socketio):
                     valor_final
                 FROM caixa
                 WHERE empresa_id = %s
+                  AND filial_id = %s
                   AND status = 'aberto'
                 ORDER BY id DESC
                 LIMIT 1
                 FOR UPDATE
                 """,
-                (empresa_id,),
+                (empresa_id, filial_id),
             )
 
             caixa = cursor.fetchone()
@@ -802,18 +817,17 @@ def registrar_rotas(app, socketio):
             # Busca todos os produtos em uma única consulta.
             cursor.execute(
                 """
-                SELECT
-                    id,
-                    nome,
-                    preco,
-                    estoque
-                FROM produtos
-                WHERE empresa_id = %s
-                  AND id = ANY(%s)
-                ORDER BY id
+                SELECT p.id, p.nome, p.preco, pf.estoque
+                FROM produtos p
+                INNER JOIN produto_filial pf
+                  ON pf.produto_id = p.id AND pf.filial_id = %s AND pf.ativo = TRUE
+                WHERE p.empresa_id = %s
+                  AND p.id = ANY(%s)
+                ORDER BY p.id
                 FOR UPDATE
                 """,
                 (
+                    filial_id,
                     empresa_id,
                     produtos_ids,
                 ),
@@ -962,7 +976,7 @@ def registrar_rotas(app, socketio):
                     (
                         int(produto["id"]),
                         quantidade,
-                        empresa_id,
+                        filial_id,
                     )
                 )
 
@@ -980,6 +994,7 @@ def registrar_rotas(app, socketio):
                         int(caixa["id"]),
                         usuario_id,
                         cliente_id,
+                        filial_id,
                     )
                 )
 
@@ -1022,20 +1037,20 @@ def registrar_rotas(app, socketio):
                 WITH dados (
                     produto_id,
                     quantidade,
-                    empresa_id
+                    filial_id
                 ) AS (
                     VALUES %s
                 )
-                UPDATE produtos AS p
+                UPDATE produto_filial AS p
                 SET estoque = (
                     p.estoque
                     - dados.quantidade
                 )
                 FROM dados
-                WHERE p.id = dados.produto_id
-                  AND p.empresa_id = dados.empresa_id
+                WHERE p.produto_id = dados.produto_id
+                  AND p.filial_id = dados.filial_id
                   AND p.estoque >= dados.quantidade
-                RETURNING p.id
+                RETURNING p.produto_id
                 """,
                 linhas_estoque,
                 template="(%s, %s, %s)",
@@ -1068,6 +1083,7 @@ def registrar_rotas(app, socketio):
                     caixa_id,
                     usuario_id,
                     cliente_id,
+                    filial_id,
                     data_venda
                 )
                 VALUES %s
@@ -1076,7 +1092,7 @@ def registrar_rotas(app, socketio):
                 template=(
                     "("
                     "%s, %s, %s, %s, %s, %s, "
-                    "%s, %s, %s, %s, %s, %s, "
+                    "%s, %s, %s, %s, %s, %s, %s, "
                     "CURRENT_TIMESTAMP"
                     ")"
                 ),
@@ -1208,13 +1224,16 @@ def registrar_rotas(app, socketio):
         if not empresa_id:
             conn.close()
             return redirect("/")
+        filial_id = int(_filial_venda(empresa_id)["id"])
 
         cursor.execute("""
-            SELECT *
-            FROM produtos
-            WHERE codigo_barras = %s
-            AND empresa_id = %s
-        """, (codigo, empresa_id))
+            SELECT p.*
+            FROM produtos p
+            INNER JOIN produto_filial pf
+              ON pf.produto_id = p.id AND pf.filial_id = %s AND pf.ativo = TRUE
+            WHERE p.codigo_barras = %s
+            AND p.empresa_id = %s
+        """, (filial_id, codigo, empresa_id))
 
         produto = cursor.fetchone()
 

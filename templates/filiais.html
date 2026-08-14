@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/filiais.css') }}">{% endblock %}
+{% block content %}
+<main class="filiais-page">
+  <header class="filiais-hero">
+    <div><small>ESTRUTURA DA EMPRESA</small><h1>Filiais e estoques</h1><p>Um catálogo, estoques independentes e controle centralizado.</p></div>
+    <button type="button" class="btn-primary" onclick="document.getElementById('modalFilial').classList.add('aberto')">+ Nova filial</button>
+  </header>
+
+  <section class="filiais-grid">
+    {% for filial in filiais %}
+    <article class="filial-card {% if not filial.ativa %}inativa{% endif %}">
+      <div class="filial-topo">
+        <span class="filial-icone">{{ 'M' if filial.matriz else loop.index }}</span>
+        <div><small>{{ 'UNIDADE PRINCIPAL' if filial.matriz else 'FILIAL' }}</small><h2>{{ filial.nome }}</h2><p>{{ filial.codigo or 'Sem código' }}</p></div>
+        <span class="status">{{ 'Ativa' if filial.ativa else 'Inativa' }}</span>
+      </div>
+      <div class="filial-metricas">
+        <div><span>Produtos</span><strong>{{ filial.total_produtos }}</strong></div>
+        <div><span>Estoque total</span><strong>{{ filial.total_estoque }}</strong></div>
+        <div><span>Usuários</span><strong>{{ filial.total_usuarios }}</strong></div>
+      </div>
+      <div class="filial-acoes">
+        <a class="btn-primary" href="{{ url_for('produtos', filial_id=filial.id) }}">Abrir produtos</a>
+        {% if not filial.matriz %}
+        <form method="post" action="{{ url_for('copiar_catalogo_filial', filial_id=filial.id) }}"><button>Copiar catálogo</button></form>
+        <form method="post" action="{{ url_for('filial_status', filial_id=filial.id) }}"><input type="hidden" name="ativa" value="{{ 0 if filial.ativa else 1 }}"><button class="{{ 'danger' if filial.ativa else '' }}">{{ 'Desativar' if filial.ativa else 'Ativar' }}</button></form>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+</main>
+
+<div id="modalFilial" class="modal-filial" onclick="if(event.target===this)this.classList.remove('aberto')">
+  <form method="post" class="modal-card">
+    <button type="button" class="modal-close" onclick="document.getElementById('modalFilial').classList.remove('aberto')">×</button>
+    <small>NOVA UNIDADE</small><h2>Cadastrar filial</h2><p>O catálogo pode ser copiado sem misturar os estoques.</p>
+    <label>Nome<input name="nome" maxlength="150" required placeholder="Ex.: Filial Centro"></label>
+    <label>Código<input name="codigo" maxlength="40" placeholder="Ex.: CENTRO"></label>
+    <label class="check"><input type="checkbox" name="copiar_catalogo" value="1" checked><span>Copiar produtos da matriz</span></label>
+    <label class="check"><input type="checkbox" name="copiar_estoque" value="1"><span>Copiar também as quantidades atuais</span></label>
+    <button class="btn-primary" type="submit">Criar filial</button>
+  </form>
+</div>
+{% endblock %}

@@ -200,6 +200,19 @@
 
     </section>
 
+    <section class="valores-esperados-equipe">
+        <div class="valores-esperados-titulo">
+            <span class="equipe-eyebrow">VALORES ESPERADOS</span>
+            <h2>Projeção da equipe</h2>
+        </div>
+        <div class="valores-esperados-grid">
+            <article><span>Produtos cadastrados</span><strong>{{ valores_esperados.produtos_cadastrados }}</strong><small>Catálogo compartilhado</small></article>
+            <article><span>Total vendido</span><strong>R$ {{ "%.2f"|format(valores_esperados.faturamento) }}</strong><small>Vendas válidas na competência</small></article>
+            <article><span>Comissões esperadas</span><strong>R$ {{ "%.2f"|format(valores_esperados.comissoes) }}</strong><small>Calculadas sobre as vendas</small></article>
+            <article><span>Total a pagar</span><strong>R$ {{ "%.2f"|format(valores_esperados.a_pagar) }}</strong><small>Folhas ainda pendentes</small></article>
+        </div>
+    </section>
+
 
     <!-- LISTA -->
 
@@ -291,6 +304,15 @@
 
             </div>
 
+
+            <form method="POST" action="/usuarios/{{ funcionario.id }}/filial" class="funcionario-filial-form">
+                <label>Filial</label>
+                <select name="filial_id" onchange="this.form.submit()">
+                    {% for filial in filiais %}
+                    <option value="{{ filial.id }}" {% if filial.id == funcionario.filial_id %}selected{% endif %}>{{ filial.nome }}</option>
+                    {% endfor %}
+                </select>
+            </form>
 
             <div class="funcionario-resumo-principal">
 
@@ -840,6 +862,15 @@
                             value="5"
                             required
                         >
+                    </label>
+
+                    <label class="campo-largo filial-funcionario-campo">
+                        <span>Filial de trabalho</span>
+                        <select name="filial_id" required>
+                            {% for filial in filiais %}
+                            <option value="{{ filial.id }}">{{ filial.nome }}{% if filial.matriz %} (Matriz){% endif %}</option>
+                            {% endfor %}
+                        </select>
                     </label>
 
                     <label class="campo-largo">
