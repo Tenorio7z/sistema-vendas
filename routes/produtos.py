@@ -27,18 +27,42 @@ from services.filiais_service import FiliaisService
 
 
 def _filial_atual(empresa_id):
-    if session.get("nivel") in ("gerente", "master"):
-        filial_id = request.values.get("filial_id", type=int)
-        filial = FiliaisService.obter(empresa_id, filial_id) if filial_id else None
+    filial_solicitada = request.values.get(
+        "filial_id",
+        type=int,
+    )
+
+    if (
+        session.get("nivel") in ("gerente", "master")
+        and filial_solicitada
+    ):
+        filial = FiliaisService.obter(
+            empresa_id,
+            filial_solicitada,
+        )
+
         if filial and filial.get("ativa"):
             return filial
+
+    filial_id = session.get("filial_id")
+
+    if filial_id:
+        return {
+            "id": int(filial_id),
+            "nome": session.get("filial_nome") or "Matriz",
+            "matriz": session.get("filial_matriz", False),
+            "ativa": True,
+        }
 
     filial = FiliaisService.filial_do_usuario(
         empresa_id,
         session.get("usuario_id"),
     )
+
     session["filial_id"] = filial["id"]
     session["filial_nome"] = filial["nome"]
+    session["filial_matriz"] = filial.get("matriz", False)
+
     return filial
 
 

@@ -24,10 +24,24 @@ def registrar_rotas(app):
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         empresa_id = session["empresa_id"]
-        filial = FiliaisService.filial_do_usuario(
-            empresa_id, session.get("usuario_id")
-        )
-        filial_id = int(filial["id"])
+        filial_id = session.get("filial_id")
+
+        if not filial_id:
+            filial = FiliaisService.filial_do_usuario(
+                empresa_id,
+                session.get("usuario_id"),
+            )
+
+            filial_id = int(filial["id"])
+
+            session["filial_id"] = filial_id
+            session["filial_nome"] = filial["nome"]
+            session["filial_matriz"] = filial.get(
+                "matriz",
+                False,
+            )
+        else:
+            filial_id = int(filial_id)
 
         # ==========================================
         # ÚLTIMO CAIXA

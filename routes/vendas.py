@@ -18,13 +18,24 @@ CENTAVOS = Decimal("0.01")
 
 def _filial_venda(empresa_id):
     filial_id = session.get("filial_id")
-    filial = FiliaisService.obter(empresa_id, filial_id) if filial_id else None
-    if not filial or not filial.get("ativa"):
-        filial = FiliaisService.filial_do_usuario(
-            empresa_id, session.get("usuario_id")
-        )
-        session["filial_id"] = filial["id"]
-        session["filial_nome"] = filial["nome"]
+
+    if filial_id:
+        return {
+            "id": int(filial_id),
+            "nome": session.get("filial_nome") or "Matriz",
+            "matriz": session.get("filial_matriz", False),
+            "ativa": True,
+        }
+
+    filial = FiliaisService.filial_do_usuario(
+        empresa_id,
+        session.get("usuario_id"),
+    )
+
+    session["filial_id"] = filial["id"]
+    session["filial_nome"] = filial["nome"]
+    session["filial_matriz"] = filial.get("matriz", False)
+
     return filial
 
 
