@@ -825,6 +825,10 @@ def registrar_rotas(app):
                     "cargo",
                     "Funcionário",
                 ),
+                comissao=request.form.get(
+                    "comissao",
+                    "0",
+                ),
                 salario_base=request.form.get(
                     "salario_base",
                     "0",

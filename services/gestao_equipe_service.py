@@ -648,6 +648,7 @@ class GestaoEquipeService:
         empresa_id,
         usuario_id,
         cargo,
+        comissao,
         salario_base,
         dia_pagamento,
         data_admissao=None,
@@ -661,6 +662,10 @@ class GestaoEquipeService:
             salario_base
         )
 
+        comissao = cls._decimal(
+            comissao
+        )
+
         dia_pagamento = cls._inteiro(
             dia_pagamento,
             5,
@@ -669,6 +674,14 @@ class GestaoEquipeService:
         if salario_base < ZERO:
             raise ValueError(
                 "O salário não pode ser negativo."
+            )
+
+        if not ZERO <= comissao <= Decimal("100.00"):
+            raise ValueError(
+                (
+                    "A comissão deve ficar entre "
+                    "0% e 100%."
+                )
             )
 
         if not 1 <= dia_pagamento <= 31:
@@ -688,6 +701,28 @@ class GestaoEquipeService:
                 empresa_id,
                 usuario_id,
             )
+
+            cursor.execute(
+                """
+                UPDATE usuarios
+
+                SET comissao = %s
+
+                WHERE id = %s
+                  AND empresa_id = %s
+                  AND nivel = 'funcionario'
+                """,
+                (
+                    comissao,
+                    usuario_id,
+                    empresa_id,
+                ),
+            )
+
+            if cursor.rowcount != 1:
+                raise ValueError(
+                    "Funcionário não encontrado."
+                )
 
             cursor.execute(
                 """

@@ -447,6 +447,7 @@
                     data-id="{{ funcionario['id'] }}"
                     data-usuario="{{ funcionario['usuario'] }}"
                     data-cargo="{{ funcionario['cargo'] }}"
+                    data-percentual-comissao="{{ funcionario['percentual_comissao'] }}"
                     data-salario="{{ funcionario['salario_base'] }}"
                     data-dia="{{ funcionario['dia_pagamento'] }}"
                     data-admissao="{{ funcionario['data_admissao'] or '' }}"
@@ -999,6 +1000,26 @@
                     </label>
 
                     <label>
+                        <span>Comissão sobre as vendas</span>
+
+                        <div class="input-sufixo">
+
+                            <input
+                                type="number"
+                                name="comissao"
+                                id="configComissao"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                required
+                            >
+
+                            <span>%</span>
+
+                        </div>
+                    </label>
+
+                    <label>
                         <span>Salário-base</span>
 
                         <div class="input-prefixo">
@@ -1441,6 +1462,11 @@ if (campoConfigFoto) {
         "configCargo"
     ).value =
         botao.dataset.cargo || "";
+
+    document.getElementById(
+        "configComissao"
+    ).value =
+        botao.dataset.percentualComissao || 0;
 
     document.getElementById(
         "configSalario"
