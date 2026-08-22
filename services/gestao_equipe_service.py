@@ -532,43 +532,98 @@ class GestaoEquipeService:
 
                     fc.data_admissao,
 
-                    COUNT(v.id)
-                        AS registros_venda,
+                    CASE
+                        WHEN pendente.id IS NOT NULL
+                        THEN COALESCE(
+                            pendente.registros_venda,
+                            0
+                        )
+                        ELSE COALESCE(
+                            vendas_abertas.registros_venda,
+                            0
+                        )
+                    END AS registros_venda,
+
+                    CASE
+                        WHEN pendente.id IS NOT NULL
+                        THEN COALESCE(
+                            pendente.itens_vendidos,
+                            0
+                        )
+                        ELSE COALESCE(
+                            vendas_abertas.itens_vendidos,
+                            0
+                        )
+                    END AS itens_vendidos,
+
+                    CASE
+                        WHEN pendente.id IS NOT NULL
+                        THEN COALESCE(
+                            pendente.faturamento_base,
+                            0
+                        )
+                        ELSE COALESCE(
+                            vendas_abertas.faturamento,
+                            0
+                        )
+                    END AS faturamento,
+
+                    CASE
+                        WHEN pendente.id IS NOT NULL
+                        THEN COALESCE(
+                            pendente.valor_comissao,
+                            0
+                        )
+                        ELSE ROUND(
+                            (
+                                COALESCE(
+                                    vendas_abertas.faturamento,
+                                    0
+                                )
+                                * COALESCE(
+                                    u.comissao,
+                                    0
+                                )
+                                / 100
+                            )::numeric,
+                            2
+                        )
+                    END AS comissao_gerada,
+
+                    pendente.id AS folha_id,
+                    pendente.status AS folha_status,
 
                     COALESCE(
-                        SUM(v.quantidade),
-                        0
-                    ) AS itens_vendidos,
-
-                    COALESCE(
-                        SUM(v.valor),
-                        0
-                    ) AS faturamento,
-
-                    ROUND(
-                        (
-                            COALESCE(
-                                SUM(v.valor),
-                                0
-                            )
-                            * COALESCE(
-                                u.comissao,
-                                0
-                            )
-                            / 100
-                        )::numeric,
-                        2
-                    ) AS comissao_gerada,
-
-                    fp.id AS folha_id,
-                    fp.status AS folha_status,
-
-                    COALESCE(
-                        fp.valor_total,
+                        pendente.valor_total,
                         0
                     ) AS folha_total,
 
-                    fp.data_pagamento
+                    pendente.criado_em AS folha_criada_em,
+
+                    ultimo_pago.data_pagamento,
+                    COALESCE(
+                        ultimo_pago.valor_total,
+                        0
+                    ) AS ultimo_pagamento_total,
+
+                    COALESCE(
+                        pagamentos.total_pago,
+                        0
+                    ) AS total_pago_historico,
+
+                    CASE
+                        WHEN pendente.id IS NOT NULL
+                        THEN COALESCE(
+                            pendente.salario_base,
+                            0
+                        )
+                        WHEN salario_pago.salario_incluido
+                        THEN 0
+                        ELSE COALESCE(
+                            fc.salario_base,
+                            0
+                        )
+                    END AS salario_disponivel
 
                 FROM usuarios u
 
@@ -576,50 +631,110 @@ class GestaoEquipeService:
                     ON fc.usuario_id = u.id
                    AND fc.empresa_id = u.empresa_id
 
-                LEFT JOIN vendas v
-                    ON v.usuario_id = u.id
-                   AND v.empresa_id = u.empresa_id
-                   AND COALESCE(
-                       v.cancelada,
-                       0
-                   ) = 0
-                   AND DATE(
-                       COALESCE(
-                           v.data_venda,
-                           v.data
-                       )
-                   ) BETWEEN %s AND %s
+                LEFT JOIN LATERAL (
+                    SELECT fp.*,
+                           COALESCE((
+                               SELECT COUNT(*)
+                               FROM vendas vp
+                               WHERE vp.empresa_id = fp.empresa_id
+                                 AND vp.usuario_id = fp.usuario_id
+                                 AND COALESCE(vp.cancelada, 0) = 0
+                                 AND (
+                                     fp.periodo_inicio IS NULL
+                                     OR COALESCE(vp.data_venda, vp.data)
+                                        > fp.periodo_inicio
+                                 )
+                                 AND COALESCE(vp.data_venda, vp.data)
+                                     <= fp.periodo_fim
+                           ), 0) AS registros_venda,
+                           COALESCE((
+                               SELECT SUM(vp.quantidade)
+                               FROM vendas vp
+                               WHERE vp.empresa_id = fp.empresa_id
+                                 AND vp.usuario_id = fp.usuario_id
+                                 AND COALESCE(vp.cancelada, 0) = 0
+                                 AND (
+                                     fp.periodo_inicio IS NULL
+                                     OR COALESCE(vp.data_venda, vp.data)
+                                        > fp.periodo_inicio
+                                 )
+                                 AND COALESCE(vp.data_venda, vp.data)
+                                     <= fp.periodo_fim
+                           ), 0) AS itens_vendidos
+                    FROM folha_pagamentos fp
+                    WHERE fp.empresa_id = u.empresa_id
+                      AND fp.usuario_id = u.id
+                      AND fp.status = 'pendente'
+                    ORDER BY fp.id DESC
+                    LIMIT 1
+                ) pendente ON TRUE
 
-                LEFT JOIN folha_pagamentos fp
-                    ON fp.usuario_id = u.id
-                   AND fp.empresa_id = u.empresa_id
-                   AND fp.competencia = %s
+                LEFT JOIN LATERAL (
+                    SELECT fp.*
+                    FROM folha_pagamentos fp
+                    WHERE fp.empresa_id = u.empresa_id
+                      AND fp.usuario_id = u.id
+                      AND fp.status = 'pago'
+                    ORDER BY
+                        fp.data_pagamento DESC NULLS LAST,
+                        fp.id DESC
+                    LIMIT 1
+                ) ultimo_pago ON TRUE
+
+                LEFT JOIN LATERAL (
+                    SELECT
+                        COALESCE(
+                            SUM(fp.valor_total),
+                            0
+                        ) AS total_pago
+                    FROM folha_pagamentos fp
+                    WHERE fp.empresa_id = u.empresa_id
+                      AND fp.usuario_id = u.id
+                      AND fp.status = 'pago'
+                ) pagamentos ON TRUE
+
+                LEFT JOIN LATERAL (
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM folha_pagamentos fp
+                        WHERE fp.empresa_id = u.empresa_id
+                          AND fp.usuario_id = u.id
+                          AND fp.competencia = %s
+                          AND fp.status IN ('pendente', 'pago')
+                          AND fp.salario_base > 0
+                    ) AS salario_incluido
+                ) salario_pago ON TRUE
+
+                LEFT JOIN LATERAL (
+                    SELECT
+                        COUNT(v.id) AS registros_venda,
+                        COALESCE(
+                            SUM(v.quantidade),
+                            0
+                        ) AS itens_vendidos,
+                        COALESCE(
+                            SUM(v.valor),
+                            0
+                        ) AS faturamento
+                    FROM vendas v
+                    WHERE v.empresa_id = u.empresa_id
+                      AND v.usuario_id = u.id
+                      AND COALESCE(v.cancelada, 0) = 0
+                      AND (
+                          ultimo_pago.periodo_fim IS NULL
+                          OR COALESCE(v.data_venda, v.data)
+                             > ultimo_pago.periodo_fim
+                      )
+                ) vendas_abertas ON TRUE
 
                 WHERE u.empresa_id = %s
                   AND u.nivel = 'funcionario'
-
-                GROUP BY
-                    u.id,
-                    u.usuario,
-                    u.status,
-                    u.foto,
-                    u.comissao,
-                    fc.cargo,
-                    fc.salario_base,
-                    fc.dia_pagamento,
-                    fc.data_admissao,
-                    fp.id,
-                    fp.status,
-                    fp.valor_total,
-                    fp.data_pagamento
 
                 ORDER BY
                     faturamento DESC,
                     u.usuario ASC
                 """,
                 (
-                    inicio,
-                    fim,
                     competencia,
                     empresa_id,
                 )
@@ -798,14 +913,9 @@ class GestaoEquipeService:
         cursor,
         empresa_id,
         usuario_id,
-        competencia,
+        periodo_inicio=None,
+        periodo_fim=None,
     ):
-        inicio, fim = (
-            cls._periodo_competencia(
-                competencia
-            )
-        )
-
         cursor.execute(
             """
             SELECT
@@ -843,12 +953,17 @@ class GestaoEquipeService:
                    v.cancelada,
                    0
                ) = 0
-               AND DATE(
-                   COALESCE(
+               AND (
+                   %s IS NULL
+                   OR COALESCE(
                        v.data_venda,
                        v.data
-                   )
-               ) BETWEEN %s AND %s
+                   ) > %s
+               )
+               AND COALESCE(
+                   v.data_venda,
+                   v.data
+               ) <= %s
 
             WHERE u.id = %s
               AND u.empresa_id = %s
@@ -859,8 +974,9 @@ class GestaoEquipeService:
                 u.comissao
             """,
             (
-                inicio,
-                fim,
+                periodo_inicio,
+                periodo_inicio,
+                periodo_fim,
                 usuario_id,
                 empresa_id,
             )
@@ -917,6 +1033,15 @@ class GestaoEquipeService:
         cursor = criar_cursor(conn)
 
         try:
+            # Evita dois acertos simultâneos para o mesmo funcionário.
+            cursor.execute(
+                "SELECT pg_advisory_xact_lock(%s, %s)",
+                (
+                    int(empresa_id),
+                    int(usuario_id),
+                ),
+            )
+
             funcionario = (
                 cls._verificar_funcionario(
                     cursor,
@@ -946,7 +1071,7 @@ class GestaoEquipeService:
 
             configuracao = cursor.fetchone()
 
-            salario_base = cls._decimal(
+            salario_configurado = cls._decimal(
                 (
                     configuracao["salario_base"]
                     if configuracao
@@ -960,15 +1085,110 @@ class GestaoEquipeService:
                 else 5
             )
 
+            cursor.execute(
+                """
+                SELECT id
+                FROM folha_pagamentos
+                WHERE empresa_id = %s
+                  AND usuario_id = %s
+                  AND status = 'pendente'
+                LIMIT 1
+                FOR UPDATE
+                """,
+                (
+                    empresa_id,
+                    usuario_id,
+                ),
+            )
+
+            if cursor.fetchone():
+                raise ValueError(
+                    (
+                        "Este funcionário já possui um "
+                        "acerto pendente. Pague ou cancele "
+                        "o acerto antes de gerar outro."
+                    )
+                )
+
+            cursor.execute(
+                """
+                SELECT
+                    COALESCE(
+                        periodo_fim,
+                        data_pagamento,
+                        atualizado_em,
+                        criado_em
+                    ) AS periodo_fim
+                FROM folha_pagamentos
+                WHERE empresa_id = %s
+                  AND usuario_id = %s
+                  AND status = 'pago'
+                ORDER BY
+                    data_pagamento DESC NULLS LAST,
+                    id DESC
+                LIMIT 1
+                """,
+                (
+                    empresa_id,
+                    usuario_id,
+                ),
+            )
+
+            ultimo_acerto = cursor.fetchone()
+            periodo_inicio = (
+                ultimo_acerto["periodo_fim"]
+                if ultimo_acerto
+                else None
+            )
+
+            cursor.execute(
+                "SELECT CURRENT_TIMESTAMP AS agora"
+            )
+            periodo_fim = cursor.fetchone()["agora"]
+
             comissao = cls.calcular_comissao(
                 cursor,
                 empresa_id,
                 usuario_id,
-                competencia,
+                periodo_inicio=periodo_inicio,
+                periodo_fim=periodo_fim,
             )
 
             valor_comissao = cls._decimal(
                 comissao["valor_comissao"]
+            )
+
+            faturamento_base = cls._decimal(
+                comissao["faturamento"]
+            )
+
+            cursor.execute(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM folha_pagamentos
+                    WHERE empresa_id = %s
+                      AND usuario_id = %s
+                      AND competencia = %s
+                      AND status IN ('pendente', 'pago')
+                      AND salario_base > 0
+                ) AS salario_incluido
+                """,
+                (
+                    empresa_id,
+                    usuario_id,
+                    competencia,
+                ),
+            )
+
+            salario_ja_incluido = bool(
+                cursor.fetchone()["salario_incluido"]
+            )
+
+            salario_base = (
+                ZERO
+                if salario_ja_incluido
+                else salario_configurado
             )
 
             valor_total = (
@@ -980,6 +1200,14 @@ class GestaoEquipeService:
 
             if valor_total < ZERO:
                 valor_total = ZERO
+
+            if valor_total <= ZERO:
+                raise ValueError(
+                    (
+                        "Não existe salário, comissão ou "
+                        "bônus disponível para este acerto."
+                    )
+                )
 
             ultimo_dia = monthrange(
                 competencia.year,
@@ -997,41 +1225,6 @@ class GestaoEquipeService:
 
             cursor.execute(
                 """
-                SELECT
-                    id,
-                    status
-
-                FROM folha_pagamentos
-
-                WHERE empresa_id = %s
-                  AND usuario_id = %s
-                  AND competencia = %s
-
-                FOR UPDATE
-                """,
-                (
-                    empresa_id,
-                    usuario_id,
-                    competencia,
-                )
-            )
-
-            folha_existente = cursor.fetchone()
-
-            if (
-                folha_existente
-                and folha_existente["status"]
-                == "pago"
-            ):
-                raise ValueError(
-                    (
-                        "Esta folha já foi paga e "
-                        "não pode ser recalculada."
-                    )
-                )
-
-            cursor.execute(
-                """
                 INSERT INTO folha_pagamentos (
                     empresa_id,
                     usuario_id,
@@ -1044,7 +1237,10 @@ class GestaoEquipeService:
                     valor_total,
                     status,
                     data_vencimento,
-                    observacoes
+                    observacoes,
+                    periodo_inicio,
+                    periodo_fim,
+                    faturamento_base
                 )
                 VALUES (
                     %s,
@@ -1058,25 +1254,11 @@ class GestaoEquipeService:
                     %s,
                     'pendente',
                     %s,
+                    %s,
+                    %s,
+                    %s,
                     %s
                 )
-
-                ON CONFLICT (
-                    empresa_id,
-                    usuario_id,
-                    competencia
-                )
-                DO UPDATE SET
-                    registrado_por = EXCLUDED.registrado_por,
-                    salario_base = EXCLUDED.salario_base,
-                    valor_comissao = EXCLUDED.valor_comissao,
-                    valor_bonus = EXCLUDED.valor_bonus,
-                    valor_descontos = EXCLUDED.valor_descontos,
-                    valor_total = EXCLUDED.valor_total,
-                    data_vencimento = EXCLUDED.data_vencimento,
-                    observacoes = EXCLUDED.observacoes,
-                    status = 'pendente',
-                    atualizado_em = CURRENT_TIMESTAMP
 
                 RETURNING *
                 """,
@@ -1096,6 +1278,9 @@ class GestaoEquipeService:
                         if observacoes
                         else None
                     ),
+                    periodo_inicio,
+                    periodo_fim,
+                    faturamento_base,
                 )
             )
 
@@ -1179,18 +1364,18 @@ class GestaoEquipeService:
 
             if not folha:
                 raise ValueError(
-                    "Folha de pagamento não encontrada."
+                    "Acerto de pagamento não encontrado."
                 )
 
             if folha["status"] == "pago":
                 raise ValueError(
-                    "Esta folha já foi paga."
+                    "Este acerto já foi pago."
                 )
 
             if folha["status"] == "cancelado":
                 raise ValueError(
                     (
-                        "Uma folha cancelada não pode "
+                        "Um acerto cancelado não pode "
                         "ser paga."
                     )
                 )
@@ -1251,7 +1436,7 @@ class GestaoEquipeService:
                     """,
                     (
                         (
-                            "Pagamento da folha de "
+                            "Pagamento do acerto de "
                             f"{folha['usuario']} — "
                             f"{folha['competencia']:%m/%Y}"
                         ),
@@ -1337,7 +1522,7 @@ class GestaoEquipeService:
                     empresa_id,
                     registrado_por,
                     (
-                        "Folha de pagamento — "
+                        "Acerto de pagamento — "
                         f"{folha['usuario']} — "
                         f"{folha['competencia']:%m/%Y}"
                     ),

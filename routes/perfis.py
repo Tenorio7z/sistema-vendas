@@ -622,6 +622,29 @@ def registrar_rotas(app):
                     item
                 )
 
+            # Os indicadores operacionais representam o saldo que ainda
+            # pode entrar no próximo acerto. Pagamentos anteriores continuam
+            # no histórico e no total pago, mas deixam de inflar novamente
+            # faturamento e comissão disponíveis.
+            faturamento_disponivel = sum(
+                float(item.get("faturamento", 0) or 0)
+                for item in funcionarios_formatados
+            )
+            comissoes_disponiveis = sum(
+                float(item.get("comissao_gerada", 0) or 0)
+                for item in funcionarios_formatados
+            )
+            itens_disponiveis = sum(
+                int(item.get("itens_vendidos", 0) or 0)
+                for item in funcionarios_formatados
+            )
+
+            resumo["vendas"] = dict(resumo["vendas"])
+            resumo["comissoes"] = dict(resumo["comissoes"])
+            resumo["vendas"]["faturamento_equipe"] = faturamento_disponivel
+            resumo["vendas"]["itens_vendidos"] = itens_disponiveis
+            resumo["comissoes"]["comissoes_geradas"] = comissoes_disponiveis
+
             historico = (
                 GestaoEquipeService.historico_pagamentos(
                     empresa_id=empresa_id,
@@ -643,8 +666,8 @@ def registrar_rotas(app):
 
             valores_esperados = {
                 "produtos_cadastrados": total_produtos,
-                "faturamento": float(resumo["vendas"]["faturamento_equipe"] or 0),
-                "comissoes": float(resumo["comissoes"]["comissoes_geradas"] or 0),
+                "faturamento": faturamento_disponivel,
+                "comissoes": comissoes_disponiveis,
                 "a_pagar": float(resumo["folha"]["total_pendente"] or 0),
             }
 
@@ -977,7 +1000,7 @@ def registrar_rotas(app):
 
             flash(
                 (
-                    "Folha gerada com sucesso. "
+                    "Acerto gerado com sucesso. "
                     f"Total: R$ {folha['valor_total']}"
                 ),
                 "sucesso",
@@ -991,13 +1014,13 @@ def registrar_rotas(app):
 
         except Exception:
             app.logger.exception(
-                "Erro ao gerar folha."
+                "Erro ao gerar acerto."
             )
 
             flash(
                 (
                     "Não foi possível gerar "
-                    "a folha de pagamento."
+                    "o acerto do funcionário."
                 ),
                 "erro",
             )
@@ -1073,7 +1096,7 @@ def registrar_rotas(app):
 
         except Exception:
             app.logger.exception(
-                "Erro ao pagar folha."
+                "Erro ao pagar acerto."
             )
 
             flash(

@@ -232,6 +232,42 @@ def registrar_rotas(app):
                 or 0
             )
 
+            # O painel operacional mostra somente o saldo ainda não
+            # acertado. As vendas antigas continuam preservadas no banco
+            # e no histórico financeiro.
+            cursor.execute(
+                """
+                SELECT MAX(
+                    COALESCE(
+                        periodo_fim,
+                        data_pagamento,
+                        atualizado_em,
+                        criado_em
+                    )
+                ) AS ultimo_acerto
+                FROM folha_pagamentos
+                WHERE empresa_id = %s
+                  AND usuario_id = %s
+                  AND status = 'pago'
+                """,
+                (
+                    empresa_id,
+                    funcionario_id,
+                ),
+            )
+
+            pagamento = cursor.fetchone() or {}
+            ultimo_acerto = pagamento.get("ultimo_acerto")
+            inicio_periodo = datetime.combine(
+                inicio,
+                datetime.min.time(),
+            )
+            inicio_vendas = (
+                ultimo_acerto
+                if ultimo_acerto and ultimo_acerto > inicio_periodo
+                else inicio
+            )
+
             cursor.execute(
                 """
                 SELECT
@@ -267,7 +303,7 @@ def registrar_rotas(app):
                 (
                     funcionario_id,
                     empresa_id,
-                    inicio,
+                    inicio_vendas,
                     fim,
                 ),
             )
@@ -424,7 +460,7 @@ def registrar_rotas(app):
                 (
                     funcionario_id,
                     empresa_id,
-                    inicio,
+                    inicio_vendas,
                     fim,
                 ),
             )
@@ -475,7 +511,7 @@ def registrar_rotas(app):
                 (
                     funcionario_id,
                     empresa_id,
-                    inicio,
+                    inicio_vendas,
                     fim,
                 ),
             )
@@ -516,7 +552,7 @@ def registrar_rotas(app):
                 (
                     funcionario_id,
                     empresa_id,
-                    inicio,
+                    inicio_vendas,
                     fim,
                 ),
             )
@@ -548,7 +584,7 @@ def registrar_rotas(app):
                 (
                     funcionario_id,
                     empresa_id,
-                    inicio,
+                    inicio_vendas,
                     fim,
                 ),
             )

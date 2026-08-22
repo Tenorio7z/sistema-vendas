@@ -359,7 +359,7 @@
                 </div>
 
                 <div>
-                    <span>Comissão gerada</span>
+                    <span>Comissão disponível</span>
 
                     <strong>
                         R$
@@ -382,26 +382,11 @@
 
             <div class="folha-status-box">
 
-                {% if funcionario["folha_status"] == "pago" %}
-
-                <div class="folha-status pago">
-
-                    <span>Folha paga</span>
-
-                    <strong>
-                        R$
-                        {{ "%.2f"|format(
-                            funcionario["folha_total"]|float
-                        ) }}
-                    </strong>
-
-                </div>
-
-                {% elif funcionario["folha_status"] == "pendente" %}
+                {% if funcionario["folha_status"] == "pendente" %}
 
                 <div class="folha-status pendente">
 
-                    <span>Pagamento pendente</span>
+                    <span>Acerto aguardando pagamento</span>
 
                     <strong>
                         R$
@@ -416,13 +401,19 @@
 
                 <div class="folha-status nao-gerada">
 
-                    <span>
-                        Folha ainda não gerada
-                    </span>
+                    {% if funcionario["data_pagamento"] %}
+                    <span>Último acerto pago</span>
 
                     <strong>
-                        {{ competencia }}
+                        R$
+                        {{ "%.2f"|format(
+                            funcionario["ultimo_pagamento_total"]|float
+                        ) }}
                     </strong>
+                    {% else %}
+                    <span>Nenhum acerto registrado</span>
+                    <strong>Pronto para iniciar</strong>
+                    {% endif %}
 
                 </div>
 
@@ -463,7 +454,11 @@
                     Configurar
                 </button>
 
-                {% if funcionario["folha_status"] != "pago" %}
+                {% if funcionario["folha_status"] != "pendente"
+                      and (
+                          funcionario["comissao_gerada"]|float > 0
+                          or funcionario["salario_disponivel"]|float > 0
+                      ) %}
 
                 <button
                     type="button"
@@ -471,10 +466,10 @@
                     onclick="abrirGerarFolha(this)"
                     data-id="{{ funcionario['id'] }}"
                     data-usuario="{{ funcionario['usuario'] }}"
-                    data-salario="{{ funcionario['salario_base'] }}"
+                    data-salario="{{ funcionario['salario_disponivel'] }}"
                     data-comissao="{{ funcionario['comissao_gerada'] }}"
                 >
-                    Gerar folha
+                    Gerar acerto
                 </button>
 
                 {% endif %}
@@ -1103,7 +1098,7 @@
                     </span>
 
                     <h2 id="folhaTitulo">
-                        Gerar folha
+                        Gerar acerto
                     </h2>
                 </div>
 
@@ -1201,7 +1196,7 @@
                     type="submit"
                     class="btn-modal-principal"
                 >
-                    Gerar folha da competência
+                    Gerar acerto
                 </button>
 
             </form>
@@ -1244,7 +1239,7 @@
 
             <div class="pagamento-total-box">
 
-                <span>Total da folha</span>
+                <span>Total do acerto</span>
 
                 <strong id="pagamentoTotal">
                     R$ 0,00
@@ -1550,7 +1545,7 @@ if (campoConfigFoto) {
         document.getElementById(
             "folhaTitulo"
         ).textContent =
-            `Folha de ${botao.dataset.usuario}`;
+            `Acerto de ${botao.dataset.usuario}`;
 
         document.getElementById(
             "folhaSalario"
