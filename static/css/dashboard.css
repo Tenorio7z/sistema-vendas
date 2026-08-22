@@ -215,12 +215,50 @@
     display: grid;
     grid-template-columns:
         minmax(175px, 0.65fr)
+        minmax(150px, 0.55fr)
         minmax(320px, 1.2fr)
         auto;
     align-items: center;
     gap: 18px;
 
     border-radius: 19px;
+}
+
+.dash-branch-filter {
+    display: grid;
+    gap: 5px;
+}
+
+.dash-branch-filter label {
+    color: var(--dash-muted);
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.dash-branch-filter select {
+    width: 100%;
+    min-width: 150px;
+    height: 43px;
+    padding: 0 38px 0 13px;
+
+    color: var(--dash-text);
+    font-size: 11px;
+    font-weight: 750;
+
+    border: 1px solid var(--dash-border);
+    border-radius: 12px;
+    outline: none;
+    cursor: pointer;
+
+    background: rgba(6, 24, 51, 0.48);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dash-branch-filter select:focus {
+    border-color: var(--dash-blue);
+    box-shadow: 0 0 0 3px rgba(73, 177, 255, 0.12);
 }
 
 .dash-period-copy strong,
@@ -1125,6 +1163,7 @@ body:not(.dark) .dash-hero {
 
 body:not(.dark) .dash-period-tabs,
 body:not(.dark) .dash-status,
+body:not(.dark) .dash-branch-filter select,
 body:not(.dark) .dash-custom-period input {
     background: rgba(230, 239, 251, 0.78);
 }
@@ -1163,14 +1202,30 @@ body:not(.dark) .dash-nami-panel a {
    RESPONSIVO
 ========================================================= */
 
-@media (max-width: 1180px) {
+@media (max-width: 1500px) {
     .dash-toolbar {
-        grid-template-columns: 1fr 1.5fr;
+        grid-template-columns:
+            minmax(170px, 0.7fr)
+            minmax(155px, 0.65fr)
+            minmax(300px, 1.35fr);
     }
 
     .dash-custom-period {
         grid-column: 1 / -1;
         justify-content: flex-end;
+
+        padding-top: 14px;
+
+        border-top: 1px solid var(--dash-border);
+    }
+
+    .dash-custom-period label {
+        flex: 0 1 180px;
+    }
+
+    .dash-custom-period input {
+        width: 100%;
+        min-width: 0;
     }
 
     .dash-quick-actions {
@@ -1184,6 +1239,20 @@ body:not(.dark) .dash-nami-panel a {
     .dash-nami-panel {
         grid-column: 1 / -1;
         min-height: 175px;
+    }
+}
+
+@media (max-width: 1050px) {
+    .dash-toolbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dash-period-tabs {
+        grid-column: 1 / -1;
+    }
+
+    .dash-custom-period {
+        justify-content: stretch;
     }
 }
 
@@ -1241,11 +1310,17 @@ body:not(.dark) .dash-nami-panel a {
         padding: 15px;
     }
 
+    .dash-branch-filter select {
+        min-width: 0;
+    }
+
     .dash-custom-period {
         grid-column: auto;
 
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        padding-top: 12px;
     }
 
     .dash-custom-period input {

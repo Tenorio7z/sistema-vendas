@@ -11,7 +11,10 @@
         <div class="dash-hero-copy">
             <span class="dash-eyebrow">VISÃO GERAL</span>
             <h1>Bem-vindo, {{ empresa["nome"] }}</h1>
-            <p>Acompanhe a operação e tome decisões sem sair do painel.</p>
+            <p>
+                Dashboard de <strong>{{ filial_atual.nome }}</strong> —
+                dados isolados desta unidade.
+            </p>
         </div>
 
         <div class="dash-hero-side">
@@ -31,17 +34,32 @@
             <small>{{ periodo.descricao }}</small>
         </div>
 
+        {% if pode_alternar_filial and filiais|length > 1 %}
+        <form class="dash-branch-filter" method="GET" action="{{ url_for('dashboard') }}">
+            <input type="hidden" name="periodo" value="{{ periodo.chave }}">
+            <label for="dashboard-filial">Unidade</label>
+            <select id="dashboard-filial" name="filial_id" onchange="this.form.submit()">
+                {% for filial in filiais %}
+                <option value="{{ filial.id }}" {% if filial.id == filial_atual.id %}selected{% endif %}>
+                    {{ filial.nome }}{% if filial.matriz %} · Matriz{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+
         <nav class="dash-period-tabs" aria-label="Períodos rápidos">
-            <a href="{{ url_for('dashboard', periodo='hoje') }}"
+            <a href="{{ url_for('dashboard', periodo='hoje', filial_id=filial_atual.id) }}"
                class="{% if periodo.chave == 'hoje' %}active{% endif %}">Hoje</a>
-            <a href="{{ url_for('dashboard', periodo='7dias') }}"
+            <a href="{{ url_for('dashboard', periodo='7dias', filial_id=filial_atual.id) }}"
                class="{% if periodo.chave == '7dias' %}active{% endif %}">7 dias</a>
-            <a href="{{ url_for('dashboard', periodo='mes') }}"
+            <a href="{{ url_for('dashboard', periodo='mes', filial_id=filial_atual.id) }}"
                class="{% if periodo.chave == 'mes' %}active{% endif %}">Este mês</a>
         </nav>
 
         <form class="dash-custom-period" method="GET" action="{{ url_for('dashboard') }}">
             <input type="hidden" name="periodo" value="personalizado">
+            <input type="hidden" name="filial_id" value="{{ filial_atual.id }}">
 
             <label>
                 <span>Data inicial</span>

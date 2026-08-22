@@ -5,6 +5,7 @@ from decimal import Decimal
 from flask import jsonify, redirect, render_template, request, session
 
 from database import conectar, criar_cursor
+from services.filiais_service import FiliaisService
 
 
 ZERO = Decimal("0.00")
@@ -119,7 +120,32 @@ def _variacao(atual, anterior):
     }
 
 
-def _grafico_vendas(cursor, empresa_id, filtro):
+def _resolver_filial_dashboard(empresa_id):
+    """Resolve a filial sem permitir que um funcionário consulte outra unidade."""
+    nivel = str(session.get("nivel") or "").lower()
+    pode_alternar = nivel in {"gerente", "admin", "master"}
+    filial_id = session.get("filial_id")
+
+    if pode_alternar:
+        filial_solicitada = request.args.get("filial_id", type=int)
+        if filial_solicitada:
+            filial_id = filial_solicitada
+
+    filial = None
+    if filial_id:
+        filial = FiliaisService.obter(empresa_id, int(filial_id))
+        if filial and not bool(filial.get("ativa", True)):
+            filial = None
+
+    if not filial:
+        matriz_id = FiliaisService.garantir_matriz(empresa_id)
+        filial = FiliaisService.obter(empresa_id, matriz_id)
+
+    filiais = FiliaisService.listar(empresa_id) if pode_alternar else [filial]
+    return filial, filiais, pode_alternar
+
+
+def _grafico_vendas(cursor, empresa_id, filial_id, filtro):
     hoje = filtro["chave"] == "hoje"
     agrupamento = "hour" if hoje else "day"
 
@@ -130,13 +156,14 @@ def _grafico_vendas(cursor, empresa_id, filtro):
             COALESCE(SUM(valor), 0) AS total
         FROM vendas
         WHERE empresa_id = %s
+          AND filial_id = %s
           AND COALESCE(cancelada, 0) = 0
           AND data_venda >= %s
           AND data_venda < %s
         GROUP BY 1
         ORDER BY 1
         """,
-        (empresa_id, filtro["inicio"], filtro["fim"]),
+        (empresa_id, filial_id, filtro["inicio"], filtro["fim"]),
     )
 
     encontrados = {
@@ -195,18 +222,26 @@ def _insight_nami(metricas, alertas, produto_mais_vendido):
     return mensagem
 
 
-def _carregar_dashboard(empresa_id, filtro):
+def _carregar_dashboard(empresa_id, filial_id, filtro):
     conn = conectar()
     cursor = criar_cursor(conn)
 
     try:
         cursor.execute(
             """
-            SELECT id, nome
-            FROM empresa
-            WHERE id = %s
+            SELECT
+                e.id,
+                e.nome,
+                f.id AS filial_id,
+                f.nome AS filial_nome,
+                f.matriz AS filial_matriz
+            FROM empresa e
+            INNER JOIN filiais f
+                ON f.empresa_id = e.id
+               AND f.id = %s
+            WHERE e.id = %s
             """,
-            (empresa_id,),
+            (filial_id, empresa_id),
         )
         empresa = cursor.fetchone()
 
@@ -215,11 +250,12 @@ def _carregar_dashboard(empresa_id, filtro):
             SELECT id, valor_inicial, valor_final, status, data_abertura
             FROM caixa
             WHERE empresa_id = %s
+              AND filial_id = %s
               AND status = 'aberto'
             ORDER BY id DESC
             LIMIT 1
             """,
-            (empresa_id,),
+            (empresa_id, filial_id),
         )
         caixa_aberto = cursor.fetchone()
 
@@ -251,6 +287,7 @@ def _carregar_dashboard(empresa_id, filtro):
                     ), 0) AS total_cancelado
                 FROM vendas
                 WHERE empresa_id = %s
+                  AND filial_id = %s
                   AND data_venda >= %s
                   AND data_venda < %s
             ),
@@ -264,6 +301,7 @@ def _carregar_dashboard(empresa_id, filtro):
                     ), 0) AS faturamento
                 FROM vendas
                 WHERE empresa_id = %s
+                  AND filial_id = %s
                   AND data_venda >= %s
                   AND data_venda < %s
             )
@@ -273,9 +311,11 @@ def _carregar_dashboard(empresa_id, filtro):
             """,
             (
                 empresa_id,
+                filial_id,
                 filtro["inicio"],
                 filtro["fim"],
                 empresa_id,
+                filial_id,
                 filtro["inicio_anterior"],
                 filtro["fim_anterior"],
             ),
@@ -288,7 +328,24 @@ def _carregar_dashboard(empresa_id, filtro):
                 COALESCE((
                     SELECT SUM(cp.valor)
                     FROM custos_pagamentos cp
+                    LEFT JOIN caixa cx
+                        ON cx.id = cp.caixa_id
+                       AND cx.empresa_id = cp.empresa_id
+                    LEFT JOIN usuarios uc
+                        ON uc.id = cp.usuario_id
+                       AND uc.empresa_id = cp.empresa_id
                     WHERE cp.empresa_id = %s
+                      AND COALESCE(
+                          cx.filial_id,
+                          uc.filial_id,
+                          (
+                              SELECT fm.id
+                              FROM filiais fm
+                              WHERE fm.empresa_id = cp.empresa_id
+                                AND fm.matriz = TRUE
+                              LIMIT 1
+                          )
+                      ) = %s
                       AND cp.estornado = FALSE
                       AND cp.data_pagamento >= %s
                       AND cp.data_pagamento < %s
@@ -296,7 +353,11 @@ def _carregar_dashboard(empresa_id, filtro):
                 COALESCE((
                     SELECT SUM(fp.valor_total)
                     FROM folha_pagamentos fp
+                    INNER JOIN usuarios uf
+                        ON uf.id = fp.usuario_id
+                       AND uf.empresa_id = fp.empresa_id
                     WHERE fp.empresa_id = %s
+                      AND uf.filial_id = %s
                       AND fp.status = 'pago'
                       AND fp.data_pagamento >= %s
                       AND fp.data_pagamento < %s
@@ -304,7 +365,20 @@ def _carregar_dashboard(empresa_id, filtro):
                 COALESCE((
                     SELECT SUM(mc.valor)
                     FROM movimentacoes_caixa mc
+                    LEFT JOIN caixa ce
+                        ON ce.id = mc.caixa_id
+                       AND ce.empresa_id = mc.empresa_id
                     WHERE mc.empresa_id = %s
+                      AND COALESCE(
+                          ce.filial_id,
+                          (
+                              SELECT fm.id
+                              FROM filiais fm
+                              WHERE fm.empresa_id = mc.empresa_id
+                                AND fm.matriz = TRUE
+                              LIMIT 1
+                          )
+                      ) = %s
                       AND mc.tipo = 'entrada'
                       AND mc.data >= %s
                       AND mc.data < %s
@@ -314,7 +388,20 @@ def _carregar_dashboard(empresa_id, filtro):
                 COALESCE((
                     SELECT SUM(mc.valor)
                     FROM movimentacoes_caixa mc
+                    LEFT JOIN caixa cs
+                        ON cs.id = mc.caixa_id
+                       AND cs.empresa_id = mc.empresa_id
                     WHERE mc.empresa_id = %s
+                      AND COALESCE(
+                          cs.filial_id,
+                          (
+                              SELECT fm.id
+                              FROM filiais fm
+                              WHERE fm.empresa_id = mc.empresa_id
+                                AND fm.matriz = TRUE
+                              LIMIT 1
+                          )
+                      ) = %s
                       AND mc.tipo = 'saida'
                       AND mc.data >= %s
                       AND mc.data < %s
@@ -325,10 +412,10 @@ def _carregar_dashboard(empresa_id, filtro):
                 ), 0) AS outras_saidas
             """,
             (
-                empresa_id, filtro["inicio"], filtro["fim"],
-                empresa_id, filtro["inicio"], filtro["fim"],
-                empresa_id, filtro["inicio"], filtro["fim"],
-                empresa_id, filtro["inicio"], filtro["fim"],
+                empresa_id, filial_id, filtro["inicio"], filtro["fim"],
+                empresa_id, filial_id, filtro["inicio"], filtro["fim"],
+                empresa_id, filial_id, filtro["inicio"], filtro["fim"],
+                empresa_id, filial_id, filtro["inicio"], filtro["fim"],
             ),
         )
         financeiro = cursor.fetchone() or {}
@@ -345,14 +432,21 @@ def _carregar_dashboard(empresa_id, filtro):
 
         cursor.execute(
             """
-            SELECT id, nome, estoque
-            FROM produtos
-            WHERE empresa_id = %s
-              AND estoque <= 5
-            ORDER BY estoque ASC, nome
+            SELECT
+                p.id,
+                p.nome,
+                COALESCE(pf.estoque, 0) AS estoque
+            FROM produto_filial pf
+            INNER JOIN produtos p
+                ON p.id = pf.produto_id
+            WHERE p.empresa_id = %s
+              AND pf.filial_id = %s
+              AND pf.ativo = TRUE
+              AND COALESCE(pf.estoque, 0) <= 5
+            ORDER BY COALESCE(pf.estoque, 0) ASC, p.nome
             LIMIT 6
             """,
-            (empresa_id,),
+            (empresa_id, filial_id),
         )
         produtos_baixos = cursor.fetchall()
 
@@ -368,6 +462,7 @@ def _carregar_dashboard(empresa_id, filtro):
                 ON p.id = v.produto_id
                AND p.empresa_id = v.empresa_id
             WHERE v.empresa_id = %s
+              AND v.filial_id = %s
               AND COALESCE(v.cancelada, 0) = 0
               AND v.data_venda >= %s
               AND v.data_venda < %s
@@ -375,7 +470,7 @@ def _carregar_dashboard(empresa_id, filtro):
             ORDER BY quantidade DESC, faturamento DESC
             LIMIT 5
             """,
-            (empresa_id, filtro["inicio"], filtro["fim"]),
+            (empresa_id, filial_id, filtro["inicio"], filtro["fim"]),
         )
         ranking = cursor.fetchall()
 
@@ -392,27 +487,41 @@ def _carregar_dashboard(empresa_id, filtro):
                 ), 0) AS valor_vencido
             FROM custos_parcelas
             WHERE empresa_id = %s
+              AND %s = (
+                  SELECT fm.id
+                  FROM filiais fm
+                  WHERE fm.empresa_id = custos_parcelas.empresa_id
+                    AND fm.matriz = TRUE
+                  LIMIT 1
+              )
               AND status <> 'cancelada'
             """,
-            (empresa_id,),
+            (empresa_id, filial_id),
         )
         vencimentos = cursor.fetchone() or {}
 
         alertas = []
+        nome_filial = str(
+            (empresa or {}).get("filial_nome") or "Matriz"
+        )
+
         for produto in produtos_baixos:
             estoque = _numero(produto["estoque"])
             if estoque <= 0:
                 titulo = f"{produto['nome']} está esgotado"
-                nivel = "critico"
+                nivel = "danger"
             else:
                 titulo = f"{produto['nome']} possui apenas {estoque:g} unidade(s)"
-                nivel = "atencao"
+                nivel = "warning"
 
             alertas.append(
                 {
                     "titulo": titulo,
-                    "descricao": "Revisar cadastro e reposição do produto.",
-                    "url": "/produtos",
+                    "descricao": (
+                        f"Estoque da unidade {nome_filial}. "
+                        "Revisar cadastro e reposição do produto."
+                    ),
+                    "url": f"/produtos?filial_id={filial_id}",
                     "nivel": nivel,
                 }
             )
@@ -440,7 +549,7 @@ def _carregar_dashboard(empresa_id, filtro):
                 },
             )
 
-        grafico = _grafico_vendas(cursor, empresa_id, filtro)
+        grafico = _grafico_vendas(cursor, empresa_id, filial_id, filtro)
         variacao_faturamento = _variacao(
             faturamento, vendas.get("faturamento_anterior")
         )
@@ -509,12 +618,20 @@ def registrar_rotas(app):
         if not empresa_id:
             return redirect("/")
 
-        dados = _carregar_dashboard(empresa_id, _periodo_dashboard())
+        filial, filiais, pode_alternar = _resolver_filial_dashboard(empresa_id)
+        dados = _carregar_dashboard(
+            empresa_id,
+            int(filial["id"]),
+            _periodo_dashboard(),
+        )
 
         return render_template(
             "dashboard.html",
             usuario=session.get("usuario"),
             nivel=session.get("nivel"),
+            filial_atual=filial,
+            filiais=filiais,
+            pode_alternar_filial=pode_alternar,
             **dados,
         )
 
@@ -528,7 +645,12 @@ def registrar_rotas(app):
             return jsonify({"erro": "Empresa não encontrada."}), 400
 
         try:
-            dados = _carregar_dashboard(empresa_id, _periodo_dashboard())
+            filial, _, _ = _resolver_filial_dashboard(empresa_id)
+            dados = _carregar_dashboard(
+                empresa_id,
+                int(filial["id"]),
+                _periodo_dashboard(),
+            )
 
             return jsonify(
                 {
