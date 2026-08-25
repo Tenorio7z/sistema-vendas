@@ -57,6 +57,16 @@
 
         <div class="comanda-header-status">
 
+            {% if comanda["status"] in ["aberta", "aguardando_pagamento"] and itens %}
+            <a href="{{ url_for('imprimir_conta_comanda', comanda_id=comanda['id']) }}"
+                target="_blank" rel="noopener" class="comanda-imprimir-conta">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 8V3h10v5M6 17H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z" />
+                </svg>
+                Imprimir conta
+            </a>
+            {% endif %}
+
             <span class="status-comanda status-{{ comanda['status'] }}">
 
                 {% if comanda["status"] == "aberta" %}

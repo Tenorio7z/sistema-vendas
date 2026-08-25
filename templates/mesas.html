@@ -32,6 +32,14 @@
 
         <div class="mesas-header-acoes">
 
+            <button type="button" class="btn-mesas-secundario btn-impressora" data-modal-abrir="modalConfigurarImpressao">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 8V3h10v5M6 17H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z" />
+                </svg>
+                Impressão
+                <span>{{ configuracao_impressao["largura_papel_mm"] }} mm</span>
+            </button>
+
             <button type="button" class="btn-mesas-secundario" data-modal-abrir="modalConfigurarMesas">
                 Configurar mesas
             </button>
@@ -169,6 +177,7 @@
 
         <article class="mesa-card mesa-{{ mesa['status'] }}" data-mesa-card data-status="{{ mesa['status'] }}"
             data-mesa-id="{{ mesa['id'] }}" data-mesa-numero="{{ mesa['numero']|e }}"
+            data-comanda-id="{{ mesa['comanda_id'] or '' }}"
             data-mesa-nome="{{ (mesa['nome'] or '')|e }}" data-pesquisa="{{
                 (
                     mesa['numero']
@@ -346,11 +355,27 @@
 
                 {% if mesa["comanda_id"] %}
 
+                <button type="button" class="btn-ver-comanda" data-ver-comanda
+                    data-comanda-id="{{ mesa['comanda_id'] }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 5h18v14H3zM7 9h10M7 13h6" />
+                    </svg>
+                    Ver comanda
+                </button>
+
                 <button type="button" class="btn-mesa-destaque" data-lancar-produtos>
                     + Lançar produtos
                 </button>
 
                 {% if (mesa["quantidade_itens"] or 0)|float > 0 %}
+
+                <a class="btn-imprimir-conta" href="{{ url_for('imprimir_conta_comanda', comanda_id=mesa['comanda_id']) }}"
+                    target="_blank" rel="noopener" title="Imprimir conta para pagamento">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M7 8V3h10v5M6 17H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z" />
+                    </svg>
+                    Conta
+                </a>
 
                 <button type="button" class="btn-fechar-comanda" data-fechar-comanda
                     data-comanda-id="{{ mesa['comanda_id'] }}" data-mesa-numero="{{ mesa['numero']|e }}"
@@ -487,6 +512,88 @@
     </div>
 
 </main>
+
+<!-- =====================================================
+     MODAL: COMANDA COMPLETA
+====================================================== -->
+<div class="mesas-modal" id="modalResumoComanda" aria-hidden="true">
+    <div class="mesas-modal-backdrop" data-modal-fechar></div>
+    <section class="mesas-modal-card modal-comanda-profissional" role="dialog" aria-modal="true"
+        aria-labelledby="tituloResumoComanda">
+        <header class="mesas-modal-header resumo-comanda-header">
+            <div>
+                <span class="mesas-kicker">CONFERÊNCIA DA CONTA</span>
+                <h2 id="tituloResumoComanda">Comanda</h2>
+                <p id="metaResumoComanda">Carregando informações...</p>
+            </div>
+            <button type="button" class="mesas-modal-fechar" data-modal-fechar aria-label="Fechar">×</button>
+        </header>
+
+        <div class="resumo-comanda-corpo">
+            <div class="resumo-comanda-identidade" id="identidadeResumoComanda"></div>
+            <div class="resumo-comanda-lista" id="itensResumoComanda" aria-live="polite">
+                <div class="resumo-comanda-estado">Carregando a comanda...</div>
+            </div>
+            <div class="resumo-comanda-total">
+                <span>Total da conta</span>
+                <strong id="totalResumoComanda">R$ 0,00</strong>
+            </div>
+        </div>
+
+        <footer class="resumo-comanda-acoes">
+            <a href="#" class="btn-conta-detalhes" id="abrirDetalhesComanda">Abrir detalhes</a>
+            <a href="#" target="_blank" rel="noopener" class="btn-conta-imprimir" id="imprimirResumoComanda">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 8V3h10v5M6 17H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z" />
+                </svg>
+                Imprimir conta
+            </a>
+        </footer>
+    </section>
+</div>
+
+<!-- =====================================================
+     MODAL: CONFIGURAÇÃO DA IMPRESSORA
+====================================================== -->
+<div class="mesas-modal" id="modalConfigurarImpressao" aria-hidden="true">
+    <div class="mesas-modal-backdrop" data-modal-fechar></div>
+    <section class="mesas-modal-card modal-impressao" role="dialog" aria-modal="true"
+        aria-labelledby="tituloConfigurarImpressao">
+        <header class="mesas-modal-header">
+            <div>
+                <span class="mesas-kicker">IMPRESSÃO TÉRMICA</span>
+                <h2 id="tituloConfigurarImpressao">Configurar pré-conta</h2>
+                <p>Escolha a largura da bobina usada pela impressora ou maquininha.</p>
+            </div>
+            <button type="button" class="mesas-modal-fechar" data-modal-fechar aria-label="Fechar">×</button>
+        </header>
+
+        <form method="POST" action="{{ url_for('configurar_impressao_mesas') }}" class="mesas-form">
+            <fieldset class="bobinas-grid">
+                <legend>Largura do papel</legend>
+                {% for largura, descricao in [(48, 'Maquininhas compactas'), (58, 'Térmica padrão'), (80, 'Cupom mais espaçoso')] %}
+                <label class="bobina-opcao">
+                    <input type="radio" name="largura_papel_mm" value="{{ largura }}"
+                        {% if configuracao_impressao["largura_papel_mm"] == largura %}checked{% endif %}>
+                    <span class="bobina-visual bobina-{{ largura }}"><i></i></span>
+                    <strong>{{ largura }} mm</strong>
+                    <small>{{ descricao }}</small>
+                </label>
+                {% endfor %}
+            </fieldset>
+
+            <div class="impressao-aviso">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM12 10v7M12 7h.01" /></svg>
+                <p>A pré-conta serve para conferência e pagamento. Imprimi-la não fecha a mesa, não registra recebimento e não altera o estoque.</p>
+            </div>
+
+            <footer class="mesas-modal-footer">
+                <button type="button" class="btn-mesas-cancelar" data-modal-fechar>Cancelar</button>
+                <button type="submit" class="btn-mesas-principal">Salvar configuração</button>
+            </footer>
+        </form>
+    </section>
+</div>
 
 <!-- =====================================================
      MODAL: CONFIGURAR MESAS
@@ -802,22 +909,11 @@
 
                     <span>Cliente opcional</span>
 
-                    <select name="cliente_id">
+                    <select name="cliente_id" data-clientes-select>
 
                         <option value="">
                             Atendimento sem cliente
                         </option>
-
-                        {% for cliente in clientes %}
-
-                        <option value="{{ cliente['id'] }}">
-                            {{ cliente["nome"] }}
-                            {% if cliente["telefone"] %}
-                            — {{ cliente["telefone"] }}
-                            {% endif %}
-                        </option>
-
-                        {% endfor %}
 
                     </select>
 
@@ -910,16 +1006,10 @@
                 <label>
                     <span>Cliente opcional</span>
 
-                    <select name="cliente_id">
+                    <select name="cliente_id" data-clientes-select>
                         <option value="">
                             Venda sem cliente
                         </option>
-
-                        {% for cliente in clientes %}
-                        <option value="{{ cliente['id'] }}">
-                            {{ cliente["nome"] }}
-                        </option>
-                        {% endfor %}
                     </select>
                 </label>
 
@@ -1047,6 +1137,69 @@
 
         let statusAtual = "todas";
         let totalComandaFechamento = 0;
+        let clientesCarregados = false;
+        let clientesEmCarregamento = null;
+
+        function carregarClientes() {
+            if (clientesCarregados) {
+                return Promise.resolve();
+            }
+
+            if (clientesEmCarregamento) {
+                return clientesEmCarregamento;
+            }
+
+            const selects = document.querySelectorAll(
+                "[data-clientes-select]"
+            );
+
+            selects.forEach(function (select) {
+                select.disabled = true;
+                select.options[0].textContent = "Carregando clientes...";
+            });
+
+            clientesEmCarregamento = fetch(
+                "/mesas/clientes-disponiveis",
+                { headers: { "Accept": "application/json" } }
+            )
+                .then(function (resposta) {
+                    return resposta.json().then(function (dados) {
+                        if (!resposta.ok || !dados.ok) {
+                            throw new Error(
+                                dados.erro || "Não foi possível carregar clientes."
+                            );
+                        }
+                        return dados.clientes || [];
+                    });
+                })
+                .then(function (clientes) {
+                    selects.forEach(function (select) {
+                        const textoVazio = select.closest("#formFecharComanda")
+                            ? "Venda sem cliente"
+                            : "Atendimento sem cliente";
+                        select.replaceChildren(new Option(textoVazio, ""));
+
+                        clientes.forEach(function (cliente) {
+                            const rotulo = cliente.nome
+                                + (cliente.telefone ? " — " + cliente.telefone : "");
+                            select.add(new Option(rotulo, String(cliente.id)));
+                        });
+                        select.disabled = false;
+                    });
+                    clientesCarregados = true;
+                })
+                .catch(function () {
+                    selects.forEach(function (select) {
+                        select.options[0].textContent = "Clientes indisponíveis";
+                        select.disabled = false;
+                    });
+                })
+                .finally(function () {
+                    clientesEmCarregamento = null;
+                });
+
+            return clientesEmCarregamento;
+        }
 
         function abrirModal(id) {
             const modal = document.getElementById(id);
@@ -1220,6 +1373,7 @@
             );
 
             if (botaoComanda) {
+                carregarClientes();
                 const mesaId = botaoComanda.dataset.mesaId;
                 const numero = botaoComanda.dataset.mesaNumero;
                 const nome = botaoComanda.dataset.mesaNome;
@@ -1253,6 +1407,7 @@
             );
 
             if (botaoFecharComanda) {
+                carregarClientes();
                 const comandaId = (
                     botaoFecharComanda.dataset.comandaId
                 );
@@ -1537,7 +1692,10 @@
         const textoTotal = document.getElementById("produtosMesaTotal");
 
         let mesaAtual = null;
-        let produtos = null;
+        let produtos = [];
+        let requisicaoProdutos = null;
+        let buscaAgendada = null;
+        const catalogoProdutos = new Map();
         const quantidades = new Map();
 
         function moeda(valor) {
@@ -1571,9 +1729,7 @@
             let total = 0;
 
             quantidades.forEach(function (quantidade, produtoId) {
-                const produto = produtos.find(function (item) {
-                    return item.id === produtoId;
-                });
+                const produto = catalogoProdutos.get(produtoId);
 
                 if (!produto || quantidade <= 0) {
                     return;
@@ -1598,9 +1754,7 @@
         }
 
         function definirQuantidade(produtoId, valor) {
-            const produto = produtos.find(function (item) {
-                return item.id === produtoId;
-            });
+            const produto = catalogoProdutos.get(produtoId);
 
             if (!produto) {
                 return;
@@ -1630,12 +1784,7 @@
         }
 
         function renderizar() {
-            const termo = busca.value.trim().toLowerCase();
-            const filtrados = produtos.filter(function (produto) {
-                return !termo || produto.nome.toLowerCase().includes(termo);
-            });
-
-            if (!filtrados.length) {
+            if (!produtos.length) {
                 grid.innerHTML = (
                     "<div class='produtos-mesa-estado'>"
                     + "Nenhum produto encontrado."
@@ -1644,7 +1793,7 @@
                 return;
             }
 
-            grid.innerHTML = filtrados.map(function (produto) {
+            grid.innerHTML = produtos.map(function (produto) {
                 const quantidade = quantidades.get(produto.id) || 0;
 
                 return (
@@ -1668,21 +1817,29 @@
             }).join("");
         }
 
-        async function carregarProdutos() {
-            if (produtos !== null) {
-                renderizar();
-                return;
+        async function carregarProdutos(termo) {
+            if (requisicaoProdutos) {
+                requisicaoProdutos.abort();
             }
 
+            requisicaoProdutos = new AbortController();
             grid.innerHTML = (
                 "<div class='produtos-mesa-estado'>"
                 + "Carregando produtos..."
                 + "</div>"
             );
 
-            const resposta = await fetch("/mesas/produtos-disponiveis", {
-                headers: { "Accept": "application/json" }
+            const parametros = new URLSearchParams({
+                busca: String(termo || "").trim(),
+                limite: "60"
             });
+            const resposta = await fetch(
+                "/mesas/produtos-disponiveis?" + parametros.toString(),
+                {
+                    headers: { "Accept": "application/json" },
+                    signal: requisicaoProdutos.signal
+                }
+            );
             const dados = await resposta.json();
 
             if (!resposta.ok || !dados.ok) {
@@ -1692,6 +1849,9 @@
             }
 
             produtos = dados.produtos || [];
+            produtos.forEach(function (produto) {
+                catalogoProdutos.set(produto.id, produto);
+            });
             renderizar();
         }
 
@@ -1718,8 +1878,11 @@
             abrirModalProdutos();
 
             try {
-                await carregarProdutos();
+                await carregarProdutos("");
             } catch (erro) {
+                if (erro.name === "AbortError") {
+                    return;
+                }
                 grid.innerHTML = (
                     "<div class='produtos-mesa-estado erro'>"
                     + escapar(erro.message)
@@ -1767,9 +1930,19 @@
         });
 
         busca.addEventListener("input", function () {
-            if (produtos !== null) {
-                renderizar();
-            }
+            window.clearTimeout(buscaAgendada);
+            buscaAgendada = window.setTimeout(function () {
+                carregarProdutos(busca.value).catch(function (erro) {
+                    if (erro.name === "AbortError") {
+                        return;
+                    }
+                    grid.innerHTML = (
+                        "<div class='produtos-mesa-estado erro'>"
+                        + escapar(erro.message)
+                        + "</div>"
+                    );
+                });
+            }, 260);
         });
 
         grid.addEventListener("change", function (evento) {
@@ -1840,6 +2013,136 @@
                 confirmar.disabled = false;
                 confirmar.textContent = "Confirmar lançamento";
             }
+        });
+    })();
+</script>
+
+<script>
+    (function () {
+        "use strict";
+
+        const modal = document.getElementById("modalResumoComanda");
+        const titulo = document.getElementById("tituloResumoComanda");
+        const meta = document.getElementById("metaResumoComanda");
+        const identidade = document.getElementById("identidadeResumoComanda");
+        const lista = document.getElementById("itensResumoComanda");
+        const total = document.getElementById("totalResumoComanda");
+        const detalhes = document.getElementById("abrirDetalhesComanda");
+        const imprimir = document.getElementById("imprimirResumoComanda");
+
+        function moeda(valor) {
+            return Number(valor || 0).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+            });
+        }
+
+        function quantidade(valor) {
+            return Number(valor || 0).toLocaleString("pt-BR", {
+                maximumFractionDigits: 3
+            });
+        }
+
+        function elemento(tag, classe, texto) {
+            const no = document.createElement(tag);
+            if (classe) no.className = classe;
+            if (texto !== undefined) no.textContent = texto;
+            return no;
+        }
+
+        function abrirModal() {
+            modal.classList.add("aberto");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.classList.add("modal-aberto");
+        }
+
+        function renderizar(dados) {
+            const comanda = dados.comanda;
+            titulo.textContent = "Mesa " + comanda.mesa_numero
+                + (comanda.mesa_nome ? " — " + comanda.mesa_nome : "");
+            meta.textContent = "Comanda #" + comanda.id
+                + (comanda.funcionario_nome
+                    ? " · Atendimento: " + comanda.funcionario_nome
+                    : "");
+
+            identidade.replaceChildren();
+            [
+                ["Cliente", comanda.cliente_nome || comanda.identificacao || "Não identificado"],
+                ["Pessoas", quantidade(comanda.quantidade_pessoas || 1)],
+                ["Itens", String(dados.itens.length)]
+            ].forEach(function (item) {
+                const bloco = elemento("div", "resumo-identidade-item");
+                bloco.append(
+                    elemento("small", "", item[0]),
+                    elemento("strong", "", item[1])
+                );
+                identidade.appendChild(bloco);
+            });
+
+            lista.replaceChildren();
+            if (!dados.itens.length) {
+                lista.appendChild(elemento(
+                    "div", "resumo-comanda-estado", "Nenhum item ativo na comanda."
+                ));
+            } else {
+                dados.itens.forEach(function (item) {
+                    const card = elemento("article", "resumo-item");
+                    const cabecalho = elemento("div", "resumo-item-cabecalho");
+                    const nome = elemento("strong", "", item.produto_nome);
+                    const subtotal = elemento("strong", "resumo-item-subtotal", moeda(item.subtotal));
+                    cabecalho.append(nome, subtotal);
+
+                    const detalhe = elemento(
+                        "span",
+                        "resumo-item-calculo",
+                        quantidade(item.quantidade) + " × " + moeda(item.valor_unitario)
+                    );
+                    card.append(cabecalho, detalhe);
+
+                    if (item.observacoes) {
+                        card.appendChild(elemento(
+                            "p", "resumo-item-observacao", "Observação: " + item.observacoes
+                        ));
+                    }
+                    lista.appendChild(card);
+                });
+            }
+
+            total.textContent = moeda(comanda.total);
+            detalhes.href = "/comandas/" + encodeURIComponent(comanda.id);
+            imprimir.href = "/comandas/" + encodeURIComponent(comanda.id) + "/conta";
+        }
+
+        async function carregar(comandaId) {
+            titulo.textContent = "Carregando comanda...";
+            meta.textContent = "Aguarde um instante";
+            identidade.replaceChildren();
+            lista.replaceChildren(elemento("div", "resumo-comanda-estado", "Buscando todos os itens..."));
+            total.textContent = moeda(0);
+            abrirModal();
+
+            try {
+                const resposta = await fetch(
+                    "/comandas/" + encodeURIComponent(comandaId) + "/resumo",
+                    { headers: { "Accept": "application/json" } }
+                );
+                const dados = await resposta.json();
+                if (!resposta.ok || !dados.ok) {
+                    throw new Error(dados.erro || "Não foi possível abrir a comanda.");
+                }
+                renderizar(dados);
+            } catch (erro) {
+                titulo.textContent = "Comanda indisponível";
+                meta.textContent = "Tente novamente";
+                lista.replaceChildren(elemento("div", "resumo-comanda-estado erro", erro.message));
+            }
+        }
+
+        document.addEventListener("click", function (evento) {
+            const botao = evento.target.closest("[data-ver-comanda]");
+            if (!botao) return;
+            evento.preventDefault();
+            carregar(botao.dataset.comandaId);
         });
     })();
 </script>

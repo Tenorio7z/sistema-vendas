@@ -13,6 +13,12 @@ from services.cupom_service import (
     gerar_cupom_venda,
 )
 
+from services.comanda_impressao_service import (
+    gerar_pre_conta,
+    obter_configuracao_impressao,
+    salvar_configuracao_impressao,
+)
+
 from services.notificacoes import (
     notificar_gerente,
 )
@@ -23,6 +29,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     session,
     url_for,
 )
@@ -142,25 +149,21 @@ def registrar_rotas(
 
         try:
 
-            mesas_lista = (
-                MesasService.listar_mesas(
+            painel = MesasService.carregar_painel_mesas(
+                empresa_id
+            )
+
+            configuracao_impressao = (
+                obter_configuracao_impressao(
                     empresa_id
                 )
             )
 
-            resumo = MesasService.resumo(
-                empresa_id
-            )
-
-            clientes = _buscar_clientes(
-                empresa_id
-            )
-
             return render_template(
                 "mesas.html",
-                mesas=mesas_lista,
-                resumo=resumo,
-                clientes=clientes,
+                mesas=painel["mesas"],
+                resumo=painel["resumo"],
+                configuracao_impressao=configuracao_impressao,
             )
 
         except Exception:
@@ -194,7 +197,9 @@ def registrar_rotas(
 
         try:
             produtos = MesasService.listar_produtos(
-                session.get("empresa_id")
+                session.get("empresa_id"),
+                busca=request.args.get("busca"),
+                limite=request.args.get("limite", 60),
             )
 
             return jsonify(
@@ -227,6 +232,45 @@ def registrar_rotas(
                     "erro": (
                         "Não foi possível carregar os produtos."
                     ),
+                }
+            ), 500
+
+    # =====================================================
+    # CLIENTES SOB DEMANDA — EVITA CARREGAR 500 REGISTROS
+    # EM TODO ACESSO AO PAINEL
+    # =====================================================
+
+    @app.route(
+        "/mesas/clientes-disponiveis",
+        methods=["GET"],
+    )
+    @modulo_obrigatorio("mesas")
+    def clientes_disponiveis_mesa():
+        try:
+            clientes = _buscar_clientes(
+                session.get("empresa_id")
+            )
+            return jsonify(
+                {
+                    "ok": True,
+                    "clientes": [
+                        {
+                            "id": cliente["id"],
+                            "nome": cliente["nome"],
+                            "telefone": cliente["telefone"],
+                        }
+                        for cliente in clientes
+                    ],
+                }
+            )
+        except Exception:
+            app.logger.exception(
+                "Erro ao carregar clientes das mesas."
+            )
+            return jsonify(
+                {
+                    "ok": False,
+                    "erro": "Não foi possível carregar os clientes.",
                 }
             ), 500
 
@@ -793,6 +837,135 @@ def registrar_rotas(
                 "Não foi possível carregar a comanda.",
                 "erro",
             )
+
+        return _voltar_mesas()
+
+    # =====================================================
+    # RESUMO COMPLETO DA COMANDA PARA O PAINEL DE MESAS
+    # =====================================================
+
+    @app.route(
+        "/comandas/<int:comanda_id>/resumo",
+        methods=["GET"],
+    )
+    @modulo_obrigatorio("mesas")
+    def resumo_comanda(comanda_id):
+        try:
+            dados = MesasService.detalhar_comanda(
+                empresa_id=session.get("empresa_id"),
+                comanda_id=comanda_id,
+            )
+            comanda = dados["comanda"]
+            itens = [
+                item
+                for item in dados["itens"]
+                if item["status"] != "cancelado"
+            ]
+
+            return jsonify(
+                {
+                    "ok": True,
+                    "comanda": {
+                        "id": comanda["id"],
+                        "mesa_numero": comanda["mesa_numero"],
+                        "mesa_nome": comanda["mesa_nome"],
+                        "identificacao": comanda["identificacao"],
+                        "funcionario_nome": comanda["funcionario_nome"],
+                        "cliente_nome": comanda["cliente_nome"],
+                        "quantidade_pessoas": comanda["quantidade_pessoas"],
+                        "status": comanda["status"],
+                        "aberta_em": (
+                            comanda["aberta_em"].isoformat()
+                            if comanda.get("aberta_em")
+                            else None
+                        ),
+                        "total": float(comanda["total"] or 0),
+                    },
+                    "itens": [
+                        {
+                            "id": item["id"],
+                            "produto_nome": item["produto_nome"],
+                            "quantidade": float(item["quantidade"] or 0),
+                            "valor_unitario": float(item["valor_unitario"] or 0),
+                            "subtotal": float(item["subtotal"] or 0),
+                            "observacoes": item["observacoes"],
+                            "status": item["status"],
+                        }
+                        for item in itens
+                    ],
+                }
+            )
+        except MesasErro as erro:
+            return jsonify({"ok": False, "erro": str(erro)}), 404
+        except Exception:
+            app.logger.exception(
+                "Erro ao resumir a comanda %s.", comanda_id
+            )
+            return jsonify(
+                {
+                    "ok": False,
+                    "erro": "Não foi possível carregar a comanda.",
+                }
+            ), 500
+
+    # =====================================================
+    # PRÉ-CONTA TÉRMICA — NÃO FECHA A VENDA
+    # =====================================================
+
+    @app.route(
+        "/comandas/<int:comanda_id>/conta",
+        methods=["GET"],
+    )
+    @modulo_obrigatorio("mesas")
+    def imprimir_conta_comanda(comanda_id):
+        try:
+            caminho, configuracao = gerar_pre_conta(
+                empresa_id=session.get("empresa_id"),
+                comanda_id=comanda_id,
+            )
+            return send_file(
+                caminho,
+                mimetype="application/pdf",
+                as_attachment=False,
+                download_name=(
+                    f"conta_comanda_{comanda_id}_"
+                    f"{configuracao['largura_papel_mm']}mm.pdf"
+                ),
+            )
+        except MesasErro as erro:
+            flash(str(erro), "erro")
+        except Exception:
+            app.logger.exception(
+                "Erro ao imprimir a conta da comanda %s.",
+                comanda_id,
+            )
+            flash("Não foi possível gerar a conta.", "erro")
+
+        return _voltar_mesas()
+
+    # =====================================================
+    # CONFIGURAÇÃO DA IMPRESSORA TÉRMICA
+    # =====================================================
+
+    @app.route(
+        "/mesas/configuracao-impressao",
+        methods=["POST"],
+    )
+    @modulo_obrigatorio("mesas")
+    def configurar_impressao_mesas():
+        try:
+            salvar_configuracao_impressao(
+                empresa_id=session.get("empresa_id"),
+                usuario_id=session.get("usuario_id"),
+                largura_papel_mm=request.form.get("largura_papel_mm"),
+                copias_pre_conta=request.form.get("copias_pre_conta", 1),
+            )
+            flash("Impressora térmica configurada.", "sucesso")
+        except ValueError as erro:
+            flash(str(erro), "erro")
+        except Exception:
+            app.logger.exception("Erro ao configurar impressão térmica.")
+            flash("Não foi possível salvar a configuração.", "erro")
 
         return _voltar_mesas()
 

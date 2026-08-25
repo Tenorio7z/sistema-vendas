@@ -2637,3 +2637,356 @@ html:not(.dark) .modal-recebimento .recebimento-previsao span {
         height: 128px;
     }
 }
+
+/* =========================================================
+   NEXUS — COMANDA PROFISSIONAL E IMPRESSÃO TÉRMICA
+========================================================= */
+
+.btn-impressora {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-impressora svg,
+.btn-ver-comanda svg,
+.btn-imprimir-conta svg,
+.btn-conta-imprimir svg,
+.impressao-aviso svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.btn-impressora > span {
+    padding: 3px 6px;
+    color: #65d1ff;
+    font-size: 7px;
+    border: 1px solid rgba(77, 174, 255, .28);
+    border-radius: 99px;
+    background: rgba(41, 139, 255, .09);
+}
+
+.mesa-acoes {
+    flex-wrap: wrap;
+}
+
+.mesa-acoes .btn-ver-comanda {
+    min-height: 37px;
+    flex: 1 0 100%;
+    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    color: #c9e7ff;
+    font: inherit;
+    font-weight: 850;
+    cursor: pointer;
+    border: 1px solid rgba(73, 170, 255, .3);
+    border-radius: 11px;
+    background: linear-gradient(135deg, rgba(54, 155, 255, .14), rgba(58, 103, 208, .08));
+    transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.mesa-acoes .btn-ver-comanda:hover {
+    transform: translateY(-1px);
+    color: #fff;
+    border-color: rgba(91, 189, 255, .64);
+    background: linear-gradient(135deg, rgba(54, 155, 255, .24), rgba(58, 103, 208, .14));
+}
+
+.mesa-acoes .btn-imprimir-conta {
+    min-height: 40px;
+    padding: 9px 11px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #d9e8fa;
+    font-size: 8px;
+    font-weight: 850;
+    text-decoration: none;
+    border: 1px solid rgba(138, 166, 211, .28);
+    border-radius: 11px;
+    background: rgba(11, 31, 64, .52);
+    transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.mesa-acoes .btn-imprimir-conta:hover {
+    transform: translateY(-1px);
+    color: #fff;
+    border-color: rgba(99, 190, 255, .52);
+    background: rgba(28, 70, 121, .58);
+}
+
+.modal-comanda-profissional {
+    width: min(760px, calc(100% - 24px));
+    overflow: hidden;
+}
+
+.resumo-comanda-header {
+    background: linear-gradient(120deg, rgba(50, 143, 255, .12), rgba(111, 88, 255, .06));
+}
+
+.resumo-comanda-corpo {
+    padding: 20px 21px 8px;
+}
+
+.resumo-comanda-identidade {
+    margin-bottom: 15px;
+    display: grid;
+    grid-template-columns: 1.5fr .7fr .7fr;
+    gap: 9px;
+}
+
+.resumo-identidade-item {
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid rgba(99, 155, 225, .2);
+    border-radius: 12px;
+    background: rgba(8, 28, 58, .38);
+}
+
+.resumo-identidade-item small,
+.resumo-identidade-item strong {
+    display: block;
+}
+
+.resumo-identidade-item small {
+    margin-bottom: 4px;
+    color: var(--mesas-texto-secundario);
+    font-size: 7px;
+}
+
+.resumo-identidade-item strong {
+    overflow: hidden;
+    color: var(--mesas-texto);
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.resumo-comanda-lista {
+    max-height: min(43vh, 430px);
+    overflow-y: auto;
+    display: grid;
+    gap: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(79, 163, 255, .45) transparent;
+}
+
+.resumo-item {
+    padding: 12px 13px;
+    border: 1px solid rgba(97, 146, 212, .18);
+    border-radius: 13px;
+    background: linear-gradient(135deg, rgba(18, 48, 89, .58), rgba(13, 34, 68, .38));
+}
+
+.resumo-item-cabecalho {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--mesas-texto);
+    font-size: 10px;
+}
+
+.resumo-item-subtotal {
+    flex: 0 0 auto;
+    color: #50d6b0;
+}
+
+.resumo-item-calculo {
+    display: block;
+    margin-top: 5px;
+    color: var(--mesas-texto-secundario);
+    font-size: 8px;
+}
+
+.resumo-item-observacao {
+    margin: 8px 0 0;
+    padding: 7px 9px;
+    color: #ffd79d;
+    font-size: 8px;
+    line-height: 1.45;
+    border-left: 2px solid #ffad42;
+    border-radius: 0 7px 7px 0;
+    background: rgba(255, 173, 66, .07);
+}
+
+.resumo-comanda-estado {
+    min-height: 150px;
+    display: grid;
+    place-items: center;
+    color: var(--mesas-texto-secundario);
+    font-size: 9px;
+    text-align: center;
+}
+
+.resumo-comanda-estado.erro { color: #ff91a8; }
+
+.resumo-comanda-total {
+    margin-top: 13px;
+    padding: 16px 17px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border: 1px solid rgba(43, 215, 169, .32);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(37, 205, 160, .13), rgba(38, 116, 179, .08));
+}
+
+.resumo-comanda-total span { color: #b7c9de; font-size: 9px; }
+.resumo-comanda-total strong { color: #35e0b3; font-size: 20px; }
+
+.resumo-comanda-acoes {
+    padding: 15px 21px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
+.btn-conta-detalhes,
+.btn-conta-imprimir {
+    min-height: 42px;
+    padding: 10px 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 850;
+    text-decoration: none;
+    border-radius: 11px;
+}
+
+.btn-conta-detalhes {
+    border: 1px solid rgba(115, 157, 214, .28);
+    background: rgba(10, 31, 64, .54);
+}
+
+.btn-conta-imprimir {
+    border: 1px solid rgba(69, 171, 255, .5);
+    background: linear-gradient(135deg, #35aaff, #5766f3);
+    box-shadow: 0 10px 24px rgba(44, 129, 244, .23);
+}
+
+.modal-impressao { width: min(650px, calc(100% - 24px)); }
+
+.bobinas-grid {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    border: 0;
+}
+
+.bobinas-grid legend {
+    margin-bottom: 10px;
+    color: #a7b7cd;
+    font-size: 8px;
+    font-weight: 750;
+}
+
+.bobina-opcao {
+    position: relative;
+    padding: 14px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    border: 1px solid rgba(99, 149, 215, .21);
+    border-radius: 14px;
+    background: rgba(8, 27, 57, .42);
+    transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.bobina-opcao:hover { transform: translateY(-2px); border-color: rgba(79, 174, 255, .46); }
+.bobina-opcao:has(input:checked) {
+    border-color: rgba(64, 174, 255, .8);
+    background: linear-gradient(145deg, rgba(46, 151, 255, .21), rgba(83, 96, 240, .09));
+    box-shadow: inset 0 0 0 1px rgba(74, 177, 255, .16), 0 10px 25px rgba(0, 76, 175, .13);
+}
+
+.bobina-opcao input { position: absolute; opacity: 0; pointer-events: none; }
+.bobina-opcao strong { margin-top: 9px; color: var(--mesas-texto); font-size: 10px; }
+.bobina-opcao small { margin-top: 4px; color: var(--mesas-texto-secundario); font-size: 7px; text-align: center; }
+
+.bobina-visual {
+    height: 55px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.bobina-visual i {
+    position: relative;
+    display: block;
+    height: 48px;
+    border: 1px solid rgba(132, 198, 255, .52);
+    border-radius: 5px 5px 2px 2px;
+    background: linear-gradient(90deg, rgba(227, 242, 255, .82), #fff 45%, rgba(173, 211, 245, .75));
+    box-shadow: 0 6px 15px rgba(0, 0, 0, .18);
+}
+
+.bobina-visual i::before {
+    content: "";
+    position: absolute;
+    inset: 7px 5px auto;
+    height: 2px;
+    border-radius: 2px;
+    background: rgba(39, 111, 169, .24);
+    box-shadow: 0 6px rgba(39, 111, 169, .17), 0 12px rgba(39, 111, 169, .12);
+}
+
+.bobina-48 i { width: 31px; }
+.bobina-58 i { width: 39px; }
+.bobina-80 i { width: 52px; }
+
+.impressao-aviso {
+    margin-top: 15px;
+    padding: 12px 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #a9c9e7;
+    border: 1px solid rgba(68, 156, 255, .22);
+    border-radius: 12px;
+    background: rgba(41, 128, 226, .08);
+}
+
+.impressao-aviso svg { flex: 0 0 17px; color: #55bdff; }
+.impressao-aviso p { margin: 0; font-size: 8px; line-height: 1.55; }
+
+html:not(.dark) .resumo-item,
+html:not(.dark) .resumo-identidade-item,
+html:not(.dark) .bobina-opcao {
+    background: rgba(238, 246, 255, .76);
+}
+
+@media (max-width: 680px) {
+    .mesas-header-acoes { flex-wrap: wrap; }
+    .resumo-comanda-identidade { grid-template-columns: 1fr 1fr; }
+    .resumo-identidade-item:first-child { grid-column: 1 / -1; }
+    .bobinas-grid { grid-template-columns: 1fr; }
+    .bobina-opcao { flex-direction: row; justify-content: flex-start; gap: 12px; text-align: left; }
+    .bobina-opcao strong { margin: 0; }
+    .bobina-opcao small { margin: 0 0 0 auto; }
+}
+
+@media (max-width: 480px) {
+    .mesa-acoes .btn-mesa-destaque { flex: 1 1 100%; }
+    .mesa-acoes .btn-imprimir-conta,
+    .mesa-acoes .btn-fechar-comanda { flex: 1 1 calc(50% - 5px); }
+    .resumo-comanda-acoes { flex-direction: column-reverse; }
+    .btn-conta-detalhes, .btn-conta-imprimir { width: 100%; }
+}

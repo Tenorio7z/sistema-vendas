@@ -150,6 +150,18 @@ class MesasService:
         empresa_id,
     ):
 
+        painel = cls.carregar_painel_mesas(
+            empresa_id
+        )
+
+        return painel["mesas"]
+
+    @classmethod
+    def carregar_painel_mesas(
+        cls,
+        empresa_id,
+    ):
+
         empresa_id = cls._inteiro(
             empresa_id,
             "Empresa",
@@ -162,6 +174,52 @@ class MesasService:
 
             cursor.execute(
                 """
+                WITH itens_agrupados AS (
+                    SELECT
+                        ci.empresa_id,
+                        ci.comanda_id,
+                        COALESCE(
+                            SUM(ci.quantidade) FILTER (
+                                WHERE ci.status != 'cancelado'
+                            ),
+                            0
+                        ) AS quantidade_itens,
+                        COUNT(*) FILTER (
+                            WHERE ci.status != 'cancelado'
+                              AND ci.pedido_id IS NULL
+                        ) AS itens_nao_enviados,
+                        COUNT(*) FILTER (
+                            WHERE ci.status IN ('pendente', 'preparando')
+                        ) AS itens_em_producao
+                    FROM comanda_itens ci
+                    INNER JOIN comandas comando_aberta
+                        ON comando_aberta.id = ci.comanda_id
+                        AND comando_aberta.empresa_id = ci.empresa_id
+                        AND comando_aberta.status IN (
+                            'aberta',
+                            'aguardando_pagamento'
+                        )
+                    WHERE ci.empresa_id = %s
+                    GROUP BY ci.empresa_id, ci.comanda_id
+                ),
+                resumo_mesas AS (
+                    SELECT
+                        COUNT(*) AS painel_total,
+                        COUNT(*) FILTER (WHERE status = 'livre') AS painel_livres,
+                        COUNT(*) FILTER (WHERE status = 'ocupada') AS painel_ocupadas,
+                        COUNT(*) FILTER (WHERE status = 'reservada') AS painel_reservadas,
+                        COUNT(*) FILTER (WHERE status = 'inativa') AS painel_inativas
+                    FROM mesas
+                    WHERE empresa_id = %s
+                ),
+                resumo_comandas AS (
+                    SELECT
+                        COUNT(*) AS painel_comandas_abertas,
+                        COALESCE(SUM(total), 0) AS painel_total_em_aberto
+                    FROM comandas
+                    WHERE empresa_id = %s
+                      AND status IN ('aberta', 'aguardando_pagamento')
+                )
                 SELECT
                     m.id,
                     m.numero,
@@ -196,9 +254,20 @@ class MesasService:
                     COALESCE(
                         itens.itens_em_producao,
                         0
-                    ) AS itens_em_producao
+                    ) AS itens_em_producao,
+
+                    rm.painel_total,
+                    rm.painel_livres,
+                    rm.painel_ocupadas,
+                    rm.painel_reservadas,
+                    rm.painel_inativas,
+                    rc.painel_comandas_abertas,
+                    rc.painel_total_em_aberto
 
                 FROM mesas m
+
+                CROSS JOIN resumo_mesas rm
+                CROSS JOIN resumo_comandas rc
 
                 LEFT JOIN comandas c
                     ON c.mesa_id = m.id
@@ -212,35 +281,9 @@ class MesasService:
                     ON u.id = c.funcionario_id
                     AND u.empresa_id = m.empresa_id
 
-                LEFT JOIN LATERAL (
-                    SELECT
-                        COALESCE(
-                            SUM(ci.quantidade)
-                                FILTER (
-                                    WHERE ci.status != 'cancelado'
-                                ),
-                            0
-                        ) AS quantidade_itens,
-
-                        COUNT(*)
-                            FILTER (
-                                WHERE ci.status != 'cancelado'
-                                  AND ci.pedido_id IS NULL
-                            ) AS itens_nao_enviados,
-
-                        COUNT(*)
-                            FILTER (
-                                WHERE ci.status IN (
-                                    'pendente',
-                                    'preparando'
-                                )
-                            ) AS itens_em_producao
-
-                    FROM comanda_itens ci
-
-                    WHERE ci.comanda_id = c.id
-                      AND ci.empresa_id = m.empresa_id
-                ) itens ON TRUE
+                LEFT JOIN itens_agrupados itens
+                    ON itens.comanda_id = c.id
+                    AND itens.empresa_id = m.empresa_id
 
                 WHERE m.empresa_id = %s
 
@@ -253,10 +296,42 @@ class MesasService:
                     END,
                     m.numero
                 """,
-                (empresa_id,),
+                (
+                    empresa_id,
+                    empresa_id,
+                    empresa_id,
+                    empresa_id,
+                ),
             )
 
-            return cursor.fetchall()
+            mesas = cursor.fetchall()
+
+            if mesas:
+                primeira = mesas[0]
+                resumo = {
+                    "total": primeira["painel_total"],
+                    "livres": primeira["painel_livres"],
+                    "ocupadas": primeira["painel_ocupadas"],
+                    "reservadas": primeira["painel_reservadas"],
+                    "inativas": primeira["painel_inativas"],
+                    "comandas_abertas": primeira["painel_comandas_abertas"],
+                    "total_em_aberto": primeira["painel_total_em_aberto"],
+                }
+            else:
+                resumo = {
+                    "total": 0,
+                    "livres": 0,
+                    "ocupadas": 0,
+                    "reservadas": 0,
+                    "inativas": 0,
+                    "comandas_abertas": 0,
+                    "total_em_aberto": 0,
+                }
+
+            return {
+                "mesas": mesas,
+                "resumo": resumo,
+            }
 
         finally:
 
@@ -1680,7 +1755,9 @@ class MesasService:
                     u.usuario AS funcionario_nome,
 
                     cl.nome AS cliente_nome,
-                    cl.telefone AS cliente_telefone
+                    cl.telefone AS cliente_telefone,
+
+                    e.nome AS empresa_nome
 
                 FROM comandas c
 
@@ -1695,6 +1772,9 @@ class MesasService:
                 LEFT JOIN clientes cl
                     ON cl.id = c.cliente_id
                     AND cl.empresa_id = c.empresa_id
+
+                LEFT JOIN empresa e
+                    ON e.id = c.empresa_id
 
                 WHERE c.id = %s
                   AND c.empresa_id = %s
@@ -1798,12 +1878,30 @@ class MesasService:
     def listar_produtos(
         cls,
         empresa_id,
+        busca=None,
+        limite=None,
     ):
 
         empresa_id = cls._inteiro(
             empresa_id,
             "Empresa",
         )
+
+        busca = cls._texto(
+            busca,
+            120,
+        )
+
+        if limite is None:
+            limite = 1000000
+        else:
+            try:
+                limite = min(
+                    max(int(limite), 1),
+                    100,
+                )
+            except (TypeError, ValueError):
+                limite = 60
 
         conn = conectar()
         cursor = criar_cursor(conn)
@@ -1822,10 +1920,20 @@ class MesasService:
 
                 WHERE empresa_id = %s
                   AND estoque > 0
+                  AND (
+                      %s = ''
+                      OR nome ILIKE %s
+                  )
 
                 ORDER BY nome
+                LIMIT %s
                 """,
-                (empresa_id,),
+                (
+                    empresa_id,
+                    busca,
+                    f"%{busca}%",
+                    limite,
+                ),
             )
 
             return cursor.fetchall()

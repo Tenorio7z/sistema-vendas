@@ -150,6 +150,39 @@
     z-index: 2;
 
     flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.comanda-imprimir-conta {
+    min-height: 39px;
+    padding: 9px 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    color: #ffffff;
+    font-size: 8px;
+    font-weight: 850;
+    text-decoration: none;
+    border: 1px solid rgba(75, 181, 255, .46);
+    border-radius: 11px;
+    background: linear-gradient(135deg, rgba(52, 165, 255, .88), rgba(80, 95, 239, .88));
+    box-shadow: 0 9px 22px rgba(40, 123, 231, .22);
+    transition: transform .18s ease, filter .18s ease;
+}
+
+.comanda-imprimir-conta:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.comanda-imprimir-conta svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .status-comanda {
