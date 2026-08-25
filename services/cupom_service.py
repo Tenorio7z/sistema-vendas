@@ -276,6 +276,9 @@ def _altura_necessaria(vendas):
     if possui_desconto:
         altura += 5 * mm
 
+    if primeira_venda.get("pagamento") == "Dinheiro":
+        altura += 7 * mm
+
     largura_nome = 30 * mm
 
     for venda in vendas:
@@ -877,6 +880,25 @@ def gerar_cupom_venda(
     )
 
     y -= 3.5 * mm
+
+    if forma_pagamento == "Dinheiro":
+        valor_recebido = _decimal(
+            venda_ids[0].get("valor_recebido")
+        )
+        troco = _decimal(
+            venda_ids[0].get("troco")
+        )
+
+        pdf.setFont(FONTE_NEGRITO, 5.8)
+        pdf.drawString(esquerda, y, "VALOR RECEBIDO:")
+        pdf.setFont(FONTE_NORMAL, 5.8)
+        pdf.drawRightString(direita, y, _moeda(valor_recebido))
+        y -= 3.2 * mm
+
+        pdf.setFont(FONTE_NEGRITO, 6.2)
+        pdf.drawString(esquerda, y, "TROCO:")
+        pdf.drawRightString(direita, y, _moeda(troco))
+        y -= 3.5 * mm
 
     # =====================================================
     # RODAPÉ

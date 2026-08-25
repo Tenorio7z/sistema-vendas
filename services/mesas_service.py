@@ -3252,6 +3252,7 @@ class MesasService:
         comanda_id,
         recebido_por,
         pagamento,
+        valor_recebido=None,
         tipo_desconto="nenhum",
         desconto_informado="0",
         cliente_id=None,
@@ -3537,6 +3538,36 @@ class MesasService:
                 rounding=ROUND_HALF_UP,
             )
 
+            if pagamento == "Dinheiro":
+                valor_recebido = cls._moeda(
+                    valor_recebido,
+                    "Valor recebido",
+                )
+
+                if valor_recebido < total_liquido:
+                    faltante = (
+                        total_liquido
+                        - valor_recebido
+                    ).quantize(
+                        Decimal("0.01"),
+                        rounding=ROUND_HALF_UP,
+                    )
+                    raise MesasErro(
+                        "O valor recebido é menor que o total. "
+                        f"Faltam R$ {faltante:.2f}."
+                    )
+
+                troco = (
+                    valor_recebido
+                    - total_liquido
+                ).quantize(
+                    Decimal("0.01"),
+                    rounding=ROUND_HALF_UP,
+                )
+            else:
+                valor_recebido = total_liquido
+                troco = Decimal("0.00")
+
             venda_grupo = str(
                 uuid4()
             )
@@ -3666,6 +3697,8 @@ class MesasService:
                         "desconto": desconto_item,
                         "valor": valor_liquido,
                         "pagamento": pagamento,
+                        "valor_recebido": valor_recebido,
+                        "troco": troco,
                         "empresa_id": empresa_id,
                         "venda_grupo": venda_grupo,
                         "cliente_id": cliente_id,
@@ -3881,6 +3914,9 @@ class MesasService:
                     desconto_valor = %s,
                     desconto_percentual = %s,
                     total = %s,
+                    pagamento = %s,
+                    valor_recebido = %s,
+                    troco = %s,
                     fechada_em = CURRENT_TIMESTAMP,
                     atualizado_em = CURRENT_TIMESTAMP
 
@@ -3893,6 +3929,9 @@ class MesasService:
                     desconto_total,
                     percentual,
                     total_liquido,
+                    pagamento,
+                    valor_recebido,
+                    troco,
                     comanda_id,
                     empresa_id,
                 ),
@@ -3939,7 +3978,9 @@ class MesasService:
                     (
                         "Comanda recebida em "
                         f"{pagamento}. "
-                        f"Total: R$ {total_liquido:.2f}."
+                        f"Total: R$ {total_liquido:.2f}. "
+                        f"Recebido: R$ {valor_recebido:.2f}. "
+                        f"Troco: R$ {troco:.2f}."
                     ),
                 ),
             )
@@ -3957,6 +3998,8 @@ class MesasService:
                 "desconto": desconto_total,
                 "total": total_liquido,
                 "pagamento": pagamento,
+                "valor_recebido": valor_recebido,
+                "troco": troco,
                 "usuario_venda": usuario_venda,
                 "cupom": cupom,
             }

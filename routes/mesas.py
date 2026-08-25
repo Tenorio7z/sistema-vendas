@@ -1067,6 +1067,9 @@ def registrar_rotas(
                     pagamento=request.form.get(
                         "pagamento"
                     ),
+                    valor_recebido=request.form.get(
+                        "valor_recebido"
+                    ),
                     tipo_desconto=request.form.get(
                         "desconto_tipo",
                         "nenhum",
@@ -1166,6 +1169,11 @@ def registrar_rotas(
                 "Comanda finalizada. "
                 f"Total recebido: "
                 f"R$ {resultado['total']:.2f}."
+                + (
+                    f" Troco: R$ {resultado['troco']:.2f}."
+                    if resultado["pagamento"] == "Dinheiro"
+                    else ""
+                )
             ),
             "sucesso",
         )

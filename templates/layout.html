@@ -88,16 +88,6 @@
                 <span class="link-text">Dashboard</span>
             </a>
 
-            {% if session.get("nivel") == "gerente" %}
-            <a href="/perfis" class="{% if request.path.startswith('/perfis') %}active{% endif %}">
-                <img src="{{ url_for(
-                        'static',
-                        filename='icons/perfis.png'
-                    ) }}" class="nav-icon" alt="">
-
-                <span class="link-text">Gerenciar Perfis</span>
-            </a>
-            {% endif %}
 
             {% if session.get("nivel") == "master" %}
             <a href="/admin" class="{% if request.path.startswith('/admin') %}active{% endif %}">
@@ -127,11 +117,26 @@
             <a href="{{ url_for('filiais') }}" class="{% if request.path.startswith('/filiais') %}active{% endif %}">
                 <svg class="nav-icon nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path>
-                    <path d="M9 21v-5h6v5"></path><path d="M8 9h1"></path><path d="M15 9h1"></path>
-                    <path d="M8 12h1"></path><path d="M15 12h1"></path>
+                    <path d="M3 21h18"></path>
+                    <path d="M5 21V7l7-4 7 4v14"></path>
+                    <path d="M9 21v-5h6v5"></path>
+                    <path d="M8 9h1"></path>
+                    <path d="M15 9h1"></path>
+                    <path d="M8 12h1"></path>
+                    <path d="M15 12h1"></path>
                 </svg>
                 <span class="link-text">Filiais</span>
+            </a>
+            {% endif %}
+
+            {% if session.get("nivel") == "gerente" %}
+            <a href="/perfis" class="{% if request.path.startswith('/perfis') %}active{% endif %}">
+                <img src="{{ url_for(
+                        'static',
+                        filename='icons/perfis.png'
+                    ) }}" class="nav-icon" alt="">
+
+                <span class="link-text">Gerenciar Perfis</span>
             </a>
             {% endif %}
 
@@ -319,7 +324,7 @@
                         </small>
 
                         <strong>
-                            Nexus v1.7.0
+                            Nexus PDV v3.1
                         </strong>
 
                     </div>
@@ -411,11 +416,11 @@
                     <div>
 
                         <strong>
-                            Nexus PDV v1.7.0
+                            Nexus PDV v3.1
                         </strong>
 
                         <small>
-                            Publicada em 18/07/2026
+                            Publicada em 25/08/2026
                         </small>
 
                     </div>
@@ -435,31 +440,32 @@
 
                     <div class="atualizacao-grupo-titulo">
 
-                        <span>
-                            ✨
-                        </span>
+                        <span>✨</span>
 
-                        <h3>
-                            Novidades
-                        </h3>
+                        <h3>Novidades</h3>
 
                     </div>
 
                     <ul>
 
                         <li>
-                            Nova página para cadastro e gerenciamento
-                            de clientes.
+                            Nova visualização completa da comanda diretamente
+                            pelo painel de mesas.
                         </li>
 
                         <li>
-                            Agora as vendas podem ser vinculadas
-                            opcionalmente a um cliente.
+                            Impressão de pré-conta para conferência e pagamento
+                            sem fechar a mesa ou alterar o estoque.
                         </li>
 
                         <li>
-                            Novo perfil individual com histórico,
-                            métricas e produtos favoritos do cliente.
+                            Configuração de impressão térmica para bobinas de
+                            48 mm, 58 mm e 80 mm.
+                        </li>
+
+                        <li>
+                            Novo cálculo automático de troco para pagamentos
+                            realizados em dinheiro.
                         </li>
 
                     </ul>
@@ -471,32 +477,37 @@
 
                     <div class="atualizacao-grupo-titulo">
 
-                        <span>
-                            ⚡
-                        </span>
+                        <span>⚡</span>
 
-                        <h3>
-                            Melhorias
-                        </h3>
+                        <h3>Melhorias</h3>
 
                     </div>
 
                     <ul>
 
                         <li>
-                            Pesquisa de clientes por nome, telefone,
-                            e-mail, CPF ou CNPJ.
+                            Comandas agora exibem produtos, quantidades,
+                            observações, valores unitários e subtotais.
                         </li>
 
                         <li>
-                            Total gasto, ticket médio, descontos e
-                            frequência de compras calculados
-                            automaticamente.
+                            O valor entregue pelo cliente e o troco calculado
+                            ficam registrados no histórico da comanda.
                         </li>
 
                         <li>
-                            Seletor de clientes integrado à confirmação
-                            de pagamento no PDV.
+                            Valor recebido e troco também são apresentados
+                            no cupom final da venda.
+                        </li>
+
+                        <li>
+                            Busca de produtos otimizada para empresas com
+                            milhares de itens cadastrados.
+                        </li>
+
+                        <li>
+                            Painel de mesas mais rápido, com redução das
+                            consultas realizadas no banco de dados.
                         </li>
 
                     </ul>
@@ -508,31 +519,32 @@
 
                     <div class="atualizacao-grupo-titulo">
 
-                        <span>
-                            🛠️
-                        </span>
+                        <span>🛠️</span>
 
-                        <h3>
-                            Correções
-                        </h3>
+                        <h3>Correções e segurança</h3>
 
                     </div>
 
                     <ul>
 
                         <li>
-                            Ajustado o posicionamento dos botões nos
-                            cards de clientes.
+                            O fechamento da mesa agora é bloqueado quando o
+                            valor recebido em dinheiro é menor que o total.
                         </li>
 
                         <li>
-                            Melhorada a responsividade das páginas e
-                            dos modais de clientes.
+                            O troco é recalculado automaticamente quando um
+                            desconto é aplicado à comanda.
                         </li>
 
                         <li>
-                            Adicionada validação para impedir vínculos
-                            com clientes de outra empresa.
+                            A impressão da pré-conta não registra pagamento,
+                            não baixa estoque e não libera a mesa.
+                        </li>
+
+                        <li>
+                            Clientes e produtos passam a ser carregados somente
+                            quando necessários, melhorando o desempenho.
                         </li>
 
                     </ul>

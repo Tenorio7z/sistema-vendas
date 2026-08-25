@@ -34,6 +34,11 @@ Depois, reinicie o servidor Flask normalmente.
 - A configuração da bobina fica em cache por cinco minutos e deixa de executar
   DDL repetidamente.
 - Índices específicos foram adicionados para mesas, comandas e itens ativos.
+- No pagamento em dinheiro, o operador informa o valor entregue pelo cliente e
+  o troco é calculado imediatamente sobre o total após desconto.
+- O servidor bloqueia pagamentos em dinheiro insuficientes, mesmo que a
+  validação do navegador seja contornada.
+- Valor recebido e troco ficam registrados na comanda e aparecem no cupom final.
 
 ## Fluxo de uso
 
@@ -55,4 +60,5 @@ Depois, reinicie o servidor Flask normalmente.
 - `migrations/014_configuracao_impressao.sql`
 - `executar_configuracao_impressao.py`
 - `migrations/015_otimizacao_mesas.sql`
+- `migrations/016_troco_comandas.sql`
 - `executar_otimizacao_mesas.py`

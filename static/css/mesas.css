@@ -2990,3 +2990,137 @@ html:not(.dark) .bobina-opcao {
     .resumo-comanda-acoes { flex-direction: column-reverse; }
     .btn-conta-detalhes, .btn-conta-imprimir { width: 100%; }
 }
+
+/* =========================================================
+   RECEBIMENTO EM DINHEIRO E CÁLCULO DE TROCO
+========================================================= */
+
+.recebimento-dinheiro[hidden] {
+    display: none !important;
+}
+
+.recebimento-dinheiro {
+    margin-top: 15px;
+    padding: 15px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(210px, .8fr);
+    align-items: stretch;
+    gap: 12px;
+    border: 1px solid rgba(67, 177, 255, .25);
+    border-radius: 15px;
+    background:
+        radial-gradient(circle at 100% 0, rgba(45, 210, 165, .1), transparent 42%),
+        rgba(7, 27, 56, .42);
+}
+
+.recebimento-dinheiro > label > span {
+    display: block;
+    margin-bottom: 7px;
+    color: #a7b9cf;
+    font-size: 8px;
+    font-weight: 750;
+}
+
+.campo-valor-recebido {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid rgba(88, 164, 238, .35);
+    border-radius: 12px;
+    background: rgba(7, 25, 52, .72);
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.campo-valor-recebido:focus-within {
+    border-color: rgba(59, 178, 255, .82);
+    box-shadow: 0 0 0 3px rgba(54, 157, 255, .11);
+}
+
+.campo-valor-recebido > span {
+    padding: 0 0 0 14px;
+    color: #58c4ff;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.modal-recebimento .campo-valor-recebido input {
+    min-height: 50px;
+    padding-left: 7px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 900;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.troco-resultado {
+    padding: 11px 13px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid rgba(104, 153, 216, .22);
+    border-radius: 12px;
+    background: rgba(13, 37, 72, .6);
+    transition: border-color .18s ease, background .18s ease;
+}
+
+.troco-resultado span,
+.troco-resultado small,
+.troco-resultado strong {
+    display: block;
+}
+
+.troco-resultado span {
+    color: #9cb0ca;
+    font-size: 7px;
+}
+
+.troco-resultado strong {
+    margin: 4px 0;
+    color: #d9e7f7;
+    font-size: 19px;
+}
+
+.troco-resultado small {
+    color: #8196b2;
+    font-size: 7px;
+    line-height: 1.4;
+}
+
+.troco-resultado[data-status="pronto"] {
+    border-color: rgba(45, 218, 166, .45);
+    background: linear-gradient(135deg, rgba(36, 201, 153, .16), rgba(24, 105, 108, .09));
+}
+
+.troco-resultado[data-status="pronto"] strong { color: #36e1af; }
+.troco-resultado[data-status="pronto"] small { color: #8edbc4; }
+
+.troco-resultado[data-status="insuficiente"] {
+    border-color: rgba(255, 86, 119, .5);
+    background: rgba(255, 70, 105, .1);
+}
+
+.troco-resultado[data-status="insuficiente"] strong { color: #ff8da4; }
+.troco-resultado[data-status="insuficiente"] small { color: #ffafbf; }
+
+html:not(.dark) .recebimento-dinheiro {
+    background: rgba(238, 246, 255, .88);
+}
+
+html:not(.dark) .campo-valor-recebido,
+html:not(.dark) .troco-resultado {
+    background: rgba(255, 255, 255, .78);
+}
+
+html:not(.dark) .modal-recebimento .campo-valor-recebido input {
+    color: #12233f;
+}
+
+@media (max-width: 620px) {
+    .recebimento-dinheiro {
+        grid-template-columns: 1fr;
+    }
+}

@@ -8,6 +8,7 @@ def executar():
     migracoes = (
         raiz / "migrations" / "014_configuracao_impressao.sql",
         raiz / "migrations" / "015_otimizacao_mesas.sql",
+        raiz / "migrations" / "016_troco_comandas.sql",
     )
 
     conn = conectar()
@@ -29,4 +30,3 @@ def executar():
 
 if __name__ == "__main__":
     executar()
-

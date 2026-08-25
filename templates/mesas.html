@@ -996,7 +996,7 @@
                 <label>
                     <span>Forma de pagamento *</span>
 
-                    <select name="pagamento" required>
+                    <select name="pagamento" id="fecharPagamento" required>
                         <option value="dinheiro">Dinheiro</option>
                         <option value="pix">PIX</option>
                         <option value="cartao">Cartão</option>
@@ -1046,6 +1046,23 @@
                 <strong id="fecharTotalPrevisto">
                     R$ 0,00
                 </strong>
+            </section>
+
+            <section class="recebimento-dinheiro" id="recebimentoDinheiro">
+                <label>
+                    <span>Valor entregue pelo cliente *</span>
+                    <div class="campo-valor-recebido">
+                        <span>R$</span>
+                        <input type="text" name="valor_recebido" id="fecharValorRecebido"
+                            inputmode="decimal" autocomplete="off" placeholder="0,00">
+                    </div>
+                </label>
+
+                <div class="troco-resultado" id="trocoResultado" data-status="aguardando">
+                    <span>Troco a devolver</span>
+                    <strong id="fecharTroco">R$ 0,00</strong>
+                    <small id="fecharTrocoAjuda">Informe o valor recebido.</small>
+                </div>
             </section>
 
             <p class="recebimento-aviso">
@@ -1137,6 +1154,7 @@
 
         let statusAtual = "todas";
         let totalComandaFechamento = 0;
+        let totalLiquidoFechamento = 0;
         let clientesCarregados = false;
         let clientesEmCarregamento = null;
 
@@ -1289,9 +1307,67 @@
                 0
             );
 
+            totalLiquidoFechamento = total;
+
             document.getElementById(
                 "fecharTotalPrevisto"
             ).textContent = moeda(total);
+
+            atualizarTroco();
+        }
+
+        function atualizarFormaPagamento() {
+            const pagamento = document.getElementById("fecharPagamento").value;
+            const bloco = document.getElementById("recebimentoDinheiro");
+            const campo = document.getElementById("fecharValorRecebido");
+            const dinheiro = pagamento === "dinheiro";
+
+            bloco.hidden = !dinheiro;
+            campo.required = dinheiro;
+
+            if (!dinheiro) {
+                campo.value = "";
+            }
+
+            atualizarTroco();
+        }
+
+        function atualizarTroco() {
+            const pagamento = document.getElementById("fecharPagamento").value;
+            const valorRecebido = numeroMonetario(
+                document.getElementById("fecharValorRecebido").value
+            );
+            const resultado = document.getElementById("trocoResultado");
+            const texto = document.getElementById("fecharTroco");
+            const ajuda = document.getElementById("fecharTrocoAjuda");
+
+            if (pagamento !== "dinheiro") {
+                resultado.dataset.status = "oculto";
+                texto.textContent = moeda(0);
+                return;
+            }
+
+            if (valorRecebido <= 0) {
+                resultado.dataset.status = "aguardando";
+                texto.textContent = moeda(0);
+                ajuda.textContent = "Informe o valor recebido.";
+                return;
+            }
+
+            const diferenca = valorRecebido - totalLiquidoFechamento;
+
+            if (diferenca < 0) {
+                resultado.dataset.status = "insuficiente";
+                texto.textContent = moeda(0);
+                ajuda.textContent = "Faltam " + moeda(Math.abs(diferenca)) + ".";
+                return;
+            }
+
+            resultado.dataset.status = "pronto";
+            texto.textContent = moeda(diferenca);
+            ajuda.textContent = diferenca > 0
+                ? "Separe este valor para devolver ao cliente."
+                : "Pagamento exato, sem troco.";
         }
 
         function fecharModal(modal) {
@@ -1455,7 +1531,16 @@
                     "fecharDescontoValor"
                 ).value = "0";
 
+                document.getElementById(
+                    "fecharPagamento"
+                ).value = "dinheiro";
+
+                document.getElementById(
+                    "fecharValorRecebido"
+                ).value = "";
+
                 atualizarPrevisaoFechamento();
+                atualizarFormaPagamento();
                 abrirModal("modalFecharComanda");
                 return;
             }
@@ -1564,6 +1649,14 @@
             "fecharDescontoValor"
         );
 
+        const fecharPagamento = document.getElementById(
+            "fecharPagamento"
+        );
+
+        const fecharValorRecebido = document.getElementById(
+            "fecharValorRecebido"
+        );
+
         if (descontoTipo) {
             descontoTipo.addEventListener(
                 "change",
@@ -1578,6 +1671,20 @@
             );
         }
 
+        if (fecharPagamento) {
+            fecharPagamento.addEventListener(
+                "change",
+                atualizarFormaPagamento
+            );
+        }
+
+        if (fecharValorRecebido) {
+            fecharValorRecebido.addEventListener(
+                "input",
+                atualizarTroco
+            );
+        }
+
         const formFecharComanda = document.getElementById(
             "formFecharComanda"
         );
@@ -1586,8 +1693,38 @@
             formFecharComanda.addEventListener(
                 "submit",
                 function (evento) {
+                    const pagamentoDinheiro = (
+                        fecharPagamento.value === "dinheiro"
+                    );
+                    const recebido = numeroMonetario(
+                        fecharValorRecebido.value
+                    );
+
+                    if (
+                        pagamentoDinheiro
+                        && recebido < totalLiquidoFechamento
+                    ) {
+                        evento.preventDefault();
+                        fecharValorRecebido.focus();
+                        window.alert(
+                            "O valor recebido é menor que o total da conta."
+                        );
+                        return;
+                    }
+
+                    const troco = Math.max(
+                        recebido - totalLiquidoFechamento,
+                        0
+                    );
                     const confirmar = window.confirm(
-                        "Confirmar o pagamento e liberar a mesa?"
+                        pagamentoDinheiro
+                            ? (
+                                "Confirmar o pagamento?\n\n"
+                                + "Total: " + moeda(totalLiquidoFechamento)
+                                + "\nRecebido: " + moeda(recebido)
+                                + "\nTroco: " + moeda(troco)
+                            )
+                            : "Confirmar o pagamento e liberar a mesa?"
                     );
 
                     if (!confirmar) {
