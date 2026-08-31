@@ -173,6 +173,14 @@ R$ {{
 
     </section>
 
+    <section class="ef-esperados">
+        <header><span>VALORES ESPERADOS</span><h2>Potencial do estoque da sua filial</h2></header>
+        <div>
+            <article><span>Resultado esperado</span><strong>{{ moeda(resultado_esperado) }}</strong><small>Preço de venda × estoque disponível</small></article>
+            <article><span>Comissão esperada</span><strong>{{ moeda(comissao_esperada) }}</strong><small>{{ "%.2f"|format(percentual_comissao) }}% sobre o estoque</small></article>
+        </div>
+    </section>
+
 
     <!-- =========================================
          INDICADORES PRINCIPAIS

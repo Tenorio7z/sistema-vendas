@@ -1,0 +1,15 @@
+ATUALIZACAO NEXUS - PAGAMENTO DIVIDIDO E INDICADORES
+
+1. Faça backup do banco de dados.
+2. Copie os arquivos para o projeto.
+3. Na raiz do projeto, execute:
+   python executar_otimizacao_mesas.py
+4. Reinicie a aplicação Flask.
+
+A migração 017 cria o detalhamento das formas de pagamento. Vendas antigas
+continuam aparecendo nos relatórios pela forma registrada anteriormente.
+
+Teste sugerido:
+- conta de R$ 100,00;
+- R$ 50,00 em dinheiro, R$ 30,00 em PIX e R$ 20,00 em cartão;
+- informe uma nota de R$ 100,00: o troco deverá ser R$ 50,00.

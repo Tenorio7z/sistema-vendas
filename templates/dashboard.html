@@ -27,6 +27,12 @@
         </div>
     </section>
 
+    <section class="dash-payments" aria-label="Recebimentos por forma de pagamento">
+        <article><span>Dinheiro</span><strong>R$ {{ "%.2f"|format(metricas.recebimentos.dinheiro) }}</strong><small>No período selecionado</small></article>
+        <article><span>PIX</span><strong>R$ {{ "%.2f"|format(metricas.recebimentos.pix) }}</strong><small>No período selecionado</small></article>
+        <article><span>Cartão</span><strong>R$ {{ "%.2f"|format(metricas.recebimentos.cartao) }}</strong><small>No período selecionado</small></article>
+    </section>
+
     <section class="dash-toolbar" aria-label="Filtros do dashboard">
         <div class="dash-period-copy">
             <span>PERÍODO ANALISADO</span>

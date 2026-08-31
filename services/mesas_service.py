@@ -3253,6 +3253,9 @@ class MesasService:
         recebido_por,
         pagamento,
         valor_recebido=None,
+        valor_dinheiro="0",
+        valor_pix="0",
+        valor_cartao="0",
         tipo_desconto="nenhum",
         desconto_informado="0",
         cliente_id=None,
@@ -3278,6 +3281,7 @@ class MesasService:
             "pix": "PIX",
             "cartão": "Cartão",
             "cartao": "Cartão",
+            "dividido": "Dividido",
         }
 
         pagamento = pagamentos.get(
@@ -3538,7 +3542,30 @@ class MesasService:
                 rounding=ROUND_HALF_UP,
             )
 
-            if pagamento == "Dinheiro":
+            if pagamento == "Dividido":
+                parcelas = {
+                    "Dinheiro": cls._moeda(valor_dinheiro, "Valor em dinheiro"),
+                    "PIX": cls._moeda(valor_pix, "Valor em PIX"),
+                    "Cartão": cls._moeda(valor_cartao, "Valor no cartão"),
+                }
+                parcelas = {forma: valor for forma, valor in parcelas.items() if valor > 0}
+                total_informado = sum(parcelas.values(), Decimal("0.00"))
+                if total_informado != total_liquido:
+                    diferenca = abs(total_liquido - total_informado)
+                    raise MesasErro(
+                        "A soma das formas de pagamento deve ser igual ao total. "
+                        f"Diferença: R$ {diferenca:.2f}."
+                    )
+                dinheiro_cobrado = parcelas.get("Dinheiro", Decimal("0.00"))
+                if dinheiro_cobrado:
+                    valor_recebido = cls._moeda(valor_recebido, "Valor entregue em dinheiro")
+                    if valor_recebido < dinheiro_cobrado:
+                        raise MesasErro("O dinheiro entregue é menor que a parte paga em dinheiro.")
+                    troco = (valor_recebido - dinheiro_cobrado).quantize(Decimal("0.01"))
+                else:
+                    valor_recebido = Decimal("0.00")
+                    troco = Decimal("0.00")
+            elif pagamento == "Dinheiro":
                 valor_recebido = cls._moeda(
                     valor_recebido,
                     "Valor recebido",
@@ -3567,6 +3594,10 @@ class MesasService:
             else:
                 valor_recebido = total_liquido
                 troco = Decimal("0.00")
+                parcelas = {pagamento: total_liquido}
+
+            if pagamento == "Dinheiro":
+                parcelas = {pagamento: total_liquido}
 
             venda_grupo = str(
                 uuid4()
@@ -3697,6 +3728,7 @@ class MesasService:
                         "desconto": desconto_item,
                         "valor": valor_liquido,
                         "pagamento": pagamento,
+                        "pagamentos": parcelas,
                         "valor_recebido": valor_recebido,
                         "troco": troco,
                         "empresa_id": empresa_id,
@@ -3790,7 +3822,7 @@ class MesasService:
                     "Confira a comanda novamente."
                 )
 
-            execute_values(
+            vendas_criadas = execute_values(
                 cursor,
                 """
                 INSERT INTO vendas (
@@ -3809,6 +3841,7 @@ class MesasService:
                     data_venda
                 )
                 VALUES %s
+                RETURNING id, valor
                 """,
                 linhas_vendas,
                 template=(
@@ -3821,6 +3854,38 @@ class MesasService:
                 page_size=len(
                     linhas_vendas
                 ),
+                fetch=True,
+            )
+
+            pagamentos_vendas = []
+            saldos_formas = dict(parcelas)
+            saldo_total = total_liquido
+            for indice, venda in enumerate(vendas_criadas):
+                valor_venda = cls._moeda(venda["valor"], "Valor da venda")
+                ultimo_item = indice == len(vendas_criadas) - 1
+                restante_item = valor_venda
+                for posicao, (forma, saldo_forma) in enumerate(list(saldos_formas.items())):
+                    ultima_forma = posicao == len(saldos_formas) - 1
+                    if ultimo_item:
+                        valor_parcela = saldo_forma
+                    elif ultima_forma:
+                        valor_parcela = restante_item
+                    else:
+                        valor_parcela = (valor_venda * saldo_forma / saldo_total).quantize(
+                            Decimal("0.01"), rounding=ROUND_HALF_UP
+                        )
+                        valor_parcela = min(valor_parcela, saldo_forma, restante_item)
+                    if valor_parcela > 0:
+                        pagamentos_vendas.append((venda["id"], forma, valor_parcela))
+                        saldos_formas[forma] -= valor_parcela
+                        restante_item -= valor_parcela
+                saldo_total -= valor_venda
+
+            execute_values(
+                cursor,
+                "INSERT INTO venda_pagamentos (venda_id, forma, valor) VALUES %s",
+                pagamentos_vendas,
+                template="(%s, %s, %s)",
             )
 
             cursor.execute(
@@ -4000,6 +4065,7 @@ class MesasService:
                 "pagamento": pagamento,
                 "valor_recebido": valor_recebido,
                 "troco": troco,
+                "pagamentos": parcelas,
                 "usuario_venda": usuario_venda,
                 "cupom": cupom,
             }

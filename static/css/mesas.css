@@ -3124,3 +3124,10 @@ html:not(.dark) .modal-recebimento .campo-valor-recebido input {
         grid-template-columns: 1fr;
     }
 }
+/* Pagamento dividido */
+.pagamento-dividido{margin-top:16px;padding:16px;border:1px solid rgba(75,159,255,.34);border-radius:16px;background:rgba(7,27,61,.42)}
+.pagamento-dividido[hidden]{display:none}.pagamento-dividido header{display:flex;justify-content:space-between;gap:12px;margin-bottom:12px}.pagamento-dividido header div{display:grid;gap:5px}.pagamento-dividido header span{color:var(--texto-suave,#9fb1ca);font-size:.8rem}
+.pagamento-dividido-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.pagamento-dividido-grid label{display:grid;gap:7px}.pagamento-dividido-grid input{width:100%}
+.pagamento-dividido-soma{display:grid;grid-template-columns:1fr auto;gap:5px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.09)}.pagamento-dividido-soma strong{color:#45e4c1}.pagamento-dividido-soma small{grid-column:1/-1;color:#f2aa55}.pagamento-dividido-soma small[data-status="pronto"]{color:#45e4c1}
+@media(max-width:680px){.pagamento-dividido-grid{grid-template-columns:1fr}.pagamento-dividido header{display:grid}}
+.ajuda-valor-recebido{display:block;margin-top:8px;color:var(--texto-suave,#9fb1ca);font-size:.76rem;line-height:1.45}

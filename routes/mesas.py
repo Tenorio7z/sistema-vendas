@@ -1070,6 +1070,9 @@ def registrar_rotas(
                     valor_recebido=request.form.get(
                         "valor_recebido"
                     ),
+                    valor_dinheiro=request.form.get("valor_dinheiro", "0"),
+                    valor_pix=request.form.get("valor_pix", "0"),
+                    valor_cartao=request.form.get("valor_cartao", "0"),
                     tipo_desconto=request.form.get(
                         "desconto_tipo",
                         "nenhum",

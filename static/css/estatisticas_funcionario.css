@@ -1264,3 +1264,165 @@ body.dark .ef-header::after {
         padding-inline: 10px;
     }
 }
+/* =========================================================
+   POTENCIAL DO ESTOQUE - GLASS
+========================================================= */
+
+.ef-esperados {
+    position: relative;
+    overflow: hidden;
+    margin: 20px 0;
+    padding: 21px 22px 22px;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 20px;
+
+    background:
+        radial-gradient(
+            circle at 94% -12%,
+            color-mix(in srgb, var(--ef-azul) 16%, transparent),
+            transparent 38%
+        ),
+        linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--ef-card) 91%, transparent),
+            color-mix(in srgb, var(--ef-card-suave) 86%, transparent)
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        var(--ef-sombra);
+
+    backdrop-filter: blur(24px) saturate(135%);
+    -webkit-backdrop-filter: blur(24px) saturate(135%);
+}
+
+.ef-esperados::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--ef-ciano) 75%, transparent),
+        transparent
+    );
+}
+
+.ef-esperados header {
+    position: relative;
+    z-index: 1;
+}
+
+.ef-esperados header span {
+    color: var(--ef-ciano);
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 0.24em;
+}
+
+.ef-esperados header h2 {
+    margin: 7px 0 17px;
+    color: var(--ef-texto);
+    font-size: clamp(19px, 2vw, 24px);
+    line-height: 1.15;
+}
+
+.ef-esperados > div {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.ef-esperados article {
+    --esperado-cor: var(--ef-azul);
+
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    min-height: 124px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+
+    border: 1px solid var(--ef-borda);
+    border-radius: 17px;
+
+    background:
+        radial-gradient(
+            circle at 100% 100%,
+            color-mix(in srgb, var(--esperado-cor) 15%, transparent),
+            transparent 48%
+        ),
+        color-mix(in srgb, var(--ef-card) 76%, transparent);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.42),
+        0 12px 28px rgba(4, 16, 37, 0.12);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.ef-esperados article:nth-child(2) {
+    --esperado-cor: var(--ef-verde);
+}
+
+.ef-esperados article::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(
+        180deg,
+        var(--esperado-cor),
+        transparent 92%
+    );
+}
+
+.ef-esperados article:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(
+        in srgb,
+        var(--esperado-cor) 38%,
+        var(--ef-borda)
+    );
+}
+
+.ef-esperados article > span {
+    color: var(--ef-secundario);
+    font-size: 11px;
+}
+
+.ef-esperados strong {
+    overflow: hidden;
+    color: var(--ef-texto);
+    font-size: clamp(23px, 2.4vw, 30px);
+    font-weight: 850;
+    line-height: 1.08;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.ef-esperados small {
+    color: var(--ef-secundario);
+    font-size: 9px;
+    line-height: 1.4;
+}
+
+@media (max-width: 620px) {
+    .ef-esperados {
+        padding: 18px;
+    }
+
+    .ef-esperados > div {
+        grid-template-columns: 1fr;
+    }
+}

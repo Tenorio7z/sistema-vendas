@@ -1000,6 +1000,7 @@
                         <option value="dinheiro">Dinheiro</option>
                         <option value="pix">PIX</option>
                         <option value="cartao">Cartão</option>
+                        <option value="dividido">Pagamento dividido</option>
                     </select>
                 </label>
 
@@ -1040,6 +1041,24 @@
 
             </div>
 
+            <section class="pagamento-dividido" id="pagamentoDividido" hidden>
+                <header>
+                    <div>
+                        <strong>1. Divida o valor da conta</strong>
+                        <span>Informe quanto do total será pago em cada forma.</span>
+                    </div>
+                </header>
+                <div class="pagamento-dividido-grid">
+                    <label><span>Parte paga em dinheiro</span><input name="valor_dinheiro" id="fecharValorDinheiro" value="0" inputmode="decimal" placeholder="Ex.: 50,00"></label>
+                    <label><span>Parte paga no PIX</span><input name="valor_pix" id="fecharValorPix" value="0" inputmode="decimal" placeholder="Ex.: 25,00"></label>
+                    <label><span>Parte paga no cartão</span><input name="valor_cartao" id="fecharValorCartao" value="0" inputmode="decimal" placeholder="Ex.: 25,00"></label>
+                </div>
+                <div class="pagamento-dividido-soma">
+                    <span>Total distribuído</span><strong id="fecharSomaPagamentos">R$ 0,00</strong>
+                    <small id="fecharDiferencaPagamentos">Falta R$ 0,00.</small>
+                </div>
+            </section>
+
             <section class="recebimento-previsao">
                 <span>Total previsto após desconto</span>
 
@@ -1050,12 +1069,15 @@
 
             <section class="recebimento-dinheiro" id="recebimentoDinheiro">
                 <label>
-                    <span>Valor entregue pelo cliente *</span>
+                    <span id="rotuloValorRecebido">Nota/valor recebido do cliente *</span>
                     <div class="campo-valor-recebido">
                         <span>R$</span>
                         <input type="text" name="valor_recebido" id="fecharValorRecebido"
-                            inputmode="decimal" autocomplete="off" placeholder="0,00">
+                            inputmode="decimal" autocomplete="off" placeholder="Ex.: 100,00">
                     </div>
+                    <small class="ajuda-valor-recebido" id="ajudaValorRecebido">
+                        Informe a nota ou o valor físico entregue pelo cliente. Este campo serve somente para calcular o troco.
+                    </small>
                 </label>
 
                 <div class="troco-resultado" id="trocoResultado" data-status="aguardando">
@@ -1320,16 +1342,41 @@
             const pagamento = document.getElementById("fecharPagamento").value;
             const bloco = document.getElementById("recebimentoDinheiro");
             const campo = document.getElementById("fecharValorRecebido");
-            const dinheiro = pagamento === "dinheiro";
+            const dividido = pagamento === "dividido";
+            const dinheiroParcial = numeroMonetario(document.getElementById("fecharValorDinheiro").value);
+            const dinheiro = pagamento === "dinheiro" || (dividido && dinheiroParcial > 0);
 
             bloco.hidden = !dinheiro;
             campo.required = dinheiro;
+            document.getElementById("pagamentoDividido").hidden = !dividido;
+            document.getElementById("rotuloValorRecebido").textContent = dividido
+                ? "2. Nota/valor recebido do cliente *"
+                : "Nota/valor recebido do cliente *";
+            document.getElementById("ajudaValorRecebido").textContent = dividido
+                ? "A parte da conta em dinheiro é " + moeda(dinheiroParcial)
+                    + ". Informe quanto o cliente entregou fisicamente para calcular o troco."
+                : "Informe a nota ou o valor físico entregue pelo cliente. Este campo serve somente para calcular o troco.";
 
             if (!dinheiro) {
                 campo.value = "";
             }
 
+            atualizarSomaPagamentos();
             atualizarTroco();
+        }
+
+        function atualizarSomaPagamentos() {
+            const dividido = document.getElementById("fecharPagamento").value === "dividido";
+            const soma = ["fecharValorDinheiro", "fecharValorPix", "fecharValorCartao"]
+                .reduce((total, id) => total + numeroMonetario(document.getElementById(id).value), 0);
+            const diferenca = totalLiquidoFechamento - soma;
+            document.getElementById("fecharSomaPagamentos").textContent = moeda(soma);
+            const ajuda = document.getElementById("fecharDiferencaPagamentos");
+            ajuda.textContent = Math.abs(diferenca) < 0.005
+                ? "Total distribuído corretamente."
+                : (diferenca > 0 ? "Falta " : "Excede ") + moeda(Math.abs(diferenca)) + ".";
+            ajuda.dataset.status = Math.abs(diferenca) < 0.005 ? "pronto" : "pendente";
+            if (dividido) atualizarTroco();
         }
 
         function atualizarTroco() {
@@ -1341,7 +1388,10 @@
             const texto = document.getElementById("fecharTroco");
             const ajuda = document.getElementById("fecharTrocoAjuda");
 
-            if (pagamento !== "dinheiro") {
+            const dinheiroDevido = pagamento === "dividido"
+                ? numeroMonetario(document.getElementById("fecharValorDinheiro").value)
+                : totalLiquidoFechamento;
+            if (pagamento !== "dinheiro" && (pagamento !== "dividido" || dinheiroDevido <= 0)) {
                 resultado.dataset.status = "oculto";
                 texto.textContent = moeda(0);
                 return;
@@ -1354,7 +1404,7 @@
                 return;
             }
 
-            const diferenca = valorRecebido - totalLiquidoFechamento;
+            const diferenca = valorRecebido - dinheiroDevido;
 
             if (diferenca < 0) {
                 resultado.dataset.status = "insuficiente";
@@ -1685,6 +1735,14 @@
             );
         }
 
+        ["fecharValorDinheiro", "fecharValorPix", "fecharValorCartao"].forEach(function (id) {
+            const campo = document.getElementById(id);
+            if (campo) campo.addEventListener("input", function () {
+                atualizarSomaPagamentos();
+                atualizarFormaPagamento();
+            });
+        });
+
         const formFecharComanda = document.getElementById(
             "formFecharComanda"
         );
@@ -1696,13 +1754,19 @@
                     const pagamentoDinheiro = (
                         fecharPagamento.value === "dinheiro"
                     );
+                    const pagamentoDividido = fecharPagamento.value === "dividido";
+                    const dinheiroDevido = pagamentoDividido
+                        ? numeroMonetario(document.getElementById("fecharValorDinheiro").value)
+                        : totalLiquidoFechamento;
+                    const somaDividida = ["fecharValorDinheiro", "fecharValorPix", "fecharValorCartao"]
+                        .reduce((total, id) => total + numeroMonetario(document.getElementById(id).value), 0);
                     const recebido = numeroMonetario(
                         fecharValorRecebido.value
                     );
 
                     if (
-                        pagamentoDinheiro
-                        && recebido < totalLiquidoFechamento
+                        (pagamentoDinheiro || (pagamentoDividido && dinheiroDevido > 0))
+                        && recebido < dinheiroDevido
                     ) {
                         evento.preventDefault();
                         fecharValorRecebido.focus();
@@ -1711,13 +1775,20 @@
                         );
                         return;
                     }
+                    if (pagamentoDividido && Math.abs(somaDividida - totalLiquidoFechamento) >= 0.005) {
+                        evento.preventDefault();
+                        window.alert(
+                            "A soma de Dinheiro + PIX + Cartão deve ser exatamente igual ao total da conta."
+                        );
+                        return;
+                    }
 
                     const troco = Math.max(
-                        recebido - totalLiquidoFechamento,
+                        recebido - dinheiroDevido,
                         0
                     );
                     const confirmar = window.confirm(
-                        pagamentoDinheiro
+                        (pagamentoDinheiro || pagamentoDividido)
                             ? (
                                 "Confirmar o pagamento?\n\n"
                                 + "Total: " + moeda(totalLiquidoFechamento)

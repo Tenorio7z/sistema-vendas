@@ -152,6 +152,7 @@ def registrar_rotas(app):
                     u.id,
                     u.usuario,
                     u.status,
+                    u.filial_id,
                     COALESCE(u.comissao, 0) AS percentual_comissao,
                     COALESCE(fc.cargo, 'Funcionário') AS cargo,
                     COALESCE(fc.salario_base, 0) AS salario_base
@@ -185,6 +186,18 @@ def registrar_rotas(app):
                     "percentual_comissao"
                 )
             )
+
+            cursor.execute(
+                """
+                SELECT COALESCE(SUM(COALESCE(p.preco, 0) * COALESCE(pf.estoque, 0)), 0) AS total
+                FROM produto_filial pf
+                INNER JOIN produtos p ON p.id = pf.produto_id
+                WHERE pf.filial_id = %s AND p.empresa_id = %s AND pf.ativo = TRUE
+                """,
+                (funcionario.get("filial_id"), empresa_id),
+            )
+            resultado_esperado = _numero((cursor.fetchone() or {}).get("total"))
+            comissao_esperada = resultado_esperado * percentual_comissao / 100
 
             # =====================================
             # RESUMO DAS VENDAS
@@ -575,6 +588,8 @@ def registrar_rotas(app):
                     percentual_comissao
                 ),
                 comissao_gerada=comissao_gerada,
+                resultado_esperado=resultado_esperado,
+                comissao_esperada=comissao_esperada,
                 comissao_paga=comissao_paga,
                 comissao_pendente=(
                     comissao_pendente

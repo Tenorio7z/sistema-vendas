@@ -9,6 +9,7 @@ def executar():
         raiz / "migrations" / "014_configuracao_impressao.sql",
         raiz / "migrations" / "015_otimizacao_mesas.sql",
         raiz / "migrations" / "016_troco_comandas.sql",
+        raiz / "migrations" / "017_pagamentos_divididos.sql",
     )
 
     conn = conectar()

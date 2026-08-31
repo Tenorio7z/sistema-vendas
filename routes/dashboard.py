@@ -6,6 +6,7 @@ from flask import jsonify, redirect, render_template, request, session
 
 from database import conectar, criar_cursor
 from services.filiais_service import FiliaisService
+from services.pagamentos_service import resumo_pagamentos
 
 
 ZERO = Decimal("0.00")
@@ -550,6 +551,9 @@ def _carregar_dashboard(empresa_id, filial_id, filtro):
             )
 
         grafico = _grafico_vendas(cursor, empresa_id, filial_id, filtro)
+        recebimentos = resumo_pagamentos(
+            cursor, empresa_id, filtro["inicio"], filtro["fim"], filial_id
+        )
         variacao_faturamento = _variacao(
             faturamento, vendas.get("faturamento_anterior")
         )
@@ -579,6 +583,7 @@ def _carregar_dashboard(empresa_id, filial_id, filtro):
             "outras_saidas": _numero(outras_saidas),
             "variacao_faturamento": variacao_faturamento,
             "variacao_vendas": variacao_vendas,
+            "recebimentos": recebimentos,
         }
 
         produto_mais_vendido = ranking[0] if ranking else None

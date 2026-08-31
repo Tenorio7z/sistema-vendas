@@ -180,6 +180,66 @@
     </section>
 
     <!-- =====================================
+         RECEBIMENTOS POR FORMA DE PAGAMENTO
+    ====================================== -->
+
+    <section class="pagamentos-bloco">
+        <header class="pagamentos-cabecalho">
+            <div>
+                <span class="card-label">RECEBIMENTOS</span>
+                <h2>Formas de pagamento</h2>
+            </div>
+            <small>Valores das vendas válidas no período selecionado</small>
+        </header>
+
+        <div class="pagamentos-cards">
+            <article class="financeiro-card azul pagamento-resumo">
+                <div class="card-topo"><span>Dinheiro</span><span class="card-icone">R$</span></div>
+                <strong>R$ {{ "%.2f"|format(recebimentos.dinheiro) }}</strong>
+                <small>Recebido em espécie</small>
+            </article>
+
+            <article class="financeiro-card verde pagamento-resumo">
+                <div class="card-topo"><span>PIX</span><span class="card-icone">↗</span></div>
+                <strong>R$ {{ "%.2f"|format(recebimentos.pix) }}</strong>
+                <small>Recebido via PIX</small>
+            </article>
+
+            <article class="financeiro-card roxo pagamento-resumo">
+                <div class="card-topo"><span>Cartão</span><span class="card-icone">▣</span></div>
+                <strong>R$ {{ "%.2f"|format(recebimentos.cartao) }}</strong>
+                <small>Crédito e débito</small>
+            </article>
+        </div>
+
+        <article class="pagamento-pizza-card">
+            <div class="pagamento-grafico-area">
+                <div class="pagamento-grafico-canvas">
+                    <canvas id="graficoPagamentos"></canvas>
+                </div>
+                <div class="pagamento-grafico-centro" aria-hidden="true">
+                    <span>Total</span>
+                    <strong>R$ {{ "%.2f"|format(recebimentos.total) }}</strong>
+                </div>
+            </div>
+
+            <div class="pagamento-legenda">
+                <span class="card-label">DISTRIBUIÇÃO</span>
+                <h3>Participação nos recebimentos</h3>
+                <ul>
+                    {% for item in recebimentos.itens %}
+                    <li class="pagamento-{{ item.forma|lower|replace('ã', 'a') }}">
+                        <span><i></i>{{ item.forma }}</span>
+                        <strong>R$ {{ "%.2f"|format(item.valor) }}</strong>
+                        <small>{{ "%.1f"|format(item.percentual) }}%</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </article>
+    </section>
+
+    <!-- =====================================
          KPIs PRINCIPAIS
     ====================================== -->
 
@@ -985,6 +1045,72 @@
 {% if not bloqueado %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script id="dadosPagamentos" type="application/json">
+    {{ recebimentos.itens | tojson }}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const elemento = document.getElementById("graficoPagamentos");
+    const fonteDados = document.getElementById("dadosPagamentos");
+
+    if (!elemento || !fonteDados || typeof Chart === "undefined") {
+        return;
+    }
+
+    let dados = [];
+
+    try {
+        dados = JSON.parse(fonteDados.textContent.trim() || "[]");
+    } catch (erro) {
+        console.error("Erro ao carregar formas de pagamento:", erro);
+        return;
+    }
+
+    new Chart(elemento, {
+        type: "doughnut",
+        data: {
+            labels: dados.map(function (item) {
+                return item.forma;
+            }),
+            datasets: [{
+                data: dados.map(function (item) {
+                    return item.valor;
+                }),
+                backgroundColor: ["#ffb54b", "#36e0bb", "#6380ff"],
+                borderWidth: 0,
+                hoverOffset: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "68%",
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (contexto) {
+                            const valor = Number(contexto.raw).toLocaleString(
+                                "pt-BR",
+                                {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }
+                            );
+
+                            return contexto.label + ": R$ " + valor;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
 
 <script id="dadosLabelsFinanceiro" type="application/json">
     {{ labels | tojson }}

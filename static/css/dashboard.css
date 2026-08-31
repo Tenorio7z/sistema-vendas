@@ -1381,3 +1381,62 @@ body:not(.dark) .dash-nami-panel a {
         flex-direction: column;
     }
 }
+.dash-payments{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}.dash-payments article{display:grid;gap:7px;padding:17px 19px;border:1px solid rgba(78,155,255,.25);border-radius:16px;background:rgba(24,49,89,.72);box-shadow:inset 0 1px rgba(255,255,255,.06)}.dash-payments span,.dash-payments small{color:#9fb0c9}.dash-payments strong{font-size:1.35rem;color:#fff}@media(max-width:720px){.dash-payments{grid-template-columns:1fr}}
+
+/* =========================================================
+   CORREÇÃO DE ALINHAMENTO DAS GRADES
+========================================================= */
+
+/* As ações ocupam toda a linha independentemente da quantidade
+   de módulos liberados para a empresa. */
+.dash-quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    grid-template-columns: none;
+}
+
+.dash-quick-actions .dash-action {
+    flex: 1 1 175px;
+    min-width: 0;
+}
+
+/* Gráfico e alertas sempre encerram na mesma altura. */
+.dash-main-grid {
+    align-items: stretch;
+}
+
+.dash-main-grid > .dash-panel {
+    height: 100%;
+}
+
+.dash-chart-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-chart-panel .dash-chart-wrap {
+    flex: 1;
+    min-height: 280px;
+}
+
+/* Movimento e ranking acompanham a altura do maior card. */
+.dash-secondary-grid > .dash-panel {
+    height: 100%;
+}
+
+@media (max-width: 700px) {
+    .dash-quick-actions .dash-action {
+        flex-basis: calc(50% - 6px);
+    }
+
+    .dash-chart-panel .dash-chart-wrap {
+        min-height: 235px;
+    }
+}
+
+@media (max-width: 430px) {
+    .dash-quick-actions .dash-action {
+        flex-basis: 100%;
+    }
+}

@@ -278,6 +278,8 @@ def _altura_necessaria(vendas):
 
     if primeira_venda.get("pagamento") == "Dinheiro":
         altura += 7 * mm
+    elif primeira_venda.get("pagamento") == "Dividido":
+        altura += 13 * mm
 
     largura_nome = 30 * mm
 
@@ -881,7 +883,20 @@ def gerar_cupom_venda(
 
     y -= 3.5 * mm
 
-    if forma_pagamento == "Dinheiro":
+    if forma_pagamento == "Dividido":
+        pagamentos = venda_ids[0].get("pagamentos") or {}
+        for forma in ("Dinheiro", "PIX", "Cartão"):
+            valor_forma = _decimal(pagamentos.get(forma))
+            if valor_forma <= 0:
+                continue
+            pdf.setFont(FONTE_NORMAL, 5.6)
+            pdf.drawString(esquerda, y, forma.upper() + ":")
+            pdf.drawRightString(direita, y, _moeda(valor_forma))
+            y -= 3.1 * mm
+
+    if forma_pagamento in {"Dinheiro", "Dividido"} and _decimal(
+        venda_ids[0].get("valor_recebido")
+    ) > 0:
         valor_recebido = _decimal(
             venda_ids[0].get("valor_recebido")
         )

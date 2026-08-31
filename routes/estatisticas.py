@@ -8,6 +8,7 @@ from flask import (
 )
 
 from database import conectar, criar_cursor
+from services.pagamentos_service import resumo_pagamentos
 
 
 def _converter_data(valor, padrao):
@@ -852,6 +853,7 @@ def registrar_rotas(app):
 
                 bloqueado=False,
                 filtro=filtro,
+                recebimentos=resumo_pagamentos(cursor, empresa_id, inicio, fim),
 
                 faturamento_bruto=faturamento_bruto,
 
