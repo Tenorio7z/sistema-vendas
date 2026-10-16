@@ -76,6 +76,7 @@ from services.modulos_empresa_service import (
 from routes.mesas import (
     registrar_rotas as mesas_rotas,
 )
+from routes.configuracoes import registrar_rotas as configuracoes_rotas
 
 
 notificacoes(app)
@@ -89,6 +90,7 @@ vendas(app, socketio)
 registrar_rotas_onboarding_publico(app)
 registrar_rotas_onboarding_admin(app)
 auth(app)
+configuracoes_rotas(app)
 dashboard(app)
 produtos(app)
 importacao_produtos(app)

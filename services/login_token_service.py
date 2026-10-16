@@ -110,6 +110,7 @@ class LoginTokenService:
 
                     u.id,
                     u.usuario,
+                    u.nome_exibicao,
                     u.nivel,
                     u.empresa_id,
                     u.filial_id,

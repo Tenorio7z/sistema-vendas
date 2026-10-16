@@ -28,6 +28,10 @@ def _preencher_sessao(usuario):
     session["logado"] = True
     session["usuario_id"] = usuario["id"]
     session["usuario"] = usuario["usuario"]
+    session["nome_exibicao"] = (
+        usuario.get("nome_exibicao")
+        or usuario["usuario"]
+    )
     session["nivel"] = usuario["nivel"]
     session["empresa_id"] = usuario.get("empresa_id")
     session["filial_id"] = usuario.get("filial_id")
@@ -228,6 +232,7 @@ def registrar_rotas(app):
                     SELECT
                         u.id,
                         u.usuario,
+                        u.nome_exibicao,
                         u.senha,
                         u.nivel,
                         u.empresa_id,

@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/configuracoes.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="config-shell">
+    <header class="config-hero">
+        <div>
+            <span class="config-kicker">SUA CONTA NEXUS</span>
+            <h1>Configurações</h1>
+            <p>Atualize seus dados pessoais, proteja sua conta e mantenha as informações da loja em dia.</p>
+        </div>
+        <div class="config-hero-mark" aria-hidden="true">⚙</div>
+    </header>
+
+    <section class="config-card" aria-labelledby="titulo-perfil">
+        <div class="config-card-heading">
+            <div>
+                <span class="config-eyebrow">DADOS PESSOAIS</span>
+                <h2 id="titulo-perfil">Seu perfil</h2>
+                <p>Como você aparece para as pessoas que usam esta conta.</p>
+            </div>
+        </div>
+        <form action="{{ url_for('configuracoes') }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="secao" value="perfil">
+            <div class="profile-grid">
+                <div class="avatar-column">
+                    <label class="avatar-upload" for="foto-perfil">
+                        {% if perfil.possui_foto %}
+                        <img id="preview-foto" src="{{ url_for('configuracoes_foto_usuario') }}" alt="Foto do perfil">
+                        {% else %}
+                        <img id="preview-foto" src="" alt="" hidden>
+                        <span id="avatar-placeholder">{{ (perfil.nome_exibicao or perfil.usuario)[0]|upper }}</span>
+                        {% endif %}
+                        <span class="avatar-edit" aria-hidden="true">＋</span>
+                    </label>
+                    <input class="visually-hidden" id="foto-perfil" type="file" name="foto" accept="image/jpeg,image/png,image/webp" data-preview="preview-foto">
+                    <small>JPG, PNG ou WEBP · até 5 MB</small>
+                    {% if perfil.possui_foto %}
+                    <label class="remove-image"><input type="checkbox" name="remover_foto" value="1"> Remover foto atual</label>
+                    {% endif %}
+                </div>
+                <div class="profile-fields">
+                    <label for="nome-exibicao">Nome de exibição</label>
+                    <input id="nome-exibicao" name="nome_exibicao" type="text" maxlength="120" value="{{ perfil.nome_exibicao or perfil.usuario }}" autocomplete="name" required>
+                    <label for="nome-usuario">Usuário de acesso</label>
+                    <input id="nome-usuario" type="text" value="{{ perfil.usuario }}" disabled>
+                    <p class="field-hint">O nome de acesso continua sendo usado para entrar no sistema.</p>
+                    <div class="form-actions"><button class="primary-button" type="submit">Salvar perfil</button></div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <section class="config-card appearance-card" aria-labelledby="titulo-aparencia">
+        <div class="config-card-heading">
+            <div>
+                <span class="config-eyebrow">PREFERÊNCIA VISUAL</span>
+                <h2 id="titulo-aparencia">Aparência</h2>
+                <p>Escolha o modo que deixa o sistema mais confortável para você.</p>
+            </div>
+        </div>
+        <div class="appearance-control">
+            <div class="appearance-label">
+                <strong>Modo claro ou escuro</strong>
+                <span>A escolha fica salva neste navegador.</span>
+            </div>
+            <div class="theme-wrapper" aria-label="Alternar entre modo claro e escuro">
+                <img src="{{ url_for('static', filename='icons/light.png') }}" alt="Modo claro" class="theme-side-icon">
+                <button id="toggleTheme" type="button" class="theme-switch" aria-label="Alternar tema" aria-pressed="false">
+                    <span class="switch-ball"></span>
+                </button>
+                <img src="{{ url_for('static', filename='icons/dark.png') }}" alt="Modo escuro" class="theme-side-icon">
+            </div>
+        </div>
+    </section>
+
+    <section class="config-card" aria-labelledby="titulo-seguranca">
+        <div class="config-card-heading">
+            <div>
+                <span class="config-eyebrow">SEGURANÇA</span>
+                <h2 id="titulo-seguranca">Alterar senha</h2>
+                <p>Confirme sua senha atual para cadastrar uma nova.</p>
+            </div>
+            <span class="section-icon" aria-hidden="true">⌑</span>
+        </div>
+        <form class="password-grid" action="{{ url_for('configuracoes') }}" method="post">
+            <input type="hidden" name="secao" value="senha">
+            <label>Senha atual<input type="password" name="senha_atual" autocomplete="current-password" required></label>
+            <label>Nova senha<input type="password" name="nova_senha" minlength="8" autocomplete="new-password" required></label>
+            <label>Confirmar nova senha<input type="password" name="confirmar_senha" minlength="8" autocomplete="new-password" required></label>
+            <div class="form-actions"><button class="primary-button" type="submit">Atualizar senha</button></div>
+        </form>
+    </section>
+
+    {% if empresa %}
+    <section class="config-card" aria-labelledby="titulo-empresa">
+        <div class="config-card-heading">
+            <div>
+                <span class="config-eyebrow">ESPAÇO DA EMPRESA</span>
+                <h2 id="titulo-empresa">Dados da loja</h2>
+                <p>Essas informações ficam disponíveis para os usuários da sua empresa.</p>
+            </div>
+            <span class="section-icon" aria-hidden="true">⌂</span>
+        </div>
+        <form action="{{ url_for('configuracoes') }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="secao" value="empresa">
+            <div class="company-grid">
+                <div class="company-logo-column">
+                    <label class="company-logo-upload" for="logo-empresa">
+                        {% if empresa.possui_logo %}
+                        <img id="preview-logo" src="{{ url_for('configuracoes_logo_empresa') }}" alt="Logo da empresa">
+                        {% else %}
+                        <img id="preview-logo" src="" alt="" hidden>
+                        <span id="logo-placeholder">Sua logo</span>
+                        {% endif %}
+                    </label>
+                    <input class="visually-hidden" id="logo-empresa" type="file" name="logo" accept="image/jpeg,image/png,image/webp" data-preview="preview-logo">
+                    <small>JPG, PNG ou WEBP · até 5 MB</small>
+                    {% if empresa.possui_logo %}
+                    <label class="remove-image"><input type="checkbox" name="remover_logo" value="1"> Remover logo atual</label>
+                    {% endif %}
+                </div>
+                <div class="company-fields">
+                    <label for="nome-empresa">Nome da empresa</label>
+                    <input id="nome-empresa" name="nome_empresa" type="text" maxlength="150" value="{{ empresa.nome or '' }}" required>
+                    <div class="company-contact-grid">
+                        <label>Telefone<input name="telefone" type="tel" maxlength="30" value="{{ empresa.telefone or '' }}" autocomplete="tel"></label>
+                        <label>E-mail<input name="email" type="email" maxlength="180" value="{{ empresa.email or '' }}" autocomplete="email"></label>
+                    </div>
+                    <label for="endereco-empresa">Endereço</label>
+                    <input id="endereco-empresa" name="endereco" type="text" maxlength="255" value="{{ empresa.endereco or '' }}" autocomplete="street-address">
+                    <div class="form-actions"><button class="primary-button" type="submit">Salvar dados da empresa</button></div>
+                </div>
+            </div>
+        </form>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+document.querySelectorAll("[data-preview]").forEach(function (campo) {
+    campo.addEventListener("change", function () {
+        var arquivo = campo.files && campo.files[0];
+        if (!arquivo) return;
+        var imagem = document.getElementById(campo.dataset.preview);
+        imagem.src = URL.createObjectURL(arquivo);
+        imagem.hidden = false;
+        var placeholderId = campo.id === "foto-perfil" ? "avatar-placeholder" : "logo-placeholder";
+        var placeholder = document.getElementById(placeholderId);
+        if (placeholder) placeholder.hidden = true;
+    });
+});
+</script>
+{% endblock %}

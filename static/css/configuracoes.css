@@ -1,0 +1,119 @@
+.config-shell {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+    padding: 30px clamp(16px, 3vw, 38px) 54px;
+    display: grid;
+    gap: 22px;
+    color: var(--texto);
+}
+.config-hero {
+    min-height: 174px;
+    padding: clamp(24px, 4vw, 42px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    overflow: hidden;
+    border: 1px solid var(--borda);
+    border-radius: 26px;
+    background: radial-gradient(circle at 88% 15%, rgba(88,186,255,.24), transparent 28%), linear-gradient(135deg, rgba(67,140,255,.15), var(--bg-card));
+    box-shadow: var(--sombra);
+}
+.config-kicker,.config-eyebrow { color: var(--azul-escuro); font-size: 10px; font-weight: 800; letter-spacing: 1.6px; }
+html.dark .config-kicker,html.dark .config-eyebrow { color: #77c5ff; }
+.config-hero h1 { margin: 8px 0 7px; font-size: clamp(27px, 4vw, 38px); letter-spacing: -.7px; }
+.config-hero p,.config-card-heading p { margin: 0; color: var(--texto-secundario); line-height: 1.55; }
+.config-hero-mark {
+    width: 84px; height: 84px; flex: 0 0 84px; display: grid; place-items: center;
+    border: 1px solid var(--borda-forte); border-radius: 26px; color: var(--azul);
+    background: var(--bg-card); font-size: 42px; transform: rotate(-8deg);
+}
+.config-card {
+    padding: clamp(20px, 3vw, 30px); border: 1px solid var(--borda);
+    border-radius: 22px; background: var(--bg-card); box-shadow: var(--sombra);
+}
+.config-card-heading { margin-bottom: 24px; display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.config-card-heading h2 { margin: 7px 0 6px; font-size: 21px; }
+.config-card-heading p { font-size: 13px; }
+.section-icon {
+    width: 42px; height: 42px; display: grid; place-items: center;
+    border: 1px solid var(--borda); border-radius: 14px; color: var(--azul);
+    background: var(--bg-input); font-size: 24px;
+}
+.profile-grid,.company-grid { display: grid; grid-template-columns: 190px minmax(0,1fr); gap: clamp(22px, 4vw, 42px); }
+.avatar-column,.company-logo-column { display: flex; align-items: center; flex-direction: column; gap: 10px; }
+.avatar-upload {
+    position: relative; width: 142px; height: 142px; display: grid; place-items: center;
+    overflow: hidden; border: 2px solid var(--borda-forte); border-radius: 50%;
+    color: var(--azul); background: var(--bg-input); cursor: pointer; font-size: 52px; font-weight: 700;
+}
+.avatar-upload img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-upload img[hidden],.company-logo-upload img[hidden] { display: none; }
+.avatar-edit {
+    position: absolute; right: 2px; bottom: 4px; width: 34px; height: 34px;
+    display: grid; place-items: center; border: 2px solid var(--bg-card); border-radius: 50%;
+    color: #fff; background: var(--azul-escuro); font-size: 22px;
+}
+.avatar-column>small,.company-logo-column>small { color: var(--texto-suave); font-size: 11px; text-align: center; }
+.visually-hidden {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.profile-fields,.company-fields { display: grid; align-content: start; gap: 10px; }
+.profile-fields>label,.company-fields>label,.password-grid label,.company-contact-grid label {
+    display: grid; gap: 8px; color: var(--texto-secundario); font-size: 12px; font-weight: 700;
+}
+.profile-fields input,.company-fields input,.password-grid input {
+    width: 100%; min-height: 46px; padding: 0 14px; border: 1px solid var(--borda);
+    border-radius: 12px; outline: none; color: var(--texto); background: var(--bg-input);
+    font-size: 14px; transition: border-color .18s, box-shadow .18s;
+}
+.profile-fields input:focus,.company-fields input:focus,.password-grid input:focus {
+    border-color: var(--azul); box-shadow: 0 0 0 3px rgba(67,140,255,.13);
+}
+.profile-fields input:disabled { opacity: .65; cursor: not-allowed; }
+.field-hint { margin: -3px 0 5px; color: var(--texto-suave); font-size: 11px; }
+.form-actions { margin-top: 8px; display: flex; justify-content: flex-end; }
+.primary-button {
+    min-height: 44px; padding: 0 20px; border: 0; border-radius: 12px; color: #fff;
+    background: linear-gradient(135deg, var(--azul-claro), var(--azul-escuro));
+    box-shadow: 0 8px 18px rgba(53,107,233,.2); cursor: pointer; font-size: 13px; font-weight: 800;
+}
+.primary-button:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.remove-image { color: var(--vermelho); font-size: 11px; cursor: pointer; }
+.remove-image input { accent-color: var(--vermelho); }
+.password-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 15px; align-items: end; }
+.password-grid .form-actions { grid-column: 1/-1; }
+.company-logo-upload {
+    width: 160px; height: 130px; padding: 12px; display: grid; place-items: center; overflow: hidden;
+    border: 1px dashed var(--borda-forte); border-radius: 18px; color: var(--texto-suave);
+    background: var(--bg-input); cursor: pointer; font-size: 13px; font-weight: 700;
+}
+.company-logo-upload img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.company-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.appearance-control {
+    min-height: 72px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border: 1px solid var(--borda);
+    border-radius: 16px;
+    background: var(--bg-input);
+}
+.appearance-label { display: grid; gap: 5px; }
+.appearance-label strong { color: var(--texto); font-size: 13px; }
+.appearance-label span { color: var(--texto-suave); font-size: 11px; }
+.appearance-control .theme-wrapper { gap: 11px; }
+.appearance-control .theme-side-icon { width: 20px; height: 20px; }
+@media (max-width: 760px) {
+    .config-shell { padding: 18px 12px 34px; gap: 15px; }
+    .config-hero { min-height: 145px; border-radius: 20px; }
+    .config-hero-mark { width: 58px; height: 58px; flex-basis: 58px; border-radius: 18px; font-size: 30px; }
+    .profile-grid,.company-grid { grid-template-columns: 1fr; }
+    .avatar-column,.company-logo-column { align-items: flex-start; }
+    .password-grid { grid-template-columns: 1fr; }
+    .password-grid .form-actions { grid-column: auto; }
+    .company-contact-grid { grid-template-columns: 1fr; }
+}

@@ -45,24 +45,17 @@
                             ) }}" alt="Menu">
                     </button>
 
-                    <div class="theme-wrapper">
-
-                        <img src="{{ url_for(
-                                'static',
-                                filename='icons/light.png'
-                            ) }}" alt="Modo escuro" class="theme-side-icon">
-
-                        <button id="toggleTheme" type="button" class="theme-switch" aria-label="Alternar tema"
-                            aria-pressed="false">
-                            <span class="switch-ball"></span>
-                        </button>
-
-                        <img src="{{ url_for(
-                                'static',
-                                filename='icons/dark.png'
-                            ) }}" alt="Modo claro" class="theme-side-icon">
-
-                    </div>
+                    {% if session.get("logado") %}
+                    <a class="sidebar-account" href="/configuracoes" aria-label="Abrir configurações do perfil">
+                        <span class="sidebar-account-avatar">
+                            <span class="sidebar-avatar-fallback" hidden>{{ (session.get("nome_exibicao") or session.get("usuario") or "U")[0]|upper }}</span>
+                            <img class="sidebar-avatar-image" src="{{ url_for('configuracoes_foto_usuario') }}" alt="Foto do perfil"
+                                onload="this.previousElementSibling.hidden=true"
+                                onerror="this.hidden=true;this.previousElementSibling.hidden=false">
+                        </span>
+                        <span class="sidebar-account-name">{{ session.get("nome_exibicao") or session.get("usuario") }}</span>
+                    </a>
+                    {% endif %}
 
                 </div>
 
@@ -302,6 +295,11 @@
 
             {% endif %}
 
+            <a href="/configuracoes" class="{% if request.path.startswith('/configuracoes') %}active{% endif %}">
+                <span class="nav-icon nav-icon-svg" aria-hidden="true">⚙</span>
+                <span class="link-text">Configurações</span>
+            </a>
+
             <a href="/logout">
                 <img src="{{ url_for(
                         'static',
@@ -324,7 +322,7 @@
                         </small>
 
                         <strong>
-                            Nexus PDV v3.1
+                            Nexus PDV v5.4
                         </strong>
 
                     </div>
@@ -416,11 +414,11 @@
                     <div>
 
                         <strong>
-                            Nexus PDV v3.1
+                            Nexus PDV v5.4
                         </strong>
 
                         <small>
-                            Publicada em 25/08/2026
+                            Publicada em 16/10/2026
                         </small>
 
                     </div>

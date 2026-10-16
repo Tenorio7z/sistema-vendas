@@ -1,0 +1,31 @@
+BEGIN;
+
+ALTER TABLE usuarios
+    ADD COLUMN IF NOT EXISTS nome_exibicao VARCHAR(120);
+
+UPDATE usuarios
+SET nome_exibicao = usuario
+WHERE nome_exibicao IS NULL OR BTRIM(nome_exibicao) = '';
+
+ALTER TABLE usuarios
+    ADD COLUMN IF NOT EXISTS foto BYTEA;
+
+ALTER TABLE usuarios
+    ADD COLUMN IF NOT EXISTS foto_mime VARCHAR(50);
+
+ALTER TABLE empresa
+    ADD COLUMN IF NOT EXISTS telefone VARCHAR(30);
+
+ALTER TABLE empresa
+    ADD COLUMN IF NOT EXISTS email VARCHAR(180);
+
+ALTER TABLE empresa
+    ADD COLUMN IF NOT EXISTS endereco VARCHAR(255);
+
+ALTER TABLE empresa
+    ADD COLUMN IF NOT EXISTS logo BYTEA;
+
+ALTER TABLE empresa
+    ADD COLUMN IF NOT EXISTS logo_mime VARCHAR(50);
+
+COMMIT;
