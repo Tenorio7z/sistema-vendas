@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_financeiro.css') }}">{% endblock %}
+{% block content %}
+<section class="fin-page">
+  <header class="fin-header">
+    <div><span class="fin-eyebrow">PAINEL MASTER · FINANCEIRO</span><h1>Financeiro</h1><p>Acompanhe mensalidades, extras e despesas do sistema.</p></div>
+    <form class="fin-month" method="get"><label for="mes">Competência</label><input id="mes" name="mes" type="month" value="{{ competencia }}"><button>Ver mês</button></form>
+  </header>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="fin-alerts">{% for category, message in messages %}<div class="fin-alert {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+  <div class="fin-kpis">
+    <article class="fin-kpi"><span>Recebido no mês</span><strong>{{ recebido|brl }}</strong><small>{{ resumo.pagamentos }} pagamento(s) confirmado(s)</small></article>
+    <article class="fin-kpi"><span>Extras recebidos</span><strong>{{ extras|brl }}</strong><small>Acima da mensalidade registrada</small></article>
+    <article class="fin-kpi"><span>Despesas</span><strong>{{ total_despesas|brl }}</strong><small>{{ despesas|length }} lançamento(s) manual(is)</small></article>
+    <article class="fin-kpi fin-balance"><span>Saldo do mês</span><strong>{{ saldo|brl }}</strong><small>Recebimentos menos despesas</small></article>
+  </div>
+  <div class="fin-overview">
+    <article class="fin-card fin-chart-card"><div class="fin-section-head"><div><span class="fin-eyebrow">VISÃO GERAL</span><h2>Últimos 6 meses</h2></div><div class="fin-legend"><span><i class="received"></i>Recebido</span><span><i class="spent"></i>Despesas</span></div></div>
+      <div class="fin-chart">{% for item in grafico %}<div class="fin-chart-col"><div class="fin-bars"><div class="fin-bar received" style="height:{{ item.recebido_pct }}%" title="Recebido: {{ item.recebido|brl }}"></div><div class="fin-bar spent" style="height:{{ item.despesas_pct }}%" title="Despesas: {{ item.despesas|brl }}"></div></div><span>{{ item.rotulo }}</span></div>{% endfor %}</div>
+    </article>
+    <article class="fin-card fin-pending"><span class="fin-eyebrow">COBRANÇA</span><h2>{{ pendentes|length }} pendente(s)</h2><strong class="pending-value">{{ pendente_valor|brl }}</strong><p>Previsto: {{ esperado|brl }} · Recebido: {{ recebido|brl }}</p><div class="fin-progress"><i style="width:{{ (recebido / esperado * 100 if esperado else 0)|round|int }}%"></i></div><small>Mensalidade padrão atual: {{ mensalidade|brl }}</small></article>
+  </div>
+  <div class="fin-grid">
+    <section class="fin-card"><div class="fin-section-head"><div><span class="fin-eyebrow">EMPRESAS</span><h2>Pagamentos da competência</h2></div><span class="fin-count">{{ pagas_ativas|length }}/{{ pagas_ativas|length + pendentes|length }} pagos</span></div>
+      {% if empresas %}<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>Empresa</th><th>Status</th><th>Mensalidade</th><th>Pago / extra</th><th>Registro</th></tr></thead><tbody>
+      {% for e in empresas %}<tr><td><strong>{{ e.empresa_nome }}</strong><small>{{ e.usuario }}</small></td><td>{% if not e.ativa %}<span class="fin-pill inactive">Inativa</span>{% elif e.pagamento_id %}<span class="fin-pill paid">Pago</span>{% else %}<span class="fin-pill pending">Pendente</span>{% endif %}</td><td>{{ (e.valor_mensalidade if e.pagamento_id else mensalidade)|brl }}</td><td>{% if e.pagamento_id %}<strong>{{ e.valor_pago|brl }}</strong>{% if e.extra and e.extra > 0 %}<small class="fin-extra">+ {{ e.extra|brl }} extra</small>{% endif %}{% else %}—{% endif %}</td><td>{% if e.ativa %}<details class="fin-edit"><summary>{% if e.pagamento_id %}Editar{% else %}Confirmar{% endif %}</summary><form method="post" action="{{ url_for('admin_financeiro_pagamento') }}" class="fin-inline-form"><input type="hidden" name="mes" value="{{ competencia }}"><input type="hidden" name="empresa_id" value="{{ e.empresa_id }}"><label>Valor recebido<input type="text" inputmode="decimal" name="valor_pago" value="{{ e.valor_pago if e.pagamento_id else mensalidade }}" required></label><label>Data<input type="date" name="data_pagamento" value="{{ e.data_pagamento.isoformat() if e.data_pagamento else '' }}" required></label><label>Forma (opcional)<input name="forma_pagamento" maxlength="40" value="{{ e.forma_pagamento or '' }}" placeholder="Pix, transferência..."></label><label>Observação<input name="observacao" maxlength="500" value="{{ e.observacao or '' }}"></label><button class="fin-button">Salvar pagamento</button></form></details>{% else %}—{% endif %}</td></tr>{% endfor %}
+      </tbody></table></div>{% else %}<p class="fin-empty">Nenhuma empresa cadastrada.</p>{% endif %}
+    </section>
+    <aside class="fin-side">
+      <section class="fin-card"><span class="fin-eyebrow">CONFIGURAÇÃO</span><h2>Mensalidade padrão</h2><p>Aplicada às novas confirmações. O histórico fica preservado.</p><form method="post" action="{{ url_for('admin_financeiro_mensalidade') }}" class="fin-form"><input type="hidden" name="mes" value="{{ competencia }}"><label>Valor mensal (R$)<input type="text" inputmode="decimal" name="valor" value="{{ mensalidade }}" required></label><button class="fin-button secondary">Atualizar mensalidade</button></form></section>
+      <section class="fin-card"><span class="fin-eyebrow">DESPESAS MANUAIS</span><h2>Adicionar despesa</h2><p>Registre cada cobrança quando ela acontecer.</p><form method="post" action="{{ url_for('admin_financeiro_despesa') }}" class="fin-form"><input type="hidden" name="mes" value="{{ competencia }}"><label>Descrição<input name="descricao" value="Render" maxlength="180" required></label><label>Categoria<select name="categoria">{% for cat in categorias %}<option value="{{ cat }}" {% if cat == 'Hospedagem' %}selected{% endif %}>{{ cat }}</option>{% endfor %}</select></label><label>Valor (R$)<input name="valor" type="text" inputmode="decimal" value="74,00" required></label><label>Data da despesa<input type="date" name="data_despesa" value="{{ competencia }}-01" required></label><label>Observação<input name="observacao" maxlength="500" placeholder="Opcional"></label><button class="fin-button">Adicionar despesa</button></form></section>
+    </aside>
+  </div>
+  <section class="fin-card fin-expenses"><div class="fin-section-head"><div><span class="fin-eyebrow">HISTÓRICO DO MÊS</span><h2>Despesas lançadas</h2></div><strong>{{ total_despesas|brl }}</strong></div>{% if despesas %}<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>Descrição</th><th>Categoria</th><th>Data</th><th>Observação</th><th>Valor</th></tr></thead><tbody>{% for d in despesas %}<tr><td><strong>{{ d.descricao }}</strong></td><td>{{ d.categoria }}</td><td>{{ d.data_despesa.strftime('%d/%m/%Y') }}</td><td>{{ d.observacao or '—' }}</td><td><strong>{{ d.valor|brl }}</strong></td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="fin-empty">Nenhuma despesa lançada nesta competência.</p>{% endif %}</section>
+</section>
+{% endblock %}
+

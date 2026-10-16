@@ -39,6 +39,7 @@ from routes.produtos import registrar_rotas as produtos
 from routes.importacao_produtos import registrar_rotas as importacao_produtos
 from routes.vendas import registrar_rotas as vendas
 from routes.admin import registrar_rotas as admin
+from routes.admin_financeiro import registrar_rotas as admin_financeiro_rotas
 from routes.caixa import registrar_rotas as caixa
 from routes.perfis import registrar_rotas as perfis_rotas
 from routes.funcionario_dashboard import (
@@ -101,6 +102,7 @@ mesas_rotas(
     socketio,
 )
 admin(app)
+admin_financeiro_rotas(app)
 caixa(app)
 registrar_rotas_custos(app)
 
@@ -119,3 +121,5 @@ if __name__ == "__main__":
         port=5000,
         debug=True,
     )
+
+

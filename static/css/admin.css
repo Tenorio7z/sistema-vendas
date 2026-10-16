@@ -2073,4 +2073,4 @@ html:not(.dark) .empresa-modulo-switch {
     .btn-salvar-modulos {
         width: 100%;
     }
-}
+}.btn-financeiro-admin{display:inline-flex;align-items:center;justify-content:center;padding:10px 15px;border-radius:10px;background:#4169e1;color:#fff;text-decoration:none;font-weight:700}
