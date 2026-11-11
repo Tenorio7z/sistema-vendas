@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fidelidade.css') }}">
+{% endblock %}
+{% block content %}
+<main class="fid-public">
+  <p>Programa de fidelidade</p>
+  <h1>{{ campanha.nome }}</h1>
+  <p>A cada {{ campanha.checkins_meta }} compras registradas para o mesmo cliente nesta loja, o cliente recebe:</p>
+  <div class="fid-prize">{{ campanha.premio }}</div>
+  <p>Para participar, peça à equipe para localizar ou cadastrar seu perfil de cliente e vincular cada compra a ele. O sistema registra o check-in depois que a venda é concluída.</p>
+  <p>Prazo desta campanha: até {{ campanha.expira_em.strftime('%d/%m/%Y %H:%M') }}.</p>
+</main>
+{% endblock %}
+
+

@@ -1,0 +1,210 @@
+/* Fidelidade — integra com as variáveis globais do tema Nexus */
+:root {
+    --fid-note-bg: rgba(255, 189, 57, 0.16);
+    --fid-note-text: #79520b;
+    --fid-prize-bg: rgba(67, 140, 255, 0.12);
+}
+
+body.dark {
+    --fid-note-bg: rgba(255, 189, 57, 0.12);
+    --fid-note-text: #ffe2a3;
+    --fid-prize-bg: rgba(67, 140, 255, 0.17);
+}
+
+.fid-wrap {
+    width: min(1100px, calc(100% - 36px));
+    margin: 32px auto;
+    color: var(--texto);
+}
+
+.fid-wrap h1 {
+    margin: 0 0 8px;
+    color: var(--texto);
+}
+
+.fid-card,
+.fid-public {
+    color: var(--texto);
+    background: var(--bg-card);
+    border: 1px solid var(--borda);
+    border-radius: 16px;
+    box-shadow: var(--sombra);
+}
+
+.fid-card {
+    margin: 18px 0;
+    padding: 22px;
+}
+
+.fid-card h2 {
+    margin: 0 0 16px;
+    color: var(--texto);
+}
+
+.fid-card p,
+.fid-public p {
+    line-height: 1.6;
+}
+
+.fid-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.fid-card label {
+    display: block;
+    margin: 0 0 14px;
+    color: var(--texto-secundario);
+    font-weight: 600;
+}
+
+.fid-card input,
+.fid-card textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin-top: 6px;
+    padding: 11px 12px;
+    color: var(--texto);
+    background: var(--bg-input);
+    border: 1px solid var(--borda);
+    border-radius: 9px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.fid-card input::placeholder,
+.fid-card textarea::placeholder {
+    color: var(--texto-suave);
+    opacity: 1;
+}
+
+.fid-card input:focus,
+.fid-card textarea:focus {
+    border-color: var(--azul);
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--azul) 20%, transparent);
+}
+
+.fid-card button {
+    min-height: 42px;
+    padding: 10px 16px;
+    color: #fff;
+    background: var(--azul-escuro);
+    border: 0;
+    border-radius: 9px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.18s ease, transform 0.18s ease;
+}
+
+.fid-card button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.fid-card button:focus-visible,
+.fid-card a:focus-visible {
+    outline: 2px solid var(--azul-claro);
+    outline-offset: 3px;
+}
+
+.fid-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.fid-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--texto);
+}
+
+.fid-table th,
+.fid-table td {
+    padding: 11px 10px;
+    border-bottom: 1px solid var(--borda);
+    text-align: left;
+    vertical-align: top;
+}
+
+.fid-table th {
+    color: var(--texto-secundario);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.fid-table a {
+    color: var(--azul);
+    overflow-wrap: anywhere;
+}
+
+.fid-muted {
+    color: var(--texto-secundario);
+}
+
+.fid-pill {
+    display: inline-block;
+    padding: 5px 10px;
+    color: var(--texto);
+    background: var(--fid-prize-bg);
+    border: 1px solid var(--borda);
+    border-radius: 99px;
+    white-space: nowrap;
+}
+
+.fid-note {
+    padding: 12px 14px;
+    color: var(--fid-note-text);
+    background: var(--fid-note-bg);
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+}
+
+.fid-public {
+    width: min(680px, calc(100% - 36px));
+    margin: 8vh auto;
+    padding: clamp(22px, 5vw, 34px);
+}
+
+.fid-public h1 {
+    margin: 4px 0 18px;
+    color: var(--texto);
+    font-size: clamp(1.7rem, 4vw, 2.2rem);
+}
+
+.fid-public .fid-prize {
+    padding: 16px;
+    color: var(--texto);
+    background: var(--fid-prize-bg);
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    .fid-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .fid-wrap {
+        width: min(100% - 24px, 1100px);
+        margin: 22px auto;
+    }
+
+    .fid-card {
+        padding: 17px;
+    }
+
+    .fid-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .fid-table {
+        min-width: 680px;
+    }
+}

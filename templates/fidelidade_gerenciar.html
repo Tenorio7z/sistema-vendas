@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fidelidade.css') }}">
+{% endblock %}
+{% block content %}
+<main class="fid-wrap">
+  <h1>Fidelidade</h1>
+  <p class="fid-muted">Uma venda confirmada gera um check-in quando estiver vinculada a um cliente cadastrado.</p>
+  <section class="fid-card">
+    <h2>Criar campanha</h2>
+    <p class="fid-note">Criar uma campanha nova encerra a anterior. O prazo começa na criação. O link é público e mostra apenas os dados da campanha.</p>
+    <form method="post" action="{{ url_for('fidelidade_gerenciar') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="fid-grid">
+        <label>Nome da campanha<input name="nome" maxlength="120" required placeholder="Clube de fidelidade"></label>
+        <label>Final do link (slug)<input name="slug" maxlength="80" pattern="[a-z0-9]+(-[a-z0-9]+)*" required placeholder="clube-da-loja"><small class="fid-muted">Link completo: {{ url_publica|replace('LINK', 'seu-slug') }}</small></label>
+        <label>Prazo em dias<input type="number" name="prazo_dias" min="1" max="3650" value="90" required></label>
+        <label>Check-ins para cada prêmio<input type="number" name="checkins_meta" min="1" max="10000" value="5" required></label>
+      </div>
+      <label>Prêmio<input name="premio" maxlength="500" required placeholder="Ex.: uma sobremesa grátis"></label>
+      <button type="submit">Criar e ativar campanha</button>
+    </form>
+  </section>
+
+  <section class="fid-card">
+    <h2>Campanhas</h2>
+    {% if campanhas %}<div class="fid-scroll"><table class="fid-table"><thead><tr><th>Campanha</th><th>Meta</th><th>Prêmio</th><th>Prazo</th><th>Link</th><th>Situação</th></tr></thead><tbody>
+      {% for c in campanhas %}<tr><td>{{ c.nome }}</td><td>{{ c.checkins_meta }} check-ins</td><td>{{ c.premio }}</td><td>{{ c.prazo_dias }} dias<br><small>{{ c.expira_em.strftime('%d/%m/%Y %H:%M') }}</small></td><td><a href="{{ url_for('fidelidade_publica', slug=c.slug) }}" target="_blank" rel="noopener">{{ request.url_root.rstrip('/') }}{{ url_for('fidelidade_publica', slug=c.slug) }}</a></td><td><span class="fid-pill">{{ 'Ativa' if c.vigente else 'Encerrada' }}</span></td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<p>Nenhuma campanha criada ainda.</p>{% endif %}
+  </section>
+
+  <section class="fid-card">
+    <h2>Prêmios de clientes</h2>
+    <p class="fid-muted">“Revisar cancelamento” indica que uma compra vinculada foi cancelada depois de o prêmio já ter sido resgatado.</p>
+    {% if recompensas %}<div class="fid-scroll"><table class="fid-table"><thead><tr><th>Cliente</th><th>Campanha</th><th>Prêmio</th><th>Ciclo</th><th>Status</th><th>Ação</th></tr></thead><tbody>
+      {% for r in recompensas %}<tr><td>{{ r.cliente_nome }}</td><td>{{ r.campanha_nome }}</td><td>{{ r.premio }}</td><td>{{ r.ciclo }}</td><td><span class="fid-pill">{{ r.status.replace('_', ' ') }}</span></td><td>{% if r.status == 'disponivel' %}<form method="post" action="{{ url_for('fidelidade_resgatar', recompensa_id=r.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Marcar resgatado</button></form>{% elif r.status == 'revisar_cancelamento' %}<strong>Verificar manualmente</strong>{% else %}—{% endif %}</td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<p>Nenhum prêmio liberado até agora.</p>{% endif %}
+  </section>
+</main>
+{% endblock %}
+

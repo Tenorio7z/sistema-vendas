@@ -79,6 +79,8 @@ from routes.mesas import (
 )
 from routes.configuracoes import registrar_rotas as configuracoes_rotas
 
+from routes.fidelidade import registrar_rotas_fidelidade
+
 
 notificacoes(app)
 historico_caixas_rotas(app)
@@ -105,6 +107,8 @@ admin(app)
 admin_financeiro_rotas(app)
 caixa(app)
 registrar_rotas_custos(app)
+registrar_rotas_fidelidade(app)
+
 
 app.register_blueprint(ia_bp)
 app.register_blueprint(emprestimos_bp)

@@ -2,6 +2,7 @@ from flask import *
 from database import conectar, criar_cursor
 from services.cupom_service import gerar_cupom_venda
 from services.notificacoes import notificar_gerente
+from services.fidelidade_service import registrar_checkins_da_venda
 from services.fcm_services import enviar_notificacao
 from decimal import (
     Decimal,
@@ -1132,6 +1133,12 @@ def registrar_rotas(app, socketio):
                     "Não foi possível atualizar o caixa."
                 )
 
+            registrar_checkins_da_venda(
+                cursor,
+                empresa_id,
+                cliente_id,
+                venda_grupo,
+            )
             conn.commit()
 
         except ValueError as erro:

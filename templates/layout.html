@@ -158,6 +158,13 @@
 
             {% endif %}
 
+            {% if session.get("nivel") == "gerente" %}
+            <a href="{{ url_for('fidelidade_gerenciar') }}" class="{% if request.path.startswith('/fidelidade') %}active{% endif %}">
+                <span class="nav-icon nav-icon-svg" aria-hidden="true">★</span>
+                <span class="link-text">Fidelidade</span>
+            </a>
+            {% endif %}
+
             {% if modulo_ativo("vendas") %}
 
             <a href="/vendas" class="{% if request.path.startswith('/vendas') %}active{% endif %}">

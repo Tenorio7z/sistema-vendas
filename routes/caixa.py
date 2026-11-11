@@ -2,6 +2,7 @@ from flask import *
 from database import conectar
 import psycopg2.extras
 
+from services.fidelidade_service import invalidar_checkin_se_venda_cancelada
 from werkzeug.security import (
     check_password_hash
 )
@@ -553,6 +554,7 @@ def registrar_rotas(app):
                     caixa_id,
                     empresa_id,
                     filial_id,
+                    venda_grupo,
 
                     COALESCE(
                         cancelada,
@@ -677,6 +679,12 @@ def registrar_rotas(app):
                 raise ValueError(
                     "Esta venda já foi cancelada."
                 )
+
+            invalidar_checkin_se_venda_cancelada(
+                cursor,
+                empresa_id,
+                venda.get("venda_grupo"),
+            )
 
             # ======================================
             # REGISTRAR MOVIMENTAÇÃO
